@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'tengine_job'
+
 # [jobnet0001]
 # start --- job1 --- [hadoop_job_run1] --- job2 --- end
 #

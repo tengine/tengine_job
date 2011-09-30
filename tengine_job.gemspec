@@ -25,9 +25,59 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "lib/tengine/job.rb",
+    "lib/tengine/job/category.rb",
+    "lib/tengine/job/connectable.rb",
+    "lib/tengine/job/dsl_evaluator.rb",
+    "lib/tengine/job/dsl_loader.rb",
+    "lib/tengine/job/edge.rb",
+    "lib/tengine/job/end.rb",
+    "lib/tengine/job/expansion.rb",
+    "lib/tengine/job/fork.rb",
+    "lib/tengine/job/job.rb",
+    "lib/tengine/job/jobnet.rb",
+    "lib/tengine/job/jobnet/builder.rb",
+    "lib/tengine/job/jobnet_actual.rb",
+    "lib/tengine/job/jobnet_template.rb",
+    "lib/tengine/job/join.rb",
+    "lib/tengine/job/junction.rb",
+    "lib/tengine/job/mm_compatibility.rb",
+    "lib/tengine/job/mm_compatibility/connectable.rb",
+    "lib/tengine/job/root.rb",
+    "lib/tengine/job/root_jobnet_actual.rb",
+    "lib/tengine/job/root_jobnet_template.rb",
+    "lib/tengine/job/runtime_attrs.rb",
+    "lib/tengine/job/script.rb",
+    "lib/tengine/job/script_actual.rb",
+    "lib/tengine/job/script_template.rb",
+    "lib/tengine/job/start.rb",
+    "lib/tengine/job/stoppable.rb",
+    "lib/tengine/job/vertex.rb",
     "lib/tengine_job.rb",
+    "spec/mongoid.yml",
     "spec/spec_helper.rb",
-    "spec/tengine_job_spec.rb"
+    "spec/tengine/job/category_spec.rb",
+    "spec/tengine/job/dsl_loader_spec.rb",
+    "spec/tengine/job/dsls/0001_hadoop_job_run.rb",
+    "spec/tengine/job/dsls/0002_join_and_join.rb",
+    "spec/tengine/job/dsls/0003_fork_and_fork.rb",
+    "spec/tengine/job/dsls/0004_complex_fork_and_join.rb",
+    "spec/tengine/job/dsls/0005_finally.rb",
+    "spec/tengine/job/dsls/0006_expansion.rb",
+    "spec/tengine/job/edge_spec.rb",
+    "spec/tengine/job/expansion_spec.rb",
+    "spec/tengine/job/job_spec.rb",
+    "spec/tengine/job/jobnet_actual_spec.rb",
+    "spec/tengine/job/jobnet_spec.rb",
+    "spec/tengine/job/jobnet_template_spec.rb",
+    "spec/tengine/job/root_jobnet_actual_spec.rb",
+    "spec/tengine/job/root_jobnet_template_spec.rb",
+    "spec/tengine/job/script_actual_spec.rb",
+    "spec/tengine/job/script_spec.rb",
+    "spec/tengine/job/script_template_spec.rb",
+    "spec/tengine/job/vertex_spec.rb",
+    "spec/tengine_job_spec.rb",
+    "tengine_job.gemspec"
   ]
   s.homepage = %q{http://github.com/akm/tengine_job}
   s.licenses = [%q{MIT}]
@@ -40,26 +90,32 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<tengine_core>, ["~> 0.1.0"])
-      s.add_development_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_development_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.6.0"])
+      s.add_development_dependency(%q<factory_girl>, ["~> 2.1.2"])
+      s.add_development_dependency(%q<yard>, ["~> 0.7.2"])
+      s.add_development_dependency(%q<bundler>, ["~> 1.0.18"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
-      s.add_development_dependency(%q<rcov>, [">= 0"])
+      s.add_development_dependency(%q<simplecov>, ["~> 0.5.3"])
+      s.add_development_dependency(%q<ZenTest>, ["~> 4.6.2"])
     else
       s.add_dependency(%q<tengine_core>, ["~> 0.1.0"])
-      s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
+      s.add_dependency(%q<rspec>, ["~> 2.6.0"])
+      s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
+      s.add_dependency(%q<yard>, ["~> 0.7.2"])
+      s.add_dependency(%q<bundler>, ["~> 1.0.18"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
-      s.add_dependency(%q<rcov>, [">= 0"])
+      s.add_dependency(%q<simplecov>, ["~> 0.5.3"])
+      s.add_dependency(%q<ZenTest>, ["~> 4.6.2"])
     end
   else
     s.add_dependency(%q<tengine_core>, ["~> 0.1.0"])
-    s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-    s.add_dependency(%q<yard>, ["~> 0.6.0"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
+    s.add_dependency(%q<rspec>, ["~> 2.6.0"])
+    s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
+    s.add_dependency(%q<yard>, ["~> 0.7.2"])
+    s.add_dependency(%q<bundler>, ["~> 1.0.18"])
     s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
-    s.add_dependency(%q<rcov>, [">= 0"])
+    s.add_dependency(%q<simplecov>, ["~> 0.5.3"])
+    s.add_dependency(%q<ZenTest>, ["~> 4.6.2"])
   end
 end
 

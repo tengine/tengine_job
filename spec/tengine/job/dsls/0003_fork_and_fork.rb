@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'tengine_job'
+
 # [jobnet0003]
 #                   |--- job2--------------------|
 #                   |                            |

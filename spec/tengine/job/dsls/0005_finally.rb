@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+require 'tengine_job'
+
 jobnet("jobnet0005", "ジョブネット0005", :instance_name => "i-11111111", :credential_name => "goku-ssh-pk1") do
   auto_sequence
   job("job1", "ジョブ1", "job1.sh")

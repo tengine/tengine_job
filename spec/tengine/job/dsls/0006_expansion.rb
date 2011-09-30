@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+require 'tengine_job'
+
 jobnet("jobnet0006_01") do
   boot_jobs("job101", "job102", "job103")
   job("job101", "echo 'success101'")
