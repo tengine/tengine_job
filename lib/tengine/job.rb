@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'tengine_job'
 
 module Tengine::Job
@@ -34,4 +35,14 @@ module Tengine::Job
   autoload :Connectable         , "tengine/job/connectable"
 
   autoload :MmCompatibility     , "tengine/job/mm_compatibility"
+
+
+  class << self
+    def notify(sender, msg)
+      if sender.is_a?(Tengine::Core::Bootstrap) && (msg == :after_load_dsl)
+        # Tengine::Job::Category.update_for(sender.config.dsl_version) # RootJobnetTemplateのdsl_filepathからCategoryを生成します
+      end
+    end
+
+  end
 end
