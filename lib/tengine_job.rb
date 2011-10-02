@@ -4,4 +4,4 @@ module Tengine
   autoload :Job, "tengine/job"
 end
 
-Tengine.dsl_loader_modules << Tengine::Job::DslLoader
+Tengine.plugins.add(Tengine::Job)

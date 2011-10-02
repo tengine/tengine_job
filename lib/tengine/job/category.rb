@@ -2,6 +2,7 @@ require 'tengine/job'
 
 class Tengine::Job::Category
   include Mongoid::Document
+  field :dsl_version, :type => String
   field :name, :type => String
   field :caption, :type => String
   with_options(:class_name => "Tengine::Job::Category") do |c|

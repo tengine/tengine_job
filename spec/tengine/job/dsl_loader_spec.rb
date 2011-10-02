@@ -2,12 +2,8 @@
 require 'spec_helper'
 
 describe Tengine::Job::DslLoader do
-  before do
-    Tengine.dsl_loader_modules << Tengine::Job::DslLoader
-  end
-
-  after do
-    Tengine.dsl_loader_modules.delete(Tengine::Job::DslLoader)
+  before(:all) do
+    Tengine.plugins.add(Tengine::Job::DslLoader)
   end
 
   def load_dsl(filename)
