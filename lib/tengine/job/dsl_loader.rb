@@ -12,7 +12,12 @@ module Tengine::Job::DslLoader
     }.update(options)
     auto_sequence = options.delete(:auto_sequence)
     result = __with_redirection__(options) do
-      Tengine::Job::JobnetTemplate.new(options)
+      if @jobnet.nil?
+        klass = Tengine::Job::RootJobnetTemplate
+      else
+        klass = Tengine::Job::JobnetTemplate
+      end
+      klass.new(options)
     end
     @jobnet.children << result if @jobnet
     __stack_instance_variable__(:@auto_sequence,  auto_sequence || @auto_sequence) do

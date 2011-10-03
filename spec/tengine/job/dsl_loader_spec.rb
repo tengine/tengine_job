@@ -24,7 +24,7 @@ describe Tengine::Job::DslLoader do
 
       it do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0001")
-        root_jobnet.should be_a(Tengine::Job::JobnetTemplate)
+        root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.name.should == "jobnet0001"
           j.description.should == "ジョブネット0001"
@@ -108,7 +108,7 @@ describe Tengine::Job::DslLoader do
 
       it do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0002")
-        root_jobnet.should be_a(Tengine::Job::JobnetTemplate)
+        root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.name.should == "jobnet0002"
           j.description.should == "jobnet0002"
@@ -157,7 +157,7 @@ describe Tengine::Job::DslLoader do
 
       it do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0003")
-        root_jobnet.should be_a(Tengine::Job::JobnetTemplate)
+        root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.name.should == "jobnet0003"
           j.description.should == "jobnet0003"
@@ -206,7 +206,7 @@ describe Tengine::Job::DslLoader do
 
       it do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0004")
-        root_jobnet.should be_a(Tengine::Job::JobnetTemplate)
+        root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.name.should == "jobnet0004"
           j.description.should == "jobnet0004"
@@ -269,7 +269,7 @@ describe Tengine::Job::DslLoader do
 
       it do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0005")
-        root_jobnet.should be_a(Tengine::Job::JobnetTemplate)
+        root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.name.should == "jobnet0005"
           j.description.should == "ジョブネット0005"
@@ -320,7 +320,7 @@ describe Tengine::Job::DslLoader do
 
       it do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0006")
-        root_jobnet.should be_a(Tengine::Job::JobnetTemplate)
+        root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.name.should == "jobnet0006"
           j.description.should == "jobnet0006"
