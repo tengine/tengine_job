@@ -38,9 +38,13 @@ module Tengine::Job
 
 
   class << self
+    # tengine_coreからそのプラグインへ通知を受けるための
     def notify(sender, msg)
-      if sender.is_a?(Tengine::Core::Bootstrap) && (msg == :after_load_dsl)
-        # Tengine::Job::Category.update_for(sender.config.dsl_version) # RootJobnetTemplateのdsl_filepathからCategoryを生成します
+      if (msg == :after_load_dsl) && sender.respond_to?(:config)
+        Tengine::Job::Category.update_for(
+          sender.config.dsl_version,
+          sender.config.dsl_dir_path
+          ) # RootJobnetTemplateのdsl_filepathからCategoryを生成します
       end
     end
 
