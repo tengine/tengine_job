@@ -11,6 +11,7 @@ describe Tengine::Job::DslLoader do
       :action => "load",
       :tengined => { :load_path => File.expand_path("dsls/#{filename}", File.dirname(__FILE__)) },
     }
+    @version = File.read(File.expand_path("dsls/VERSION", File.dirname(__FILE__))).strip
     @bootstrap = Tengine::Core::Bootstrap.new(config)
     @bootstrap.boot
   end
@@ -26,6 +27,10 @@ describe Tengine::Job::DslLoader do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0001")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
+          j.lock_version.should == 0
+          j.dsl_version.should == @version
+          j.dsl_filepath.should == "0001_hadoop_job_run.rb"
+          j.dsl_lineno.should == 21
           j.name.should == "jobnet0001"
           j.description.should == "ジョブネット0001"
           j.server_name.should == "i-11111111"
@@ -110,6 +115,10 @@ describe Tengine::Job::DslLoader do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0002")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
+          j.lock_version.should == 0
+          j.dsl_version.should == @version
+          j.dsl_filepath.should == "0002_join_and_join.rb"
+          j.dsl_lineno.should == 12
           j.name.should == "jobnet0002"
           j.description.should == "jobnet0002"
           j.server_name.should == "i-11111111"
@@ -159,6 +168,10 @@ describe Tengine::Job::DslLoader do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0003")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
+          j.lock_version.should == 0
+          j.dsl_version.should == @version
+          j.dsl_filepath.should == "0003_fork_and_fork.rb"
+          j.dsl_lineno.should == 11
           j.name.should == "jobnet0003"
           j.description.should == "jobnet0003"
           j.server_name.should == "i-11111111"
@@ -208,6 +221,10 @@ describe Tengine::Job::DslLoader do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0004")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
+          j.lock_version.should == 0
+          j.dsl_version.should == @version
+          j.dsl_filepath.should == "0004_complex_fork_and_join.rb"
+          j.dsl_lineno.should == 11
           j.name.should == "jobnet0004"
           j.description.should == "jobnet0004"
           j.server_name.should == "i-11111111"
@@ -271,6 +288,10 @@ describe Tengine::Job::DslLoader do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0005")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
+          j.lock_version.should == 0
+          j.dsl_version.should == @version
+          j.dsl_filepath.should == "0005_finally.rb"
+          j.dsl_lineno.should == 5
           j.name.should == "jobnet0005"
           j.description.should == "ジョブネット0005"
           j.server_name.should == "i-11111111"
@@ -322,6 +343,10 @@ describe Tengine::Job::DslLoader do
         root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0006")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
+          j.lock_version.should == 0
+          j.dsl_version.should == @version
+          j.dsl_filepath.should == "0006_expansion.rb"
+          j.dsl_lineno.should == 19
           j.name.should == "jobnet0006"
           j.description.should == "jobnet0006"
           j.server_name.should == nil

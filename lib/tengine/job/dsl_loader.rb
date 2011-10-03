@@ -14,6 +14,10 @@ module Tengine::Job::DslLoader
     result = __with_redirection__(options) do
       if @jobnet.nil?
         klass = Tengine::Job::RootJobnetTemplate
+        options[:dsl_version] = config.dsl_version
+        path, lineno = *block.source_location
+        options[:dsl_filepath] = config.relative_path_from_dsl_dir(path)
+        options[:dsl_lineno] = lineno.to_i
       else
         klass = Tengine::Job::JobnetTemplate
       end
