@@ -3,19 +3,22 @@ require 'tengine/job'
 
 require 'selectable_attr'
 
+# ジョブの始端から終端までを持ち、VertexとEdgeを組み合わせてジョブネットを構成することができるVertex。
+# 自身もジョブネットを構成するVertexの一部として扱われる。
 class Tengine::Job::Jobnet < Tengine::Job::Job
   include SelectableAttr::Base
 
   autoload :Builder, "tengine/job/jobnet/builder"
 
-  field :script, :type => String
-  field :description, :type => String
-  field :jobnet_type_cd, :type => Integer, :default => 1
+  field :script        , :type => String # 実行されるスクリプト(本来Tengine::Job::Scriptが保持しますが、子要素を保持してかつスクリプトを実行するhadoop_job_runもある)
+  field :description   , :type => String # ジョブネットの説明
+  field :jobnet_type_cd, :type => Integer, :default => 1 # ジョブネットの種類。後述の定義を参照してください。
 
   selectable_attr :jobnet_type_cd do
     entry 1, :normal , "normal"
     entry 2, :finally, "finally"
     # entry 3, :recover, "recover"
+    entry 4, :chained_box, "chained_box" # hadoop_job_runが保持するhadoop_jobやMap/Reduceを指します。
   end
 
   embeds_many :edges, :class_name => "Tengine::Job::Edge", :inverse_of => :owner

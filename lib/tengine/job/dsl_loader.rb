@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'tengine/job'
 
+# ジョブDSLをロードする際に使用される語彙に関するメソッドを定義するモジュール
 module Tengine::Job::DslLoader
   include Tengine::Job::DslEvaluator
 

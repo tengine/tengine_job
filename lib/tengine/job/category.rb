@@ -3,9 +3,10 @@ require 'tengine/job'
 
 class Tengine::Job::Category
   include Mongoid::Document
-  field :dsl_version, :type => String
-  field :name, :type => String
-  field :caption, :type => String
+  field :dsl_version, :type => String # DSLをロードしたときのバージョン。Tengine::Core::Config#dsl_version が設定されます。
+  field :name       , :type => String # カテゴリ名。ディレクトリ名を元に設定されるので、"/"などは使用不可。
+  field :caption    , :type => String # カテゴリの表示名。各ディレクトリ名に対応する表示名。通常dictionary.ymlに定義する。
+
   with_options(:class_name => "Tengine::Job::Category") do |c|
     c.belongs_to :parent, :inverse_of => :children, :index => true
     c.has_many   :children, :inverse_of => :parent, :order => [:name, :asc]
