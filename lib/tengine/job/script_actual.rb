@@ -3,6 +3,7 @@ require 'tengine/job'
 
 # ジョブとして実際にスクリプトを実行するVertex。
 class Tengine::Job::ScriptActual < Tengine::Job::Script
+  include Tengine::Job::ScriptExecutable
   include Tengine::Job::RuntimeAttrs
 
   field :executing_pid, :type => String # 実行しているプロセスのPID
