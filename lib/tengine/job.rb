@@ -33,6 +33,7 @@ module Tengine::Job
   autoload :RuntimeAttrs        , "tengine/job/runtime_attrs"
   autoload :Stoppable           , "tengine/job/stoppable"
   autoload :Connectable         , "tengine/job/connectable"
+  autoload :ScriptExecutable    , "tengine/job/script_executable"
 
   autoload :MmCompatibility     , "tengine/job/mm_compatibility"
 
