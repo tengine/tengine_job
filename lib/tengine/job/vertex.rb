@@ -18,6 +18,18 @@ class Tengine::Job::Vertex
   alias_method :long_inspect, :inspect
   alias_method :inspect, :short_inspect
 
+  def previous_edges
+    return nil unless parent
+    parent.edges.select{|edge| edge.destination_id == self.id}
+  end
+  alias_method :prev_edges, :previous_edges
+
+  def next_edges
+    return nil unless parent
+    parent.edges.select{|edge| edge.origin_id == self.id}
+  end
+
+
   def accept_visitor(visitor)
     visitor.visit(self)
   end
@@ -38,6 +50,5 @@ class Tengine::Job::Vertex
       return nil
     end
   end
-
 
 end

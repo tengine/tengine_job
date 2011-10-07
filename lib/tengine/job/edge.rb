@@ -10,7 +10,7 @@ class Tengine::Job::Edge
 
   embedded_in :owner, :class_name => "Tengine::Job::Jobnet", :inverse_of => :edges
 
-  field :status_cd     , :type => Integer        # ステータス。とりうる値は後述を参照してください。詳しくはtengine_jobパッケージ設計書の「edge状態遷移」を参照してください。
+  field :status_cd     , :type => Integer, :default => 0 # ステータス。とりうる値は後述を参照してください。詳しくはtengine_jobパッケージ設計書の「edge状態遷移」を参照してください。
   field :origin_id     , :type => BSON::ObjectId # 辺の遷移元となるvertexのid
   field :destination_id, :type => BSON::ObjectId # 辺の遷移先となるvertexのid
 
@@ -29,4 +29,22 @@ class Tengine::Job::Edge
   def destination
     owner.children.detect{|c| c.id == destination_id}
   end
+
+  def transmit
+    dest = self.destination
+    if dest.is_a?(Tengine::Job::Job)
+      self.status_key = :transmitting
+      dest.phase_key = :starting
+      result = [dest]
+    elsif dest.is_a?(Tengine::Job::End)
+      self.status_key = :transmitted
+    elsif dest.is_a?(Tengine::Job::Junction)
+      self.status_key = :transmitted
+      result = dest.activate_if_possible
+    else
+      raise "unsupported vertex found: #{dest.inspect}"
+    end
+    result
+  end
+
 end
