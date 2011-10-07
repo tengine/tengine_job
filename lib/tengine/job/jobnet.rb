@@ -87,4 +87,18 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     edges.new(:origin_id => origin_id, :destination_id => destination_id)
   end
 
+  def find_descendant(vertex_id)
+    return nil if vertex_id == self.id
+    visitor = Tengine::Job::Vertex::AnyVisitor.new{|vertex| vertex_id == vertex.id }
+    visitor.visit(self)
+  end
+
+  def find_descendant_by_name_path(name_path)
+    return nil if name_path == self.name_path
+    visitor = Tengine::Job::Vertex::AnyVisitor.new do |vertex|
+      name_path == (vertex.respond_to?(:name_path) ? vertex.name_path : nil)
+    end
+    visitor.visit(self)
+  end
+
 end

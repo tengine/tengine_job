@@ -18,4 +18,24 @@ class Tengine::Job::Vertex
   alias_method :long_inspect, :inspect
   alias_method :inspect, :short_inspect
 
+  def accept_visitor(visitor)
+    visitor.visit(self)
+  end
+
+  class AnyVisitor
+    def initialize(&block)
+      @block = block
+    end
+    def visit(vertex)
+      return vertex if !!@block.call(vertex)
+      vertex.children.each do |child|
+        if result = child.accept_visitor(self)
+          return result
+        end
+      end
+      return nil
+    end
+  end
+
+
 end

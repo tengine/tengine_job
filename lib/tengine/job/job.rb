@@ -13,5 +13,13 @@ class Tengine::Job::Job < Tengine::Job::Vertex
     "#<%%%-30s id: %s name: %s>" % [self.class.name, self.id.to_s, name]
   end
 
+  NAME_PATH_SEPARATOR = '/'.freeze
+
+  def name_path
+    parent ? "#{parent.name_path}#{NAME_PATH_SEPARATOR}#{self.name}" :
+      "#{NAME_PATH_SEPARATOR}#{self.name}"
+  end
+
+
 end
 
