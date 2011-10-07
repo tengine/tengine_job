@@ -124,6 +124,76 @@ describe Tengine::Job::Jobnet do
         end
       end
     end
+
+    describe :find_descendant_edge do
+      before do
+        @j1000_start = @j1000.edges[0] # to j1100
+        @j1100_next  = @j1000.edges[1] # to j1200
+        @j1200_next  = @j1000.edges[2] # to j1000's end
+
+        @j1100_start = @j1100.edges[0] # to j1110
+        @j1110_next  = @j1100.edges[1] # to j1120
+        @j1120_next  = @j1100.edges[2] # to j1100's end
+
+        @j1200_start = @j1200.edges[0] # to j1210
+        @j1210_next  = @j1200.edges[1] # to j1220
+        @j1220_next  = @j1200.edges[2] # to j1200's end
+
+        @j1210_start = @j1210.edges[0] # to j1211
+        @j1211_next  = @j1210.edges[1] # to j1212
+        @j1212_next  = @j1210.edges[2] # to j1210's end
+
+        @j1220_start = @j1220.edges[0] # to j1221
+        @j1221_next  = @j1220.edges[1] # to j1222
+        @j1222_next  = @j1220.edges[2] # to j1220's end
+      end
+
+      edge_names = %w[
+        j1000_start j1100_next j1200_next
+        j1100_start j1110_next j1120_next
+        j1200_start j1210_next j1220_next
+        j1210_start j1211_next j1212_next
+        j1220_start j1221_next j1222_next
+      ]
+
+      edge_names.each do |edge_name|
+        context "edge_name check" do
+          case edge_name
+          when /_start$/ then
+
+            it "should be the edge from start to other" do
+              owner_name = edge_name.sub(/_start$/, '')
+              owner = instance_variable_get(:"@#{owner_name}")
+              start = owner.children.first
+              edge = instance_variable_get(:"@#{edge_name}")
+              edge.origin_id.should == start.id
+            end
+
+          when /_next$/ then
+
+            it "should be the edge from vertex to other" do
+              origin_name = edge_name.sub(/_next$/, '')
+              origin = instance_variable_get(:"@#{origin_name}")
+              edge = instance_variable_get(:"@#{edge_name}")
+              edge.origin_id.should == origin.id
+              owner = origin.parent
+              edge.owner.id.should == owner.id
+            end
+
+          end
+        end
+      end
+
+      edge_names.each do |edge_name|
+        it "ルートからエッジ#{edge_name}を参照できます" do
+          edge = instance_variable_get(:"@#{edge_name}")
+          found = @j1000.find_descendant_edge(edge.id)
+          found.id.should == edge.id
+        end
+      end
+
+    end
+
   end
 
 end

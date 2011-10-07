@@ -27,7 +27,9 @@ class Tengine::Job::Vertex
       @block = block
     end
     def visit(vertex)
-      return vertex if !!@block.call(vertex)
+      if result = @block.call(vertex)
+        return result
+      end
       vertex.children.each do |child|
         if result = child.accept_visitor(self)
           return result
