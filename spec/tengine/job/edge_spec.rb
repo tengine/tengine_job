@@ -5,9 +5,9 @@ describe Tengine::Job::Edge do
   describe :transmit do
     context "シンプルなケース" do
       # in [j10]
-      # [start] --e11--> [j11] --e12--> [end]
+      # [start] --e11-->[j11]--e12-->[end]
       before do
-        @j10 = Tengine::Job::JobnetActual.new(:name => "j10")
+        @j10 = Tengine::Job::RootJobnetActual.new(:name => "j10")
         @j10.children << @j11 = Tengine::Job::JobnetActual.new(:name => "j11")
         @j10.prepare_end
         @j10.build_sequencial_edges
@@ -28,11 +28,11 @@ describe Tengine::Job::Edge do
 
     context "分岐するケース" do
       # in [j10]
-      #                   |---e12--->[j11]---e14--->|
-      # [start]---e11--->[F]                       [J]---e16--->[end]
-      #                   |---e13--->[j12]---e15--->|
+      #                 |--e12-->[j11]--e14-->|
+      # [start]--e11-->[F]                   [J]--e16-->[end]
+      #                 |--e13-->[j12]--e15-->|
       before do
-        @j10 = Tengine::Job::JobnetActual.new(:name => "j10")
+        @j10 = Tengine::Job::RootJobnetActual.new(:name => "j10")
         @j10.children << @start = Tengine::Job::Start.new
         @j10.children << @fork1 = Tengine::Job::Fork.new
         @j10.children << @j11   = Tengine::Job::JobnetActual.new(:name => "j11")
@@ -82,11 +82,11 @@ describe Tengine::Job::Edge do
       #                                                       |--e17-->[j14]--e21-->[j16]--e24--->|
       #                  |--e12-->[j11]--e14-->[j13]--e16-->[F2]                                  |
       # [start]--e11-->[F1]                                   |--e18-->[J1]--e22-->[j17]--e25-->[J2]--e26-->[end]
-      #                  |                                    |--e19-->                           |
+      #                  |                                    |--e19-->[J1]                       |
       #                  |--e13-->[j12] ------e15---------->[F3]                                  |
       #                                                       |--e20---->[j15]---e23------------->|
       before do
-        @j10 = Tengine::Job::JobnetActual.new(:name => "j10")
+        @j10 = Tengine::Job::RootJobnetActual.new(:name => "j10")
         @j10.children << @start = Tengine::Job::Start.new
         @j10.children << @fork1 = Tengine::Job::Fork.new
         @j10.children << @j11   = Tengine::Job::ScriptActual.new(:name => "j11")
