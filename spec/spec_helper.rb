@@ -21,6 +21,11 @@ end
 # in ./support/ and its subdirectories.
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
+# Requires fixtures files in ./fixtures/ and its subdirectories.
+# フィクスチャは support/jobnet_fixture_builder.rb を使うので、
+# supportのrequireよりも後にrequireする必要があります
+Dir["#{File.dirname(__FILE__)}/fixtures/**/*.rb"].each {|f| require f}
+
 Tengine::Core::MethodTraceable.disabled = true
 require 'logger'
 log_path = File.expand_path("../tmp/log/test.log", File.dirname(__FILE__))

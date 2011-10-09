@@ -5,24 +5,18 @@ describe Tengine::Job::Edge do
   describe :transmit do
     context "シンプルなケース" do
       # in [j10]
-      # [start] --e11-->[j11]--e12-->[end]
+      # [start] --e1-->[s11]--e2-->[end]
       before do
-        @j10 = Tengine::Job::RootJobnetActual.new(:name => "j10")
-        @j10.children << @j11 = Tengine::Job::JobnetActual.new(:name => "j11")
-        @j10.prepare_end
-        @j10.build_sequencial_edges
-        @j10.save!
-        #
-        @j10_start = @j10.children[0]
-        @j10_end   = @j10.children[2]
-        @e11 = @j10.edges[0]
-        @e12 = @j10.edges[1]
+        @builder = Rjn0001SimpleJobnetBuilder.new
+        @builder.create_actual
       end
 
-      it "e11をtransmitするとtransmittingになってj11はactivateされてstartingになる" do
-        @e11.transmit
-        @e11.status_key.should == :transmitting
-        @j11.phase_key.should == :starting
+      it "e1をtransmitするとtransmittingになってj11はactivateされてstartingになる" do
+        e1 = @builder[:e1]
+        j11 = @builder[:j11]
+        e1.transmit
+        e1.status_key.should == :transmitting
+        j11.phase_key.should == :starting
       end
     end
 
@@ -35,8 +29,8 @@ describe Tengine::Job::Edge do
         @j10 = Tengine::Job::RootJobnetActual.new(:name => "j10")
         @j10.children << @start = Tengine::Job::Start.new
         @j10.children << @fork1 = Tengine::Job::Fork.new
-        @j10.children << @j11   = Tengine::Job::JobnetActual.new(:name => "j11")
-        @j10.children << @j12   = Tengine::Job::JobnetActual.new(:name => "j12")
+        @j10.children << @j11   = Tengine::Job::ScriptActual.new(:name => "j11")
+        @j10.children << @j12   = Tengine::Job::ScriptActual.new(:name => "j12")
         @j10.children << @join1 = Tengine::Job::Join.new
         @j10.children << @end   = Tengine::Job::End.new
         @j10.edges << @e11 = Tengine::Job::Edge.new(:origin_id => @start.id, :destination_id => @fork1.id)
