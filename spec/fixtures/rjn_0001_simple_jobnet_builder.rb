@@ -14,7 +14,6 @@ class Rjn0001SimpleJobnetBuilder < JobnetFixtureBuilder
 
   def create(options = {})
     root = new_root_jobnet("rjn0001", options)
-    self[:jn10] = root
     root.children << new_script("j11", :script => "$HOME/j11.sh")
     root.prepare_end
     root.build_sequencial_edges

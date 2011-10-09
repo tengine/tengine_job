@@ -1,5 +1,9 @@
 class JobnetFixtureBuilder
   def initialize
+    reset
+  end
+
+  def reset
     @instances = {}
     @start_count = 0
     @end_count = 0
@@ -7,6 +11,7 @@ class JobnetFixtureBuilder
     @join_count = 0
     @edge_count = 0
   end
+
 
   def [](instance_name)
     @instances[instance_name.to_sym]
@@ -17,15 +22,21 @@ class JobnetFixtureBuilder
   end
 
   def create_template(options = {})
+    reset
     @mode = :template
     create(options)
   end
 
   def create_actual(options = {})
     template = create_template
+    reset
     @mode = :actual
     options = (options || {}).update(:template => template)
     create(options)
+  end
+
+  def context
+    self
   end
 
   def create(options = {})
@@ -42,12 +53,15 @@ class JobnetFixtureBuilder
   }.freeze
 
   %w[root_jobnet jobnet script].each do |method_name|
+    root_assign = method_name =~ /^root_/ ? "@instances[:root] = result" : ""
+
     class_eval(<<-EOS)
       def new_#{method_name}(name, attrs = {}, &block)
         klass = MODE_AND_METHOD_TO_CLASS[ [@mode, :#{method_name}] ]
         attrs[:name] = name.to_s
         result = klass.new(attrs, &block)
         @instances[name.to_sym] = result
+        #{root_assign}
         result
       end
     EOS
@@ -74,7 +88,9 @@ class JobnetFixtureBuilder
   end
 
   def new_edge(origin, dest)
-    edge_count += 1
+    origin = self[origin] if origin.is_a?(Symbol)
+    dest   = self[dest  ] if dest  .is_a?(Symbol)
+    @edge_count += 1
     name = "e#{@edge_count}"
     result = Tengine::Job::Edge.new(:origin_id => origin.id, :destination_id => dest.id)
     @instances[name.to_sym] = result
