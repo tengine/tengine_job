@@ -38,6 +38,7 @@ class Tengine::Job::Edge
       result = [dest]
     elsif dest.is_a?(Tengine::Job::End)
       self.status_key = :transmitted
+      result = []
     elsif dest.is_a?(Tengine::Job::Junction)
       self.status_key = :transmitted
       result = dest.activate_if_possible

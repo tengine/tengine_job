@@ -13,7 +13,8 @@ describe Tengine::Job::Edge do
       end
 
       it "e1をtransmitするとtransmittingになってj11はactivateされてstartingになる" do
-        @ctx[:e1].transmit
+        jobs = @ctx[:e1].transmit
+        jobs.should == [@ctx[:j11]]
         @ctx[:e1].status_key.should == :transmitting
         @ctx[:j11].phase_key.should == :starting
       end
@@ -31,7 +32,8 @@ describe Tengine::Job::Edge do
       end
 
       it "e1をtransmitするとe2とe3はtransmittedでj11とj12はstartingになる" do
-        @ctx[:e1].transmit
+        jobs = @ctx[:e1].transmit
+        jobs.should == [@ctx[:j11], @ctx[:j12]]
         @ctx[:e1].status_key.should == :transmitted
         @ctx[:e2].status_key.should == :transmitting
         @ctx[:e3].status_key.should == :transmitting
@@ -40,18 +42,21 @@ describe Tengine::Job::Edge do
       end
 
       it "e4をtransmitするとtransmittedになるけどe6は変わらず" do
-        @ctx[:e4].transmit
+        jobs = @ctx[:e4].transmit
+        jobs.should == []
         @ctx[:e4].status_key.should == :transmitted
         @ctx[:e6].status_key.should == :active
       end
 
       it "e4をtransmitした後、e5をtransmitするとe6もtransmittedになる" do
-        @ctx[:e4].transmit
+        jobs = @ctx[:e4].transmit
+        jobs.should == []
         @ctx[:e4].status_key.should == :transmitted
         @ctx[:e5].status_key.should == :active
         @ctx[:e6].status_key.should == :active
         @ctx[:root].save!
-        @ctx[:e5].transmit
+        jobs = @ctx[:e5].transmit
+        jobs.should == []
         @ctx[:e4].status_key.should == :transmitted
         @ctx[:e5].status_key.should == :transmitted
         @ctx[:J1].possible?.should == true
@@ -74,7 +79,8 @@ describe Tengine::Job::Edge do
       end
 
       it "e6.transmitしてもe12には伝搬しない" do
-        @ctx[:e6].transmit
+        jobs = @ctx[:e6].transmit
+        jobs.should == [@ctx[:j14]]
         @ctx[:e6].status_key.should == :transmitted
         @ctx[:e7].status_key.should == :transmitting
         @ctx[:e8].status_key.should == :transmitted
@@ -82,7 +88,8 @@ describe Tengine::Job::Edge do
       end
 
       it "e5とe6の両方をtransmitするとe12に伝搬する" do
-        @ctx[:e6].transmit
+        jobs = @ctx[:e6].transmit
+        jobs.should == [@ctx[:j14]]
         @ctx[:e6].status_key.should == :transmitted
         @ctx[:e7].status_key.should == :transmitting
         @ctx[:e8].status_key.should == :transmitted
@@ -90,7 +97,8 @@ describe Tengine::Job::Edge do
         @ctx[:e10].status_key.should == :active
         @ctx[:e12].status_key.should == :active
 
-        @ctx[:e5].transmit
+        jobs = @ctx[:e5].transmit
+        jobs.should == [ @ctx[:j17], @ctx[:j15] ]
         @ctx[:e6].status_key.should == :transmitted
         @ctx[:e7].status_key.should == :transmitting
         @ctx[:e8].status_key.should == :transmitted

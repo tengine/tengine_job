@@ -5,7 +5,7 @@ require 'tengine/job'
 class Tengine::Job::Junction < Tengine::Job::Vertex
 
   def activate_if_possible
-    activate if possible?
+    possible? ? activate : []
   end
 
   def possible?
@@ -13,7 +13,7 @@ class Tengine::Job::Junction < Tengine::Job::Vertex
   end
 
   def activate
-    next_edges.map{|edge| edge.transmit}.flatten
+    next_edges.map{|edge| edge.transmit}.flatten.compact
   end
 
 
