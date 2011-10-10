@@ -20,6 +20,5 @@ class Tengine::Job::Job < Tengine::Job::Vertex
       "#{NAME_PATH_SEPARATOR}#{self.name}"
   end
 
-
 end
 

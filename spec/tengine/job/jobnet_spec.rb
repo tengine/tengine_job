@@ -69,12 +69,22 @@ describe Tengine::Job::Jobnet do
 
       (all_node_names -%w[j1000]).each do |node_name|
         context "ルートから#{node_name}を見つけることができる" do
-          it :find_descendant do
-            root = @j1000
-            node = instance_variable_get(:"@#{node_name}")
-            actual = root.find_descendant(node.id)
-            actual.id.should == node.id
-            actual.name.should == node.name
+          context :find_descendant do
+            it "BSON::ObjectId" do
+              root = @j1000
+              node = instance_variable_get(:"@#{node_name}")
+              actual = root.find_descendant(node.id)
+              actual.id.should == node.id
+              actual.name.should == node.name
+            end
+
+            it "String" do
+              root = @j1000
+              node = instance_variable_get(:"@#{node_name}")
+              actual = root.find_descendant(node.id.to_s)
+              actual.id.should == node.id
+              actual.name.should == node.name
+            end
           end
 
           it :find_descendant_by_name_path do

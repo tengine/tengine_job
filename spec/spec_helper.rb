@@ -17,14 +17,17 @@ Mongoid::Document.module_eval do
   include Tengine::Core::CollectionAccessible
 end
 
-# Requires supporting files with custom matchers and macros, etc,
-# in ./support/ and its subdirectories.
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
+gem_names = ["tengine_core", "tengine_resource"]
+gem_names.each{|f| require f}
 
-# Requires fixtures files in ./fixtures/ and its subdirectories.
-# フィクスチャは support/jobnet_fixture_builder.rb を使うので、
-# supportのrequireよりも後にrequireする必要があります
-Dir["#{File.dirname(__FILE__)}/fixtures/**/*.rb"].each {|f| require f}
+base_dirs = gem_names.map{|gem_name| Gem.loaded_specs[gem_name].gem_dir}
+base_dirs += [File.expand_path("..", File.dirname(__FILE__))]
+base_dirs.each do |dir_path|
+  # fixtures/以下のファイルがsupport以下のファイルに依存していることがあるので、
+  # あえて２回検索しています
+  Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
+  Dir["#{File.dirname(__FILE__)}/fixtures/**/*.rb"].each {|f| require f}
+end
 
 Tengine::Core::MethodTraceable.disabled = true
 require 'logger'

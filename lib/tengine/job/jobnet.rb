@@ -31,6 +31,11 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     end
   end
 
+  def start_vertex
+    self.children.detect{|child| child.is_a?(Tengine::Job::Start)}
+  end
+
+
   def build_start
     return unless self.children.empty?
     self.children << Tengine::Job::Start.new
@@ -88,9 +93,10 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   end
 
   def find_descendant_edge(edge_id)
+    edge_id = String(edge_id)
     visitor = Tengine::Job::Vertex::AnyVisitor.new do |vertex|
       if vertex.respond_to?(:edges)
-        vertex.edges.detect{|edge| edge.id == edge_id}
+        vertex.edges.detect{|edge| edge.id.to_s == edge_id}
       else
         nil
       end
@@ -99,8 +105,9 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   end
 
   def find_descendant(vertex_id)
-    return nil if vertex_id == self.id
-    visitor = Tengine::Job::Vertex::AnyVisitor.new{|v| vertex_id == v.id ? v : nil }
+    vertex_id = String(vertex_id)
+    return nil if vertex_id == self.id.to_s
+    visitor = Tengine::Job::Vertex::AnyVisitor.new{|v| vertex_id == v.id.to_s ? v : nil }
     visitor.visit(self)
   end
 
