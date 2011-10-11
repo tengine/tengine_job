@@ -35,6 +35,7 @@
 # [j1630]
 # [S11]--e30-->[j1631]--e31-->[E11]
 class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
+
   DSL = <<-EOS
     jobnet("rjn0004") do
       jobnet("j1100", :credential_name => "goku_ssh_pw", :server_name => "hadoop_master_node") do

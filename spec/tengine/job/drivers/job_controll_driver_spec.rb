@@ -12,11 +12,15 @@ describe 'job_control_driver' do
     before do
       builder = Rjn0001SimpleJobnetBuilder.new
       @jobnet = builder.create_actual
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @jobnet.id,
+        })
     end
 
     it "最初のリクエスト" do
       tengine.should_not_fire
       tengine.receive("start.job.tengine", :properties => {
+          :execution_id => @execution.id.to_s,
           :root_jobnet_id => @jobnet.id.to_s,
           :target_jobnet_id => @jobnet.id.to_s,
         })

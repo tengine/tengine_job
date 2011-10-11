@@ -10,8 +10,7 @@ module Tengine::Job::ScriptExecutable
   end
 
   def execute(execution)
-    # cmd = build_command(execution)
-    
+    cmd = build_command(execution)
   end
 
   def build_command(execution)
@@ -23,8 +22,8 @@ module Tengine::Job::ScriptExecutable
     result << "source /etc/profile"
     mm_env = build_mm_env(execution).map{|k,v| "#{k}=#{v}"}.join(" ")
     # Hadoopジョブの場合は環境変数をセットする
-    if job_type_key == :hadoop_job_run
-      mm_env << ' ' << Job::HadoopJob.new(self).hadoop_opts_msg
+    if is_a?(Tengine::Job::Jobnet) && (jobnet_type_key == :hadoop_job_run)
+      mm_env << ' ' << hadoop_job_env
     end
     result << "export #{mm_env}"
     unless execution.preparation_command.blank?
@@ -36,7 +35,7 @@ module Tengine::Job::ScriptExecutable
     # tengine_job_agent_runは、標準出力に監視対象となる起動したプロセスのPIDを出力します。
     runner_path = ENV["MM_RUNNER_PATH"] || "tengine_job_agent_run"
     runner_option = ""
-    # TODO 実装するべきか要検討
+    # 実装するべきか要検討
     # runner_option << " --stdout" if execution.keeping_stdout
     # runner_option << " --stderr" if execution.keeping_stderr
     script = "#{runner_path}#{runner_option} -- #{self.script}" # runnerのオプションを指定する際は -- の前に設定してください
@@ -86,5 +85,12 @@ module Tengine::Job::ScriptExecutable
     # end
     result
   end
+
+  def hadoop_job_env
+    s = children.select{|c| c.is_a?(Tengine::Job::Jobnet) && (c.jobnet_type_key == :hadoop_job)}.
+      map{|c| "#{c.name}\\t#{c.id.to_s}\\n"}.join
+    "MM_HADOOP_JOBS=\"#{s}\""
+  end
+
 
 end

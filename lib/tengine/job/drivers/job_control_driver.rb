@@ -4,6 +4,7 @@
 driver :job_control_driver do
 
   on :'start.job.tengine' do
+    execution = Tengine::Job::Execution.find(event[:execution_id])
     jobs = nil
     # activate
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
@@ -16,7 +17,7 @@ driver :job_control_driver do
     # run
     jobs.each do |job|
       root_jobnet.update_with_lock do
-        job.run(nil)
+        job.run(execution)
       end
     end
   end

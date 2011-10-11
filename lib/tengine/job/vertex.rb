@@ -29,6 +29,21 @@ class Tengine::Job::Vertex
     parent.edges.select{|edge| edge.origin_id == self.id}
   end
 
+  def ancestors
+    if parent = self.parent
+      parent.ancestors + [parent]
+    else
+      []
+    end
+  end
+
+  # def ancestors_until_expansion
+  #   if (parent = self.parent) && !self.was_expansion?
+  #     parent.ancestors_until_expansion + [parent]
+  #   else
+  #     []
+  #   end
+  # end
 
   def accept_visitor(visitor)
     visitor.visit(self)

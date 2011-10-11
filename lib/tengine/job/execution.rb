@@ -11,5 +11,6 @@ class Tengine::Job::Execution
   field :estimated_time, :type => Integer
   field :keeping_stdout, :type => Boolean
   field :keeping_stderr, :type => Boolean
-  belongs_to :root_jobnet, :class_name => "Tengine::Job::RootJobnetActual", :index => true #, :inverse_of => :executions
+
+  belongs_to :root_jobnet, :class_name => "Tengine::Job::RootJobnetActual", :index => true, :inverse_of => :executions
 end
