@@ -15,10 +15,13 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   field :jobnet_type_cd, :type => Integer, :default => 1 # ジョブネットの種類。後述の定義を参照してください。
 
   selectable_attr :jobnet_type_cd do
-    entry 1, :normal , "normal"
-    entry 2, :finally, "finally"
-    # entry 3, :recover, "recover"
-    entry 4, :chained_box, "chained_box" # hadoop_job_runが保持するhadoop_jobやMap/Reduceを指します。
+    entry 1, :normal        , "normal"
+    entry 2, :finally       , "finally", :alternative => true
+    # entry 3, :recover       , "recover", :alternative => true
+    entry 4, :hadoop_job_run, "hadoop job run"
+    entry 5, :hadoop_job    , "hadoop job"    , :chained_box => true
+    entry 6, :map_phase     , "map phase"     , :chained_box => true
+    entry 7, :reduce_phase  , "reduce phase"  , :chained_box => true
   end
 
   embeds_many :edges, :class_name => "Tengine::Job::Edge", :inverse_of => :owner
@@ -34,7 +37,6 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   def start_vertex
     self.children.detect{|child| child.is_a?(Tengine::Job::Start)}
   end
-
 
   def build_start
     return unless self.children.empty?
@@ -78,7 +80,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     self.edges.clear
     current = nil
     self.children.each do |child|
-      next if child.is_a?(Tengine::Job::Jobnet) && (child.jobnet_type_key != :normal)
+      next if child.is_a?(Tengine::Job::Jobnet) && !!child.jobnet_type_entry[:alternative]
       if current
         self.new_edge(current, child)
       end

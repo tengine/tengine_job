@@ -35,7 +35,7 @@
 #*.swp
 #*.tmproj
 *~
-#.DS_Store
+.DS_Store
 .\#*
 #.redcar
 #\#*

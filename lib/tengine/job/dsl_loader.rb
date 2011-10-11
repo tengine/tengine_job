@@ -61,18 +61,19 @@ module Tengine::Job::DslLoader
   def hadoop_job_run(name, *args, &block)
     script, description, options = __parse_job_args__(name, args)
     options[:script] = script
+    options[:jobnet_type_key] = :hadoop_job_run
     jobnet(name, description, options, &block)
   end
 
   def hadoop_job(name, options = {})
     result = __with_redirection__(options) do
-      Tengine::Job::JobnetTemplate.new(:name => name)
+      Tengine::Job::JobnetTemplate.new(:name => name, :jobnet_type_key => :hadoop_job)
     end
     # result.children << start  = Tengine::Job::Start.new # 生成時に自動的に追加されます
     start = result.children.first
     result.children << fork   = Tengine::Job::Fork.new
-    result.children << map    = Tengine::Job::Job.new(:name => "Map")
-    result.children << reduce = Tengine::Job::Job.new(:name => "Reduce")
+    result.children << map    = Tengine::Job::JobnetTemplate.new(:name => "Map"   , :jobnet_type_key => :map_phase   )
+    result.children << reduce = Tengine::Job::JobnetTemplate.new(:name => "Reduce", :jobnet_type_key => :reduce_phase)
     result.children << join   = Tengine::Job::Join.new
     result.children << _end   = Tengine::Job::End.new
     result.edges.new(:origin_id => start.id , :destination_id => fork.id  )

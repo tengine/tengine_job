@@ -69,8 +69,8 @@ describe Tengine::Job::DslLoader do
         hadoop_job1.children.map(&:class).should == [
           Tengine::Job::Start,
           Tengine::Job::Fork,
-          Tengine::Job::Job,
-          Tengine::Job::Job,
+          Tengine::Job::JobnetTemplate,
+          Tengine::Job::JobnetTemplate,
           Tengine::Job::Join,
           Tengine::Job::End,
         ]
@@ -85,20 +85,20 @@ describe Tengine::Job::DslLoader do
         ]
 
         hadoop_job1.edges.map{|edge| [edge.origin.class, edge.destination.class]}.should == [
-          [Tengine::Job::Start, Tengine::Job::Fork],
-          [Tengine::Job::Fork , Tengine::Job::Job ],
-          [Tengine::Job::Fork , Tengine::Job::Job ],
-          [Tengine::Job::Job  , Tengine::Job::Join],
-          [Tengine::Job::Job  , Tengine::Job::Join],
-          [Tengine::Job::Join , Tengine::Job::End ],
+          [Tengine::Job::Start         , Tengine::Job::Fork          ],
+          [Tengine::Job::Fork          , Tengine::Job::JobnetTemplate],
+          [Tengine::Job::Fork          , Tengine::Job::JobnetTemplate],
+          [Tengine::Job::JobnetTemplate, Tengine::Job::Join          ],
+          [Tengine::Job::JobnetTemplate, Tengine::Job::Join          ],
+          [Tengine::Job::Join          , Tengine::Job::End           ],
         ]
         hadoop_job2 = hadoop_job_run.children[2]
         hadoop_job2.tap{|j| j.name.should == "hadoop_job2"}
         hadoop_job2.children.map(&:class).should == [
           Tengine::Job::Start,
           Tengine::Job::Fork,
-          Tengine::Job::Job,
-          Tengine::Job::Job,
+          Tengine::Job::JobnetTemplate,
+          Tengine::Job::JobnetTemplate,
           Tengine::Job::Join,
           Tengine::Job::End,
         ]
