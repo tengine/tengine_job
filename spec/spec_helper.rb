@@ -25,9 +25,10 @@ base_dirs += [File.expand_path("..", File.dirname(__FILE__))]
 base_dirs.each do |dir_path|
   # fixtures/以下のファイルがsupport以下のファイルに依存していることがあるので、
   # あえて２回検索しています
-  Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
-  Dir["#{File.dirname(__FILE__)}/fixtures/**/*.rb"].each {|f| require f}
+  Dir["#{dir_path}/spec/support/**/*.rb"].each {|f| require f}
+  Dir["#{dir_path}/spec/fixtures/**/*.rb"].each {|f| require f}
 end
+
 
 Tengine::Core::MethodTraceable.disabled = true
 require 'logger'
