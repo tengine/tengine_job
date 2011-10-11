@@ -1,10 +1,10 @@
 class Tengine::Job::Execution
   include Mongoid::Document
+  include Tengine::Job::Executable
+
   field :target_actual_ids, :type => Array
   array_text_accessor :target_actual_ids
-  field :phase_cd, :type => Integer
-  field :started_at, :type => Time
-  field :finished_at, :type => Time
+
   field :preparation_command, :type => String
   field :actual_base_timeout_alert, :type => Integer
   field :actual_base_timeout_termination, :type => Integer

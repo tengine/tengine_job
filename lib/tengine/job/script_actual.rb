@@ -5,6 +5,7 @@ require 'tengine/job'
 class Tengine::Job::ScriptActual < Tengine::Job::Script
   include Tengine::Job::ScriptExecutable
   include Tengine::Job::Executable
+  include Tengine::Job::Stoppable
 
   field :executing_pid, :type => String # 実行しているプロセスのPID
   field :exit_status  , :type => String # 終了したプロセスが返した終了ステータス

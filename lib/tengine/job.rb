@@ -33,6 +33,7 @@ module Tengine::Job
 
   autoload :Root                , "tengine/job/root"
   autoload :Executable          , "tengine/job/executable"
+  autoload :Stoppable           , "tengine/job/stoppable"
   autoload :Killing             , "tengine/job/killing"
   autoload :Connectable         , "tengine/job/connectable"
   autoload :ScriptExecutable    , "tengine/job/script_executable"
