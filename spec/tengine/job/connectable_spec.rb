@@ -47,4 +47,48 @@ describe Tengine::Job::Connectable do
     end
 
   end
+
+  describe :actual_credential do
+    before do
+      resource_fixture = GokuAtEc2ApNortheast.new
+      resource_fixture.goku_ssh_pw
+    end
+
+    it "存在するCredentialの場合" do
+      jobnet = Tengine::Job::JobnetTemplate.new(:credential_name => "goku_ssh_pw")
+      credential = jobnet.actual_credential
+      credential.should be_a(Tengine::Resource::Credential)
+      credential.name.should == "goku_ssh_pw"
+    end
+
+    it "存在しないCredentialの場合" do
+      jobnet = Tengine::Job::JobnetTemplate.new(:credential_name => "unexist_credential")
+      expect{
+        jobnet.actual_credential
+      }.to raise_error(Mongoid::Errors::DocumentNotFound)
+    end
+  end
+
+
+  describe :actual_server do
+    before do
+      resource_fixture = GokuAtEc2ApNortheast.new
+      resource_fixture.hadoop_master_node
+    end
+
+    it "存在するServerの場合" do
+      jobnet = Tengine::Job::JobnetTemplate.new(:server_name => "hadoop_master_node")
+      server = jobnet.actual_server
+      server.should be_a(Tengine::Resource::Server)
+      server.name.should == "hadoop_master_node"
+    end
+
+    it "存在しないServerの場合" do
+      jobnet = Tengine::Job::JobnetTemplate.new(:server_name => "unexist_server")
+      expect{
+        jobnet.actual_server
+      }.to raise_error(Mongoid::Errors::DocumentNotFound)
+    end
+  end
+
 end

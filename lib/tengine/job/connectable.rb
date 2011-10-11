@@ -18,6 +18,24 @@ module Tengine::Job::Connectable
       server_name || (parent ? parent.actual_server_name : nil)
     end
 
+    def actual_credential
+      key = actual_credential_name
+      return nil if key.blank?
+      result = Tengine::Resource::Credential.first(:conditions => {:name => key})
+      # TODO 使用する例外クラスはこれで良いのか検討
+      raise Mongoid::Errors::DocumentNotFound.new(Tengine::Resource::Credential, key) unless result
+      result
+    end
+
+    def actual_server
+      key = actual_server_name
+      return nil if key.blank?
+      result = Tengine::Resource::Server.first(:conditions => {:name => key})
+      # TODO 使用する例外クラスはこれで良いのか検討
+      raise Mongoid::Errors::DocumentNotFound.new(Tengine::Resource::Server, key) unless result
+      result
+    end
+
 
   end
 end
