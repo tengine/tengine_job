@@ -29,6 +29,10 @@ class Tengine::Job::Vertex
     parent.edges.select{|edge| edge.origin_id == self.id}
   end
 
+  def root
+    (parent = self.parent) ? parent.root : self
+  end
+
   def ancestors
     if parent = self.parent
       parent.ancestors + [parent]
@@ -44,6 +48,8 @@ class Tengine::Job::Vertex
   #     []
   #   end
   # end
+  # TODO expansionをちゃんと実装する際にコメントアウトを外します
+  alias_method :ancestors_until_expansion, :ancestors
 
   def accept_visitor(visitor)
     visitor.visit(self)

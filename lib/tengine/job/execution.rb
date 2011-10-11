@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 class Tengine::Job::Execution
   include Mongoid::Document
   include Tengine::Job::Executable
@@ -13,4 +14,12 @@ class Tengine::Job::Execution
   field :keeping_stderr, :type => Boolean
 
   belongs_to :root_jobnet, :class_name => "Tengine::Job::RootJobnetActual", :index => true, :inverse_of => :executions
+
+
+  # 実開始日時から求める予定終了時刻
+  def actual_estimated_end
+    return nil unless started_at
+    (started_at + (estimated_time || 0)).utc
+  end
+
 end

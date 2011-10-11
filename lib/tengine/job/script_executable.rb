@@ -62,20 +62,21 @@ module Tengine::Job::ScriptExecutable
   def build_mm_env(execution)
     result = {
       "MM_ACTUAL_JOB_ID" => id.to_s,
-      "MM_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % ancestors_until_expansion.map(&:id_string).join(';'),
-      "MM_FULL_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % ancestors.map(&:id_string).join(';'),
+      "MM_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % ancestors_until_expansion.map(&:id).map(&:to_s).join(';'),
+      "MM_FULL_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % ancestors.map(&:id).map(&:to_s).join(';'),
       "MM_ACTUAL_JOB_NAME_PATH" => name_path.dump,
       "MM_ACTUAL_JOB_SECURITY_TOKEN" => "", # TODO トークンの生成
-      "MM_SCHEDULE_ID" => execution.id_string,
+      "MM_SCHEDULE_ID" => execution.id.to_s,
       "MM_SCHEDULE_ESTIMATED_TIME" => execution.estimated_time,
     }
     if estimated_end = execution.actual_estimated_end
       result["MM_SCHEDULE_ESTIMATED_END"] = execution.actual_estimated_end.strftime("%Y%m%d%H%M%S")
     end
-    if t = template_job
+    if rjt = root.template
+      t = rjt.find_descendant_by_name_path(self.name_path)
       result.update({
           "MM_TEMPLATE_JOB_ID" => t.id.to_s,
-          "MM_TEMPLATE_JOB_ANCESTOR_IDS" => '"%s"' % t.ancestors.map(&:id_string).join(';'),
+          "MM_TEMPLATE_JOB_ANCESTOR_IDS" => '"%s"' % t.ancestors.map(&:id).map(&:to_s).join(';'),
       })
     end
     # if ms = execution.master_schedule
