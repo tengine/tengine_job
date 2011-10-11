@@ -4,44 +4,42 @@ require 'tengine/job'
 # ジョブとして実際にスクリプトを実行する処理をまとめるモジュール。
 # Tengine::Job::JobnetActualと、Tengine::Job::ScriptActualがincludeします
 module Tengine::Job::ScriptExecutable
-  def run
-    pid = execute
+  def run(execution)
+    pid = execute(execution)
     # ack(pid)
   end
 
-  def execute
-    cmd = build_command
+  def execute(execution)
+    # cmd = build_command(execution)
     
   end
 
-  def build_user_command(job)
+  def build_command(execution)
     result = []
     # RubyのNet::SSHでは設定ファイルが読み込まれないので、ロードするようにします。
     # ~/.bash_profile, ~/.bashrc などは非対応。
     # ファイルが存在していたらsourceで読み込むようにしたいのですが、一旦保留します。
     # http://www.syns.net/10/
     result << "source /etc/profile"
-    mm_env = build_mm_env(job).map{|k,v| "#{k}=#{v}"}.join(" ")
+    mm_env = build_mm_env(execution).map{|k,v| "#{k}=#{v}"}.join(" ")
     # Hadoopジョブの場合は環境変数をセットする
-    if job.job_type_key == :hadoop_job_run
-      mm_env << ' ' << Job::HadoopJob.new(job).hadoop_opts_msg
+    if job_type_key == :hadoop_job_run
+      mm_env << ' ' << Job::HadoopJob.new(self).hadoop_opts_msg
     end
     result << "export #{mm_env}"
-    unless @actual_schedule.preparation_command.blank?
-      result << @actual_schedule.preparation_command
+    unless execution.preparation_command.blank?
+      result << execution.preparation_command
     end
     # cmdはユーザーが設定したスクリプトを組み立てたもので、
-    # プロセスの監視／強制停止のためにmm_system_agent/bin/mm-system-agent-run
+    # プロセスの監視／強制停止のためにtengine_job_agent/bin/tengine_job_agent_run
     # からこれらを実行させるためにはcmdを編集します。
-    # mm-system-agent-runは、標準出力に監視対象となる起動したプロセスのPIDを出力します。
-    runner_path = ENV["MM_RUNNER_PATH"] || "mm-system-agent-run"
+    # tengine_job_agent_runは、標準出力に監視対象となる起動したプロセスのPIDを出力します。
+    runner_path = ENV["MM_RUNNER_PATH"] || "tengine_job_agent_run"
     runner_option = ""
-    runner_option << " --stdout" if @actual_schedule.keeping_stdout
-    runner_option << " --stderr" if @actual_schedule.keeping_stderr
-    script = "#{runner_path}#{runner_option} -- #{job.script}" # runnerのオプションを指定する際は -- の前に設定してください
-    unless job.parameters.blank?
-      script << " " << job.parameters
-    end
+    # TODO 実装するべきか要検討
+    # runner_option << " --stdout" if execution.keeping_stdout
+    # runner_option << " --stderr" if execution.keeping_stderr
+    script = "#{runner_path}#{runner_option} -- #{self.script}" # runnerのオプションを指定する際は -- の前に設定してください
     result << script
     result.join(" && ")
   end
@@ -62,30 +60,30 @@ module Tengine::Job::ScriptExecutable
   # 未実装
   # MM_FAILED_JOB_ID                : ジョブが失敗した場合にrecoverやfinally内のジョブを実行時に設定される、失敗したジョブのMM上でのID。
   # MM_FAILED_JOB_ANCESTOR_IDS      : ジョブが失敗した場合にrecoverやfinally内のジョブを実行時に設定される、失敗したジョブの祖先のMM上でのIDをセミコロンで繋げた文字列。
-  def build_mm_env(job)
+  def build_mm_env(execution)
     result = {
-      "MM_ACTUAL_JOB_ID" => job.id.to_s,
-      "MM_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % job.ancestors_until_expansion.map(&:id_string).join(';'),
-      "MM_FULL_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % job.ancestors.map(&:id_string).join(';'),
-      "MM_ACTUAL_JOB_NAME_PATH" => job.name_path.dump,
+      "MM_ACTUAL_JOB_ID" => id.to_s,
+      "MM_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % ancestors_until_expansion.map(&:id_string).join(';'),
+      "MM_FULL_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % ancestors.map(&:id_string).join(';'),
+      "MM_ACTUAL_JOB_NAME_PATH" => name_path.dump,
       "MM_ACTUAL_JOB_SECURITY_TOKEN" => "", # TODO トークンの生成
-      "MM_SCHEDULE_ID" => @actual_schedule.id_string,
-      "MM_SCHEDULE_ESTIMATED_TIME" => @actual_schedule.estimated_time,
+      "MM_SCHEDULE_ID" => execution.id_string,
+      "MM_SCHEDULE_ESTIMATED_TIME" => execution.estimated_time,
     }
-    if estimated_end = @actual_schedule.actual_estimated_end
-      result["MM_SCHEDULE_ESTIMATED_END"] = @actual_schedule.actual_estimated_end.strftime("%Y%m%d%H%M%S")
+    if estimated_end = execution.actual_estimated_end
+      result["MM_SCHEDULE_ESTIMATED_END"] = execution.actual_estimated_end.strftime("%Y%m%d%H%M%S")
     end
-    if t = job.template_job
+    if t = template_job
       result.update({
           "MM_TEMPLATE_JOB_ID" => t.id.to_s,
           "MM_TEMPLATE_JOB_ANCESTOR_IDS" => '"%s"' % t.ancestors.map(&:id_string).join(';'),
       })
     end
-    if ms = @actual_schedule.master_schedule
-      result.update({
-          "MM_MASTER_SCHEDULE_ID" => ms.id.to_s,
-      })
-    end
+    # if ms = execution.master_schedule
+    #   result.update({
+    #       "MM_MASTER_SCHEDULE_ID" => ms.id.to_s,
+    #   })
+    # end
     result
   end
 

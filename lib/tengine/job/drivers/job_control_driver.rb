@@ -16,7 +16,7 @@ driver :job_control_driver do
     # run
     jobs.each do |job|
       root_jobnet.update_with_lock do
-        job.run
+        job.run(nil)
       end
     end
   end
