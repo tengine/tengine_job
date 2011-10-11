@@ -5,7 +5,7 @@ require 'tengine/job'
 # Tengine::Job::Jobnetの継承元である。
 class Tengine::Job::Job < Tengine::Job::Vertex
   include Tengine::Job::Connectable
-  include Tengine::Job::Stoppable
+  include Tengine::Job::Killing
 
   field :name, :type => String # ジョブの名称。
 

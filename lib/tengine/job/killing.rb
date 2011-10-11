@@ -2,7 +2,7 @@
 require 'tengine/job'
 
 # 終了対象となりうるVertexで使用するモジュール
-module Tengine::Job::Stoppable
+module Tengine::Job::Killing
   extend ActiveSupport::Concern
 
   included do

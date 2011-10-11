@@ -4,7 +4,7 @@ require 'selectable_attr'
 
 # ジョブ／ジョブネットを実行する際の情報に関するモジュール
 # Tengine::Job::JobnetActual, Tengine::Job::JobnetTemplateがこのモジュールをincludeします
-module Tengine::Job::RuntimeAttrs
+module Tengine::Job::Executable
   extend ActiveSupport::Concern
 
   included do

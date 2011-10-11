@@ -5,6 +5,8 @@ module Tengine::Job
   autoload :DslEvaluator        , "tengine/job/dsl_evaluator"
   autoload :DslLoader           , "tengine/job/dsl_loader"
 
+  autoload :Execution           , "tengine/job/execution"
+
   autoload :Category            , "tengine/job/category"
   autoload :Edge                , "tengine/job/edge"
   autoload :Vertex              , "tengine/job/vertex"
@@ -30,8 +32,8 @@ module Tengine::Job
   autoload :Expansion           , "tengine/job/expansion"
 
   autoload :Root                , "tengine/job/root"
-  autoload :RuntimeAttrs        , "tengine/job/runtime_attrs"
-  autoload :Stoppable           , "tengine/job/stoppable"
+  autoload :Executable          , "tengine/job/executable"
+  autoload :Killing             , "tengine/job/killing"
   autoload :Connectable         , "tengine/job/connectable"
   autoload :ScriptExecutable    , "tengine/job/script_executable"
 
