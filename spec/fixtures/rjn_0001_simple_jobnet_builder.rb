@@ -13,9 +13,13 @@ class Rjn0001SimpleJobnetBuilder < JobnetFixtureBuilder
   EOS
 
   def create(options = {})
+    resource_fixture = GokuAtEc2ApNortheast.new
+    resource_fixture.goku_ssh_pw
+    resource_fixture.hadoop_master_node
+
     root = new_root_jobnet("rjn0001", options)
     root.children << new_script("j11", :script => "$HOME/j11.sh",
-      :server_name => "server1", :credential_name => "goku")
+      :server_name => "hadoop_master_node", :credential_name => "goku_ssh_pw")
     root.prepare_end
     root.build_sequencial_edges
     root.save!

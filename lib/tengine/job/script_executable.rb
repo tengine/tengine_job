@@ -10,7 +10,30 @@ module Tengine::Job::ScriptExecutable
   end
 
   def execute(execution)
+
     cmd = build_command(execution)
+    actual_credential.connect(actual_server.hostname_or_ipv4) do |ssh|
+      # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
+      ssh.open_channel do |channel|
+        channel.exec!(cmd) do |ch, success|
+          abort "could not execute command" unless success
+
+          channel.on_data do |ch, data|
+            puts "got stdout: #{data}"
+            # channel.send_data "something for stdin\n"
+          end
+
+          channel.on_extended_data do |ch, type, data|
+            puts "got stderr: #{data}"
+          end
+
+          channel.on_close do |ch|
+            puts "channel is closing!"
+          end
+        end
+      end
+
+    end
   end
 
   def build_command(execution)
