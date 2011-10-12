@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.0.3"
+  s.version = "0.0.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["akima"]
-  s.date = "2011-10-11"
+  s.date = "2011-10-12"
   s.description = "tengine_job provides jobnet management"
   s.email = "akima@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -50,10 +50,7 @@ Gem::Specification.new do |s|
     "lib/tengine/job/root.rb",
     "lib/tengine/job/root_jobnet_actual.rb",
     "lib/tengine/job/root_jobnet_template.rb",
-    "lib/tengine/job/script.rb",
-    "lib/tengine/job/script_actual.rb",
     "lib/tengine/job/script_executable.rb",
-    "lib/tengine/job/script_template.rb",
     "lib/tengine/job/start.rb",
     "lib/tengine/job/stoppable.rb",
     "lib/tengine/job/vertex.rb",
@@ -86,9 +83,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/jobnet_template_spec.rb",
     "spec/tengine/job/root_jobnet_actual_spec.rb",
     "spec/tengine/job/root_jobnet_template_spec.rb",
-    "spec/tengine/job/script_actual_spec.rb",
-    "spec/tengine/job/script_spec.rb",
-    "spec/tengine/job/script_template_spec.rb",
+    "spec/tengine/job/script_executable_spec.rb",
     "spec/tengine/job/vertex_spec.rb",
     "spec/tengine_job_spec.rb",
     "tengine_job.gemspec"
