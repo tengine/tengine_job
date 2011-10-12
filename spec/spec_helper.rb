@@ -22,7 +22,8 @@ gem_names = ["tengine_core", "tengine_resource"]
 gem_names.each{|f| require f}
 
 base_dirs = gem_names.map{|gem_name| Gem.loaded_specs[gem_name].gem_dir}
-base_dirs += [File.expand_path("..", File.dirname(__FILE__))]
+# base_dirs += [File.expand_path("..", File.dirname(__FILE__))]
+base_dirs += [File.expand_path(".")]
 base_dirs.each do |dir_path|
   # fixtures/以下のファイルがsupport以下のファイルに依存していることがあるので、
   # あえて２回検索しています
@@ -36,10 +37,12 @@ require 'logger'
 log_path = File.expand_path("../tmp/log/test.log", File.dirname(__FILE__))
 Tengine.logger = Logger.new(log_path)
 Tengine.logger.level = Logger::DEBUG
-Tengine::Core.stdout_logger = Logger.new(log_path)
-Tengine::Core.stdout_logger.level = Logger::DEBUG
-Tengine::Core.stderr_logger = Logger.new(log_path)
-Tengine::Core.stderr_logger.level = Logger::DEBUG
+Tengine::Core.stdout_logger = Tengine.logger
+Tengine::Core.stderr_logger = Tengine.logger
+# Tengine::Core.stdout_logger = Logger.new(log_path)
+# Tengine::Core.stdout_logger.level = Logger::DEBUG
+# Tengine::Core.stderr_logger = Logger.new(log_path)
+# Tengine::Core.stderr_logger.level = Logger::DEBUG
 
 RSpec.configure do |config|
   config.include Factory::Syntax::Methods

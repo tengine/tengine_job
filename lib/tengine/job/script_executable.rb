@@ -13,21 +13,21 @@ module Tengine::Job::ScriptExecutable
 
   def run(execution)
     pid = execute(execution)
-    # ack(pid)
   end
 
   def execute(execution)
-
+    return ack(@acked_pid) if @acked_pid
     cmd = build_command(execution)
+    # puts "cmd:\n" << cmd
     actual_credential.connect(actual_server.hostname_or_ipv4) do |ssh|
       # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
       ssh.open_channel do |channel|
-        channel.exec!(cmd) do |ch, success|
+        channel.exec(cmd) do |ch, success|
           abort "could not execute command" unless success
 
           channel.on_data do |ch, data|
-            puts "got stdout: #{data}"
-            # channel.send_data "something for stdin\n"
+            # puts "on_data: #{data.inspect}"
+            ack(data.strip)
           end
 
           channel.on_extended_data do |ch, type, data|
@@ -35,12 +35,17 @@ module Tengine::Job::ScriptExecutable
           end
 
           channel.on_close do |ch|
-            puts "channel is closing!"
+            # puts "channel is closing!"
           end
         end
       end
 
     end
+  end
+
+  def ack(pid)
+    @acked_pid = pid
+    self.executing_pid = pid
   end
 
   def build_command(execution)
@@ -49,7 +54,9 @@ module Tengine::Job::ScriptExecutable
     # ~/.bash_profile, ~/.bashrc などは非対応。
     # ファイルが存在していたらsourceで読み込むようにしたいのですが、一旦保留します。
     # http://www.syns.net/10/
-    result << "source /etc/profile"
+    ["/etc/profile", "$HOME/.bashrc", "$HOME/.bash_profile"].each do |path|
+      result << "if [ -f #{path} ]; then source #{path}; fi"
+    end
     mm_env = build_mm_env(execution).map{|k,v| "#{k}=#{v}"}.join(" ")
     # Hadoopジョブの場合は環境変数をセットする
     if is_a?(Tengine::Job::Jobnet) && (jobnet_type_key == :hadoop_job_run)
@@ -68,7 +75,8 @@ module Tengine::Job::ScriptExecutable
     # 実装するべきか要検討
     # runner_option << " --stdout" if execution.keeping_stdout
     # runner_option << " --stderr" if execution.keeping_stderr
-    script = "#{runner_path}#{runner_option} -- #{self.script}" # runnerのオプションを指定する際は -- の前に設定してください
+    # script = "#{runner_path}#{runner_option} -- #{self.script}" # runnerのオプションを指定する際は -- の前に設定してください
+    script = "#{runner_path}#{runner_option} #{self.script}" # runnerのオプションを指定する際は -- の前に設定してください
     result << script
     result.join(" && ")
   end

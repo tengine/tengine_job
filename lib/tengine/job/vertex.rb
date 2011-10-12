@@ -12,11 +12,11 @@ class Tengine::Job::Vertex
     c.embeds_many :children, :inverse_of => :parent
   end
 
-  def short_inspect
-    "#<%%%-30s id: %s>" % [self.class.name, self.id.to_s]
-  end
-  alias_method :long_inspect, :inspect
-  alias_method :inspect, :short_inspect
+#   def short_inspect
+#     "#<%%%-30s id: %s>" % [self.class.name, self.id.to_s]
+#   end
+#   alias_method :long_inspect, :inspect
+#   alias_method :inspect, :short_inspect
 
   def previous_edges
     return nil unless parent

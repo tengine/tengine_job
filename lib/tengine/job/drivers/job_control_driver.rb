@@ -14,9 +14,12 @@ driver :job_control_driver do
       target_edge ||= target_jobnet.start_vertex.next_edges.first
       jobs = target_edge.transmit
     end
+    root_jobnet.reload # update_with_lockした内容があるのでリロードしないとlock_versionが食い違ってしまいます
+    # reloadによって生成される別のオブジェクトをupdate_with_lockの対象となるようにroot_jobnet配下のオブジェクトを再度検索します
+    jobs = jobs.map{|j| root_jobnet.find_descendant(j.id)}
     # run
-    jobs.each do |job|
-      root_jobnet.update_with_lock do
+    root_jobnet.update_with_lock do
+      jobs.each do |job|
         job.run(execution)
       end
     end
