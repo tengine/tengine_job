@@ -3,8 +3,8 @@ source "http://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 
-gem "tengine_core", "~> 0.1.6"
-gem "tengine_resource", "~> 0.0.3"
+gem "tengine_core", "~> 0.1.7"
+gem "tengine_resource", "~> 0.0.4"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
