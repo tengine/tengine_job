@@ -4,6 +4,13 @@ require 'tengine/job'
 # ジョブとして実際にスクリプトを実行する処理をまとめるモジュール。
 # Tengine::Job::JobnetActualと、Tengine::Job::ScriptActualがincludeします
 module Tengine::Job::ScriptExecutable
+  extend ActiveSupport::Concern
+
+  included do
+    field :executing_pid, :type => String # 実行しているプロセスのPID
+    field :exit_status  , :type => String # 終了したプロセスが返した終了ステータス
+  end
+
   def run(execution)
     pid = execute(execution)
     # ack(pid)

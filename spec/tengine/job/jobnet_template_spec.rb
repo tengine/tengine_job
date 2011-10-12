@@ -25,11 +25,11 @@ describe Tengine::Job::JobnetTemplate do
       it "レシーバ以下のジョブネットに対してシーケンシャルにedgesを構築する" do
         jobnet1 = Tengine::Job::JobnetTemplate.new(:name => "jobnet1")
         jobnet1 .children << jobnet11 = Tengine::Job::JobnetTemplate.new(:name => "jobnet11")
-        jobnet11.children << job111   = Tengine::Job::ScriptTemplate.new(:name => "job111", :script => "job111.sh")
-        jobnet11.children << job112   = Tengine::Job::ScriptTemplate.new(:name => "job112", :script => "job112.sh")
+        jobnet11.children << job111   = Tengine::Job::JobnetTemplate.new(:name => "job111", :script => "job111.sh")
+        jobnet11.children << job112   = Tengine::Job::JobnetTemplate.new(:name => "job112", :script => "job112.sh")
         jobnet1 .children << jobnet12 = Tengine::Job::JobnetTemplate.new(:name => "jobnet12")
-        jobnet12.children << job121   = Tengine::Job::ScriptTemplate.new(:name => "job121", :script => "job121.sh")
-        jobnet12.children << job122   = Tengine::Job::ScriptTemplate.new(:name => "job122", :script => "job122.sh")
+        jobnet12.children << job121   = Tengine::Job::JobnetTemplate.new(:name => "job121", :script => "job121.sh")
+        jobnet12.children << job122   = Tengine::Job::JobnetTemplate.new(:name => "job122", :script => "job122.sh")
 
         jobnet1.prepare_end
         jobnet11.prepare_end
@@ -54,8 +54,8 @@ describe Tengine::Job::JobnetTemplate do
         ]
         jobnet11.children.map(&:class).should == [
           Tengine::Job::Start,
-          Tengine::Job::ScriptTemplate,
-          Tengine::Job::ScriptTemplate,
+          Tengine::Job::JobnetTemplate,
+          Tengine::Job::JobnetTemplate,
           Tengine::Job::End
         ]
         jobnet11.edges.map{|edge| [edge.origin_id, edge.destination_id]}.should == [
@@ -65,8 +65,8 @@ describe Tengine::Job::JobnetTemplate do
         ]
         jobnet12.children.map(&:class).should == [
           Tengine::Job::Start,
-          Tengine::Job::ScriptTemplate,
-          Tengine::Job::ScriptTemplate,
+          Tengine::Job::JobnetTemplate,
+          Tengine::Job::JobnetTemplate,
           Tengine::Job::End
         ]
         jobnet12.edges.map{|edge| [edge.origin_id, edge.destination_id]}.should == [
@@ -98,11 +98,11 @@ describe Tengine::Job::JobnetTemplate do
       it "レシーバ以下のジョブネットに対してシーケンシャルにedgesを構築する" do
         jobnet1 = Tengine::Job::JobnetTemplate.new(:name => "jobnet1")
         jobnet1 .children << jobnet11 = Tengine::Job::JobnetTemplate.new(:name => "jobnet11")
-        jobnet11.children << job111   = Tengine::Job::ScriptTemplate.new(:name => "job111", :script => "job111.sh")
-        jobnet11.children << job112   = Tengine::Job::ScriptTemplate.new(:name => "job112", :script => "job112.sh")
+        jobnet11.children << job111   = Tengine::Job::JobnetTemplate.new(:name => "job111", :script => "job111.sh")
+        jobnet11.children << job112   = Tengine::Job::JobnetTemplate.new(:name => "job112", :script => "job112.sh")
         jobnet1 .children << finally = Tengine::Job::JobnetTemplate.new(:name => "finally", :jobnet_type_key => :finally)
-        finally.children << job121   = Tengine::Job::ScriptTemplate.new(:name => "job121", :script => "job121.sh")
-        finally.children << job122   = Tengine::Job::ScriptTemplate.new(:name => "job122", :script => "job122.sh")
+        finally.children << job121   = Tengine::Job::JobnetTemplate.new(:name => "job121", :script => "job121.sh")
+        finally.children << job122   = Tengine::Job::JobnetTemplate.new(:name => "job122", :script => "job122.sh")
 
         jobnet1.prepare_end
         jobnet11.prepare_end
@@ -128,8 +128,8 @@ describe Tengine::Job::JobnetTemplate do
         ]
         jobnet11.children.map(&:class).should == [
           Tengine::Job::Start,
-          Tengine::Job::ScriptTemplate,
-          Tengine::Job::ScriptTemplate,
+          Tengine::Job::JobnetTemplate,
+          Tengine::Job::JobnetTemplate,
           Tengine::Job::End
         ]
         jobnet11.edges.map{|edge| [edge.origin_id, edge.destination_id]}.should == [
@@ -139,8 +139,8 @@ describe Tengine::Job::JobnetTemplate do
         ]
         finally.children.map(&:class).should == [
           Tengine::Job::Start,
-          Tengine::Job::ScriptTemplate,
-          Tengine::Job::ScriptTemplate,
+          Tengine::Job::JobnetTemplate,
+          Tengine::Job::JobnetTemplate,
           Tengine::Job::End
         ]
         finally.edges.map{|edge| [edge.origin_id, edge.destination_id]}.should == [
@@ -172,13 +172,13 @@ describe Tengine::Job::JobnetTemplate do
         jobnet1 = Tengine::Job::JobnetTemplate.new(:name => "jobnet1")
         jobnet1.children << _start = Tengine::Job::Start.new
         jobnet1.children << fork1  = Tengine::Job::Fork.new
-        jobnet1.children << job1   = Tengine::Job::ScriptTemplate.new(:name => "job1", :script => "job1.sh")
-        jobnet1.children << job2   = Tengine::Job::ScriptTemplate.new(:name => "job2", :script => "job2.sh")
+        jobnet1.children << job1   = Tengine::Job::JobnetTemplate.new(:name => "job1", :script => "job1.sh")
+        jobnet1.children << job2   = Tengine::Job::JobnetTemplate.new(:name => "job2", :script => "job2.sh")
         jobnet1.children << join1  = Tengine::Job::Join.new
-        jobnet1.children << job3   = Tengine::Job::ScriptTemplate.new(:name => "job3", :script => "job3.sh")
-        jobnet1.children << job4   = Tengine::Job::ScriptTemplate.new(:name => "job4", :script => "job4.sh")
+        jobnet1.children << job3   = Tengine::Job::JobnetTemplate.new(:name => "job3", :script => "job3.sh")
+        jobnet1.children << job4   = Tengine::Job::JobnetTemplate.new(:name => "job4", :script => "job4.sh")
         jobnet1.children << join2  = Tengine::Job::Join.new
-        jobnet1.children << job5   = Tengine::Job::ScriptTemplate.new(:name => "job5", :script => "job5.sh")
+        jobnet1.children << job5   = Tengine::Job::JobnetTemplate.new(:name => "job5", :script => "job5.sh")
         jobnet1.children << _end   = Tengine::Job::End.new
         jobnet1.edges << Tengine::Job::Edge.new(:origin_id => _start.id, :destination_id => fork1.id)
         jobnet1.edges << Tengine::Job::Edge.new(:origin_id => fork1.id, :destination_id => job1.id)
@@ -211,13 +211,13 @@ describe Tengine::Job::JobnetTemplate do
       it do
         jobnet1 = Tengine::Job::JobnetTemplate.new(:name => "jobnet1")
         jobnet1.children << _start = Tengine::Job::Start.new
-        jobnet1.children << job1   = Tengine::Job::ScriptTemplate.new(:name => "job1", :script => "job1.sh")
+        jobnet1.children << job1   = Tengine::Job::JobnetTemplate.new(:name => "job1", :script => "job1.sh")
         jobnet1.children << fork1  = Tengine::Job::Fork.new
-        jobnet1.children << job2   = Tengine::Job::ScriptTemplate.new(:name => "job2", :script => "job2.sh")
-        jobnet1.children << job3   = Tengine::Job::ScriptTemplate.new(:name => "job3", :script => "job3.sh")
+        jobnet1.children << job2   = Tengine::Job::JobnetTemplate.new(:name => "job2", :script => "job2.sh")
+        jobnet1.children << job3   = Tengine::Job::JobnetTemplate.new(:name => "job3", :script => "job3.sh")
         jobnet1.children << fork2  = Tengine::Job::Fork.new
-        jobnet1.children << job4   = Tengine::Job::ScriptTemplate.new(:name => "job4", :script => "job4.sh")
-        jobnet1.children << job5   = Tengine::Job::ScriptTemplate.new(:name => "job5", :script => "job5.sh")
+        jobnet1.children << job4   = Tengine::Job::JobnetTemplate.new(:name => "job4", :script => "job4.sh")
+        jobnet1.children << job5   = Tengine::Job::JobnetTemplate.new(:name => "job5", :script => "job5.sh")
         jobnet1.children << join1  = Tengine::Job::Join.new
         jobnet1.children << _end   = Tengine::Job::End.new
         jobnet1.edges << Tengine::Job::Edge.new(:origin_id => _start.id, :destination_id => job1.id)

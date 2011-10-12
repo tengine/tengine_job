@@ -38,9 +38,9 @@ describe Tengine::Job::DslLoader do
         end
         root_jobnet.children.map(&:class).should == [
           Tengine::Job::Start,
-          Tengine::Job::ScriptTemplate,
           Tengine::Job::JobnetTemplate,
-          Tengine::Job::ScriptTemplate,
+          Tengine::Job::JobnetTemplate,
+          Tengine::Job::JobnetTemplate,
           Tengine::Job::End,
         ]
         root_jobnet.children[1].tap{|j| j.name.should == "job1"; j.description.should == "ジョブ1"; j.script.should == "import_hdfs.sh"}
@@ -126,11 +126,11 @@ describe Tengine::Job::DslLoader do
         end
         root_jobnet.children.map(&:class).should == [
           Tengine::Job::Start         , # 0
-          Tengine::Job::ScriptTemplate, # 1
-          Tengine::Job::ScriptTemplate, # 2
-          Tengine::Job::ScriptTemplate, # 3
-          Tengine::Job::ScriptTemplate, # 4
-          Tengine::Job::ScriptTemplate, # 5
+          Tengine::Job::JobnetTemplate, # 1
+          Tengine::Job::JobnetTemplate, # 2
+          Tengine::Job::JobnetTemplate, # 3
+          Tengine::Job::JobnetTemplate, # 4
+          Tengine::Job::JobnetTemplate, # 5
           Tengine::Job::Fork          , # 6
           Tengine::Job::Join          , # 7
           Tengine::Job::Join          , # 8
@@ -179,11 +179,11 @@ describe Tengine::Job::DslLoader do
         end
         root_jobnet.children.map(&:class).should == [
           Tengine::Job::Start         , # 0
-          Tengine::Job::ScriptTemplate, # 1
-          Tengine::Job::ScriptTemplate, # 2
-          Tengine::Job::ScriptTemplate, # 3
-          Tengine::Job::ScriptTemplate, # 4
-          Tengine::Job::ScriptTemplate, # 5
+          Tengine::Job::JobnetTemplate, # 1
+          Tengine::Job::JobnetTemplate, # 2
+          Tengine::Job::JobnetTemplate, # 3
+          Tengine::Job::JobnetTemplate, # 4
+          Tengine::Job::JobnetTemplate, # 5
           Tengine::Job::Fork          , # 6
           Tengine::Job::Fork          , # 7
           Tengine::Job::Join          , # 8
@@ -232,13 +232,13 @@ describe Tengine::Job::DslLoader do
         end
         root_jobnet.children.map(&:class).should == [
           Tengine::Job::Start         , # 0
-          Tengine::Job::ScriptTemplate, # 1
-          Tengine::Job::ScriptTemplate, # 2
-          Tengine::Job::ScriptTemplate, # 3
-          Tengine::Job::ScriptTemplate, # 4
-          Tengine::Job::ScriptTemplate, # 5
-          Tengine::Job::ScriptTemplate, # 6
-          Tengine::Job::ScriptTemplate, # 7
+          Tengine::Job::JobnetTemplate, # 1
+          Tengine::Job::JobnetTemplate, # 2
+          Tengine::Job::JobnetTemplate, # 3
+          Tengine::Job::JobnetTemplate, # 4
+          Tengine::Job::JobnetTemplate, # 5
+          Tengine::Job::JobnetTemplate, # 6
+          Tengine::Job::JobnetTemplate, # 7
           Tengine::Job::Fork          , # 8
           Tengine::Job::Fork          , # 9
           Tengine::Job::Fork          , # 10
@@ -299,9 +299,9 @@ describe Tengine::Job::DslLoader do
         end
         root_jobnet.children.map(&:class).should == [
           Tengine::Job::Start         , # 0
-          Tengine::Job::ScriptTemplate, # 1
-          Tengine::Job::ScriptTemplate, # 2
-          Tengine::Job::ScriptTemplate, # 3
+          Tengine::Job::JobnetTemplate, # 1
+          Tengine::Job::JobnetTemplate, # 2
+          Tengine::Job::JobnetTemplate, # 3
           Tengine::Job::JobnetTemplate, # 4
           Tengine::Job::End           , # 5
         ]
@@ -321,8 +321,8 @@ describe Tengine::Job::DslLoader do
         finally_jobnet = root_jobnet.children[4]
         finally_jobnet.children.map(&:class).should == [
           Tengine::Job::Start         , # 0
-          Tengine::Job::ScriptTemplate, # 1
-          Tengine::Job::ScriptTemplate, # 2
+          Tengine::Job::JobnetTemplate, # 1
+          Tengine::Job::JobnetTemplate, # 2
           Tengine::Job::End           , # 3
         ]
         finally_jobnet.edges.map{|edge| [edge.origin, edge.destination]}.should == [

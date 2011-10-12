@@ -19,10 +19,6 @@ module Tengine::Job
 
   autoload :Job                 , "tengine/job/job"
 
-  autoload :Script              , "tengine/job/script"
-  autoload :ScriptActual        , "tengine/job/script_actual"
-  autoload :ScriptTemplate      , "tengine/job/script_template"
-
   autoload :Jobnet              , "tengine/job/jobnet"
   autoload :JobnetActual        , "tengine/job/jobnet_actual"
   autoload :RootJobnetActual    , "tengine/job/root_jobnet_actual"

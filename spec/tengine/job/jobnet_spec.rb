@@ -7,15 +7,15 @@ describe Tengine::Job::Jobnet do
     before do
       @j1000 = Tengine::Job::JobnetTemplate.new(:name => "j1000")
       @j1000.children << @j1100 = Tengine::Job::JobnetTemplate.new(:name => "j1100")
-      @j1100.children << @j1110 = Tengine::Job::ScriptTemplate.new(:name => "j1110", :script => "j1110.sh")
-      @j1100.children << @j1120 = Tengine::Job::ScriptTemplate.new(:name => "j1120", :script => "j1120.sh")
+      @j1100.children << @j1110 = Tengine::Job::JobnetTemplate.new(:name => "j1110", :script => "j1110.sh")
+      @j1100.children << @j1120 = Tengine::Job::JobnetTemplate.new(:name => "j1120", :script => "j1120.sh")
       @j1000.children << @j1200 = Tengine::Job::JobnetTemplate.new(:name => "j1200")
       @j1200.children << @j1210 = Tengine::Job::JobnetTemplate.new(:name => "j1210")
-      @j1210.children << @j1211 = Tengine::Job::ScriptTemplate.new(:name => "j1211", :script => "j1211.sh")
-      @j1210.children << @j1212 = Tengine::Job::ScriptTemplate.new(:name => "j1212", :script => "j1212.sh")
+      @j1210.children << @j1211 = Tengine::Job::JobnetTemplate.new(:name => "j1211", :script => "j1211.sh")
+      @j1210.children << @j1212 = Tengine::Job::JobnetTemplate.new(:name => "j1212", :script => "j1212.sh")
       @j1200.children << @j1220 = Tengine::Job::JobnetTemplate.new(:name => "j1220")
-      @j1220.children << @j1221 = Tengine::Job::ScriptTemplate.new(:name => "j1221", :script => "j1221.sh")
-      @j1220.children << @j1222 = Tengine::Job::ScriptTemplate.new(:name => "j1222", :script => "j1222.sh")
+      @j1220.children << @j1221 = Tengine::Job::JobnetTemplate.new(:name => "j1221", :script => "j1221.sh")
+      @j1220.children << @j1222 = Tengine::Job::JobnetTemplate.new(:name => "j1222", :script => "j1222.sh")
       @j1000.prepare_end
       @j1100.prepare_end
       @j1200.prepare_end

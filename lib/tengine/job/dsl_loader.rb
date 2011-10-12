@@ -52,7 +52,7 @@ module Tengine::Job::DslLoader
       :script => script
     }.update(options)
     result = __with_redirection__(options) do
-      Tengine::Job::ScriptTemplate.new(options)
+      Tengine::Job::JobnetTemplate.new(options)
     end
     @jobnet.children << result
     result

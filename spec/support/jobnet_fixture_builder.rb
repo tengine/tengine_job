@@ -48,8 +48,8 @@ class JobnetFixtureBuilder
     [:actual  , :root_jobnet] => Tengine::Job::RootJobnetActual  ,
     [:template, :jobnet     ] => Tengine::Job::JobnetTemplate    ,
     [:actual  , :jobnet     ] => Tengine::Job::JobnetActual      ,
-    [:template, :script     ] => Tengine::Job::ScriptTemplate    ,
-    [:actual  , :script     ] => Tengine::Job::ScriptActual      ,
+    [:template, :script     ] => Tengine::Job::JobnetTemplate    ,
+    [:actual  , :script     ] => Tengine::Job::JobnetActual      ,
   }.freeze
 
   %w[root_jobnet jobnet script].each do |method_name|

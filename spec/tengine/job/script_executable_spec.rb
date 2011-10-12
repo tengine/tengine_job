@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-describe Tengine::Job::ScriptActual do
+describe Tengine::Job::ScriptExecutable do
   describe :execute do
     context "実際にSSHで接続", :ssh_actual => true do
       before do
