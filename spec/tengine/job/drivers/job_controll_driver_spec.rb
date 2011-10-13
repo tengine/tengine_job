@@ -40,6 +40,7 @@ describe 'job_control_driver' do
         })
     end
 
+    if ENV['PASSWORD']
     context "実際にSSHで接続", :ssh_actual => true do
       before do
         resource_fixture = GokuAtEc2ApNortheast.new
@@ -62,8 +63,12 @@ describe 'job_control_driver' do
         j11 = @jobnet.find_descendant_by_name_path("/rjn0001/j11")
         j11.executing_pid.should_not be_nil
         j11.exit_status.should == nil
+        j11.phase_key.should == :running
+        j11.previous_edges.length.should == 1
+        j11.previous_edges.first.status_key.should == :transmitted
       end
 
+    end
     end
   end
 
