@@ -101,6 +101,8 @@ module Tengine::Job::ScriptExecutable
   # MM_FAILED_JOB_ANCESTOR_IDS      : ジョブが失敗した場合にrecoverやfinally内のジョブを実行時に設定される、失敗したジョブの祖先のMM上でのIDをセミコロンで繋げた文字列。
   def build_mm_env(execution)
     result = {
+      "MM_ROOT_JOBNET_ID" => root.id.to_s,
+      "MM_TARGET_JOBNET_ID" => parent.id.to_s,
       "MM_ACTUAL_JOB_ID" => id.to_s,
       "MM_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % ancestors_until_expansion.map(&:id).map(&:to_s).join(';'),
       "MM_FULL_ACTUAL_JOB_ANCESTOR_IDS" => '"%s"' % ancestors.map(&:id).map(&:to_s).join(';'),
