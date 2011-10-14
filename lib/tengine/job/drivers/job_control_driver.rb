@@ -29,8 +29,8 @@ driver :job_control_driver do
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
     # finish
     root_jobnet.update_with_lock do
-      job = root_jobnet.find_descendant(event[:job_id])
-      job.finish(event[:exit_code], event.occurred_at)
+      job = root_jobnet.find_descendant(event[:target_job_id])
+      job.finish(event[:exit_status], event.occurred_at)
     end
   end
 

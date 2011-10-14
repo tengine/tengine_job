@@ -3,7 +3,7 @@ source "http://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 
-gem "tengine_core", "~> 0.1.8"
+gem "tengine_core", "~> 0.1.9"
 gem "tengine_resource", "~> 0.0.4"
 
 # Add dependencies to develop your gem here.

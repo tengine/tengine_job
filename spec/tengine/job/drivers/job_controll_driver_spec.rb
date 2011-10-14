@@ -40,6 +40,33 @@ describe 'job_control_driver' do
         })
     end
 
+    {
+      :success => "0",
+      :error => "1"
+    }.each do |phase_key, exit_status|
+      it "ジョブ実行#{phase_key}の通知" do
+        @jobnet.reload
+        j11 = @jobnet.find_descendant_by_name_path("/rjn0001/j11")
+        j11.executing_pid = "123"
+        j11.phase_key = :running
+        j11.previous_edges.length.should == 1
+        j11.previous_edges.first.status_key = :transmitted
+        @ctx[:root].save!
+        tengine.receive("finished.process.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_id => @jobnet.id.to_s,
+            :target_job_id => @ctx[:j11].id.to_s,
+            :exit_status => exit_status
+          })
+        @jobnet.reload
+        j11 = @jobnet.find_descendant_by_name_path("/rjn0001/j11")
+        j11.phase_key.should == phase_key
+        j11.exit_status.should == exit_status
+      end
+    end
+
+
     if ENV['PASSWORD']
     context "実際にSSHで接続", :ssh_actual => true do
       before do
