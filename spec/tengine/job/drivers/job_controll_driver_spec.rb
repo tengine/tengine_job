@@ -52,6 +52,13 @@ describe 'job_control_driver' do
         j11.previous_edges.length.should == 1
         j11.previous_edges.first.status_key = :transmitted
         @ctx[:root].save!
+        tengine.should_fire("finished.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_id => @jobnet.id.to_s,
+            :target_job_id => @ctx[:j11].id.to_s,
+            :exit_status => exit_status
+          })
         tengine.receive("finished.process.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,

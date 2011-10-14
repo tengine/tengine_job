@@ -32,6 +32,7 @@ driver :job_control_driver do
       job = root_jobnet.find_descendant(event[:target_job_id])
       job.finish(event[:exit_status], event.occurred_at)
     end
+    fire(:'finished.job.tengine', :properties => event.properties)
   end
 
 end
