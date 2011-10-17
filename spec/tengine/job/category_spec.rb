@@ -12,19 +12,19 @@ describe Tengine::Job::Category do
       before do
         Tengine::Job::Vertex.delete_all
         Tengine::Job::Category.delete_all
-        Tengine::Job::RootJobnetTemplate.create!({
+        @root1 = Tengine::Job::RootJobnetTemplate.create!({
             :name => "root_jobnet_template01",
             :dsl_filepath => "foo/bar1/jobnet01.rb",
             :dsl_lineno => 4,
             :dsl_version => "1"
           })
-        Tengine::Job::RootJobnetTemplate.create!({
+        @root2 = Tengine::Job::RootJobnetTemplate.create!({
             :name => "root_jobnet_template01",
             :dsl_filepath => "foo/bar2/jobnet01.rb",
             :dsl_lineno => 4,
             :dsl_version => "2"
           })
-        Tengine::Job::RootJobnetTemplate.create!({
+        @root3 = Tengine::Job::RootJobnetTemplate.create!({
             :name => "root_jobnet_template01",
             :dsl_filepath => "foo/bar3/jobnet2.rb",
             :dsl_lineno => 4,
@@ -53,6 +53,8 @@ describe Tengine::Job::Category do
             c.caption.should == "ばー1"
             c.parent_id.should == foo.id
             c.dsl_version.should == "1"
+            @root1.reload
+            @root1.category_id.should == c.id
           end
         end
 
@@ -70,12 +72,16 @@ describe Tengine::Job::Category do
             c.caption.should == "ばー2"
             c.parent_id.should == foo.id
             c.dsl_version.should == "2"
+            @root2.reload
+            @root2.category_id.should == c.id
           end
           foo.children.last.tap do |c|
             c.name.should == "bar3"
             c.caption.should == "bar3"
             c.parent_id.should == foo.id
             c.dsl_version.should == "2"
+            @root3.reload
+            @root3.category_id.should == c.id
           end
         end
       end
@@ -100,12 +106,16 @@ describe Tengine::Job::Category do
           c.caption.should == "ばー2"
           c.parent_id.should == foo.id
           c.dsl_version.should == "2"
+          @root2.reload
+          @root2.category_id.should == c.id
         end
         foo.children.last.tap do |c|
           c.name.should == "bar3"
           c.caption.should == "bar3"
           c.parent_id.should == foo.id
           c.dsl_version.should == "2"
+          @root3.reload
+          @root3.category_id.should == c.id
         end
       end
 

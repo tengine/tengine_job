@@ -17,7 +17,7 @@ class Tengine::Job::Category
       root_jobnets = Tengine::Job::RootJobnetTemplate.all(:conditions => {:dsl_version => dsl_version})
       root_jobnets.each do |root_jobnet|
         dirs = File.dirname(root_jobnet.dsl_filepath || "").split('/')
-        parent_category = nil
+        last_category = nil
         dic_dir = base_dir
         dirs.each do |dir|
           caption = nil
@@ -30,10 +30,14 @@ class Tengine::Job::Category
           category = Tengine::Job::Category.find_or_create_by(
             :name => dir,
             :caption => caption || dir,
-            :parent_id => parent_category ? parent_category.id : nil,
+            :parent_id => last_category ? last_category.id : nil,
             :dsl_version => dsl_version)
           dic_dir = File.join(dic_dir, dir)
-          parent_category = category
+          last_category = category
+        end
+        if last_category
+          root_jobnet.category_id = last_category.id
+          root_jobnet.save!
         end
       end
 
