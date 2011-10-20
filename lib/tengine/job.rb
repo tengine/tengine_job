@@ -5,6 +5,8 @@ module Tengine::Job
   autoload :DslEvaluator        , "tengine/job/dsl_evaluator"
   autoload :DslLoader           , "tengine/job/dsl_loader"
 
+  autoload :Signal              , 'tengine/job/signal'
+
   autoload :Execution           , "tengine/job/execution"
 
   autoload :Category            , "tengine/job/category"
