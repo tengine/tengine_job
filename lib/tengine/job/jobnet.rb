@@ -28,6 +28,58 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
 
   after_initialize :build_start
 
+  # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#D26C1
+  def transmit(signal)
+    # 呼び出し元のedgeをtransmittedにするのは、実際にジョブ・ジョブネットがstartingになるとき、
+    # つまりactivateで行います。
+    case self.phase_key
+    when :ready then
+      self.phase_key = :starting
+      signal.paths << self
+      signal.process(self)
+    end
+  end
+
+  def activate(signal)
+    complete_origin_edge(signal)
+  end
+
+  def ack(signal)
+    case self.phase_key
+    when :ready then
+      raise Tengine::Job::Vertex::PhaseError, "ack not available on ready"
+    when :starting then
+      self.phase_key = :running
+      signal.paths << self
+      signal.process(self)
+    # else # IG
+    end
+  end
+
+  def succeed(signal)
+    case self.phase_key
+    when :ready, :error then
+      raise Tengine::Job::Vertex::PhaseError, "ack not available on succeed"
+    when :starting, :running, :dying, :stuck then
+      self.phase_key = :success
+      signal.paths << self
+      signal.process(self)
+    # else # IG
+    end
+  end
+
+  def fail(signal)
+    case self.phase_key
+    when :ready, :success then
+      raise Tengine::Job::Vertex::PhaseError, "ack not available on succeed"
+    when :starting, :running, :dying, :stuck then
+      self.phase_key = :error
+      signal.paths << self
+      signal.process(self)
+    # else # IG
+    end
+  end
+
   class << self
     def by_name(name)
       first(:conditions => {:name => name})

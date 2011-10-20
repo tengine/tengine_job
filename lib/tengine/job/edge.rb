@@ -30,22 +30,29 @@ class Tengine::Job::Edge
     owner.children.detect{|c| c.id == destination_id}
   end
 
-  def transmit
-    dest = self.destination
-    if dest.is_a?(Tengine::Job::Job)
+  # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#3E9EA
+  def transmit(signal)
+    case status_key
+    when :active then
       self.status_key = :transmitting
-      dest.phase_key = :starting
-      result = [dest]
-    elsif dest.is_a?(Tengine::Job::End)
-      self.status_key = :transmitted
-      result = []
-    elsif dest.is_a?(Tengine::Job::Junction)
-      self.status_key = :transmitted
-      result = dest.activate_if_possible
-    else
-      raise "unsupported vertex found: #{dest.inspect}"
+      signal.paths << self
+      destination.transmit(signal)
+    when :suspended then
+      self.status_key = :keeping
+    when :closed
+      raise Tengine::Job::Edge::StatusError, "transmit not available on closed"
+    # else # IG
     end
-    result
+  end
+
+  def complete(signal)
+    case status_key
+    when :transmitting then
+      self.status_key = :transmitted
+    when :active, :suspended, :keeping, :closed then
+      raise Tengine::Job::Edge::StatusError, "transmit not available on closed"
+    # else # IG
+    end
   end
 
 end
