@@ -5,10 +5,13 @@ require 'tengine/job'
 class Tengine::Job::Junction < Tengine::Job::Vertex
 
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#D26C1
-  def activate(signal)
+  def transmit(signal)
     complete_origin_edge(signal)
-    return unless prev_edges.all?(:transmitted?)
-    next_edges.each{|edge| edge.transmit(signal)}
+    activate(signal) if prev_edges.all?(:transmitted?)
+  end
+
+  def activate(signal)
+    signal.leave(self)
   end
 
 end

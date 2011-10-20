@@ -10,11 +10,7 @@ class Tengine::Job::Start < Tengine::Job::Vertex
   end
 
   def activate(signal)
-    if parent.phase_key == :ready
-      parent.phase_key = :starting
-      signal.paths << self
-      signal.process(self)
-    end
+    parent.ack(signal)
   end
 
 end

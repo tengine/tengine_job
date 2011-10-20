@@ -29,55 +29,15 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   after_initialize :build_start
 
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#D26C1
-  def transmit(signal)
-    # 呼び出し元のedgeをtransmittedにするのは、実際にジョブ・ジョブネットがstartingになるとき、
-    # つまりactivateで行います。
-    case self.phase_key
-    when :ready then
-      self.phase_key = :starting
-      signal.paths << self
-      signal.process(self)
-    end
-  end
-
-  def activate(signal)
-    complete_origin_edge(signal)
-  end
-
-  def ack(signal)
-    case self.phase_key
-    when :ready then
-      raise Tengine::Job::Vertex::PhaseError, "ack not available on ready"
-    when :starting then
-      self.phase_key = :running
-      signal.paths << self
-      signal.process(self)
-    # else # IG
-    end
-  end
-
-  def succeed(signal)
-    case self.phase_key
-    when :ready, :error then
-      raise Tengine::Job::Vertex::PhaseError, "ack not available on succeed"
-    when :starting, :running, :dying, :stuck then
-      self.phase_key = :success
-      signal.paths << self
-      signal.process(self)
-    # else # IG
-    end
-  end
-
-  def fail(signal)
-    case self.phase_key
-    when :ready, :success then
-      raise Tengine::Job::Vertex::PhaseError, "ack not available on succeed"
-    when :starting, :running, :dying, :stuck then
-      self.phase_key = :error
-      signal.paths << self
-      signal.process(self)
-    # else # IG
-    end
+  STATE_TRANSITION_METHODS = [:transmit, :activate, :ack, :succeed, :fail].freeze
+  STATE_TRANSITION_METHODS.each do |method_name|
+    class_eval(<<-END_OF_METHOD)
+      def #{method_name}(signal)
+        script_executable? ?
+          job_#{method_name}(signal) :
+          jobnet_#{method_name}(signal)
+      end
+    END_OF_METHOD
   end
 
   class << self
