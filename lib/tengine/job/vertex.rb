@@ -5,6 +5,7 @@ require 'tengine/job'
 # 自身がツリー構造を
 class Tengine::Job::Vertex
   include Mongoid::Document
+  include Tengine::Job::Signal::Transmittable
 
   self.cyclic = true
   with_options(:class_name => self.name, :cyclic => true) do |c|

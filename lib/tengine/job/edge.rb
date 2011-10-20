@@ -7,6 +7,7 @@ require 'selectable_attr'
 class Tengine::Job::Edge
   include SelectableAttr::Base
   include Mongoid::Document
+  include Tengine::Job::Signal::Transmittable
 
   embedded_in :owner, :class_name => "Tengine::Job::Jobnet", :inverse_of => :edges
 
@@ -35,8 +36,7 @@ class Tengine::Job::Edge
     case status_key
     when :active then
       self.status_key = :transmitting
-      signal.paths << self
-      destination.transmit(signal)
+      signal.leave(self)
     when :suspended then
       self.status_key = :keeping
     when :closed
