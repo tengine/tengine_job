@@ -2,8 +2,8 @@
 # 以下のジョブネットについてテンプレートジョブネットや
 # 実行用ジョブネットを扱うフィクスチャ生成のためのクラスです。
 #
-# in [j10]
-# [S] --e1-->[j11]--e2-->[j12]--e3-->[E]
+# in [rjn0001]
+# (S1) --e1-->(j11)--e2-->(j12)--e3-->(E1)
 
 class Rjn0001SimpleJobnetBuilder < JobnetFixtureBuilder
   DSL = <<-EOS
