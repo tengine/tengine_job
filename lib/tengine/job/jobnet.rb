@@ -123,6 +123,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     end
     visitor.visit(self)
   end
+  alias_method :edge, :find_descendant_edge
 
   def find_descendant(vertex_id)
     vertex_id = String(vertex_id)
@@ -130,6 +131,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     visitor = Tengine::Job::Vertex::AnyVisitor.new{|v| vertex_id == v.id.to_s ? v : nil }
     visitor.visit(self)
   end
+  alias_method :vertex, :find_descendant
 
   def find_descendant_by_name_path(name_path)
     return nil if name_path == self.name_path
@@ -142,5 +144,6 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     end
     visitor.visit(self)
   end
+  alias_method :vertex_by_name_path, :find_descendant_by_name_path
 
 end
