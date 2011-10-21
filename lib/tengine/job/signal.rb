@@ -20,19 +20,19 @@ class Tengine::Job::Signal
 
   def leave(obj)
     @paths << obj
-    with_paths_backup do
-      begin
-        if obj.is_a?(Tengine::Job::Edge)
-          obj.destination.transmit(self)
-        elsif obj.is_a?(Tengine::Job::Vertex)
-          obj.next_edges.each{|edge| edge.transmit(self)}
-        else
-          raise Tengine::Job::Signal::Error, "leaving unsupported object: #{obj.inspect}"
+    begin
+      if obj.is_a?(Tengine::Job::Edge)
+        obj.destination.transmit(self)
+      elsif obj.is_a?(Tengine::Job::Vertex)
+        obj.next_edges.each do |edge|
+          with_paths_backup{ edge.transmit(self) }
         end
-      rescue Tengine::Job::Signal::Error => e
-        puts "[#{e.class.name}] #{e.message}\nsignal.paths: #{@paths.inspect}"
-        raise e
+      else
+        raise Tengine::Job::Signal::Error, "leaving unsupported object: #{obj.inspect}"
       end
+    rescue Tengine::Job::Signal::Error => e
+      puts "[#{e.class.name}] #{e.message}\nsignal.paths: #{@paths.inspect}"
+      raise e
     end
   end
 

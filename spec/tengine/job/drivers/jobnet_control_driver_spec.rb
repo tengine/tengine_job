@@ -233,8 +233,10 @@ describe 'job_control_driver' do
         it "成功した場合" do
           @ctx[:j12].phase_key = :success
           @root.save!
-          tengine.should_fire(:"finished.jobnet.job.tengine", :properties => @base_props)
-          tengine.receive("finished.job.job.tengine", :properties => {
+          tengine.should_fire(:"success.jobnet.job.tengine",
+            :source_name => @root.name_as_resource,
+            :properties => @base_props)
+          tengine.receive("success.job.job.tengine", :properties => {
               :target_job_id => @ctx[:j12].id.to_s,
             }.update(@base_props))
           @root.reload
@@ -247,8 +249,10 @@ describe 'job_control_driver' do
         it "失敗した場合" do
           @ctx[:j12].phase_key = :error
           @root.save!
-          tengine.should_fire(:"finished.jobnet.job.tengine", :properties => @base_props)
-          tengine.receive("finished.job.job.tengine", :properties => {
+          tengine.should_fire(:"error.jobnet.job.tengine",
+            :source_name => @root.name_as_resource,
+            :properties => @base_props)
+          tengine.receive("error.job.job.tengine", :properties => {
               :target_job_id => @ctx[:j12].id.to_s
             }.update(@base_props))
           @root.reload
@@ -261,6 +265,7 @@ describe 'job_control_driver' do
 
       context "j11は失敗した場合" do
         before do
+          @root.phase_key = :running
           @ctx[:e1].status_key = :transmitted
           @ctx[:e2].status_key = :transmitted
           @ctx[:e3].status_key = :transmitted
@@ -275,12 +280,14 @@ describe 'job_control_driver' do
         it "成功した場合" do
           @ctx[:j12].phase_key = :success
           @root.save!
-          tengine.should_fire(:"finished.jobnet.job.tengine", :properties => @base_props)
-          tengine.receive("finished.job.job.tengine", :properties => {
+          tengine.should_fire(:"error.jobnet.job.tengine",
+            :source_name => @root.name_as_resource,
+            :properties => @base_props)
+          tengine.receive("success.job.job.tengine", :properties => {
               :target_job_id => @ctx[:j12].id.to_s,
             }.update(@base_props))
           @root.reload
-          @root.phase_key.should == :success
+          @root.phase_key.should == :error
           @root.finished_at.utc.iso8601.should == @now.utc.iso8601
           @ctx.edge(:e5).status_key.should == :transmitted
           @ctx.edge(:e6).status_key.should == :closed
@@ -290,8 +297,10 @@ describe 'job_control_driver' do
         it "失敗した場合" do
           @ctx[:j12].phase_key = :error
           @root.save!
-          tengine.should_fire(:"finished.jobnet.job.tengine", :properties => @base_props)
-          tengine.receive("finished.job.job.tengine", :properties => {
+          tengine.should_fire(:"error.jobnet.job.tengine",
+            :source_name => @root.name_as_resource,
+            :properties => @base_props)
+          tengine.receive("error.job.job.tengine", :properties => {
               :target_job_id => @ctx[:j12].id.to_s
             }.update(@base_props))
           @root.reload
@@ -358,7 +367,7 @@ describe 'job_control_driver' do
           @ctx[:j11].phase_key = :error
           @root.save!
           tengine.should_not_fire # j13が動いていないので、e5,e6はactiveなので、ジョブネットは終了しません。
-          tengine.receive("finished.job.job.tengine", :properties => {
+          tengine.receive("error.job.job.tengine", :properties => {
               :target_job_id => @ctx[:j11].id.to_s,
             }.update(@base_props))
           @root.reload
