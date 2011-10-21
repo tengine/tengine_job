@@ -22,9 +22,9 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   # このackは、子要素のTengine::Job::Start#activateから呼ばれます
   def jobnet_ack(signal)
-    case self.phase_key
+    case phase_key
     when :ready then
-      raise Tengine::Job::Vertex::PhaseError, "ack not available on ready"
+      raise Tengine::Job::Executable::PhaseError, "ack not available on #{phase_key.inspect}"
     when :starting then
       self.phase_key = :running
     end
@@ -40,9 +40,9 @@ module Tengine::Job::Jobnet::JobnetStateTransition
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def jobnet_succeed(signal)
-    case self.phase_key
+    case phase_key
     when :ready, :error then
-      raise Tengine::Job::Vertex::PhaseError, "ack not available on succeed"
+      raise Tengine::Job::Executable::PhaseError, "ack not available on #{phase_key.inspect}"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :success
       signal.fire(self, :"success.jobnet.job.tengine", {
@@ -53,9 +53,9 @@ module Tengine::Job::Jobnet::JobnetStateTransition
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def jobnet_fail(signal)
-    case self.phase_key
+    case phase_key
     when :ready, :success then
-      raise Tengine::Job::Vertex::PhaseError, "ack not available on succeed"
+      raise Tengine::Job::Executable::PhaseError, "ack not available on #{phase_key.inspect}"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :error
       signal.fire(self, :"error.jobnet.job.tengine", {
