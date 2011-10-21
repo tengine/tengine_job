@@ -5,7 +5,6 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def job_transmit(signal)
-    complete_origin_edge(signal)
     case self.phase_key
     when :ready then
       self.phase_key = :starting
@@ -18,6 +17,7 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_activate(signal)
+    complete_origin_edge(signal)
     # 実際にSSHでスクリプトを実行
   end
 

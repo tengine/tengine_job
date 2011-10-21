@@ -9,6 +9,8 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   include SelectableAttr::Base
 
   autoload :Builder, "tengine/job/jobnet/builder"
+  autoload :JobStateTransition, 'tengine/job/jobnet/job_state_transition'
+  autoload :JobnetStateTransition, 'tengine/job/jobnet/jobnet_state_transition'
 
   field :script        , :type => String # 実行されるスクリプト(本来Tengine::Job::Scriptが保持しますが、子要素を保持してかつスクリプトを実行するhadoop_job_runもある)
   field :description   , :type => String # ジョブネットの説明
@@ -44,6 +46,10 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     def by_name(name)
       first(:conditions => {:name => name})
     end
+  end
+
+  def script_executable?
+    !script.blank?
   end
 
   def start_vertex

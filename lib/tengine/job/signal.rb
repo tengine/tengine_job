@@ -6,12 +6,11 @@ class Tengine::Job::Signal
   class Error < StandardError
   end
 
-  attr_reader :driver, :event, :paths
+  attr_reader :paths, :ignitions
 
-  def initialize(driver, event)
-    @driver = driver
-    @event = event
+  def initialize
     @paths = []
+    @ignitions = []
   end
 
   def leave(obj)
@@ -32,6 +31,7 @@ class Tengine::Job::Signal
   end
 
   def fire(event_type_name, options = {})
+    @ignitions << [event_type_name, options]
   end
 
   module Transmittable

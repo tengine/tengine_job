@@ -5,7 +5,6 @@ module Tengine::Job::Jobnet::JobnetStateTransition
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ or ジョブ起動ドライバ
   def jobnet_transmit(signal)
-    complete_origin_edge(signal)
     case self.phase_key
     when :ready then
       self.phase_key = :starting
