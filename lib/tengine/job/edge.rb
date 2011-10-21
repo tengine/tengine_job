@@ -9,6 +9,9 @@ class Tengine::Job::Edge
   include Mongoid::Document
   include Tengine::Job::Signal::Transmittable
 
+  class StatusError < StandardError
+  end
+
   embedded_in :owner, :class_name => "Tengine::Job::Jobnet", :inverse_of => :edges
 
   field :status_cd     , :type => Integer, :default => 0 # ステータス。とりうる値は後述を参照してください。詳しくはtengine_jobパッケージ設計書の「edge状態遷移」を参照してください。
@@ -40,8 +43,7 @@ class Tengine::Job::Edge
     when :suspended then
       self.status_key = :keeping
     when :closed
-      raise Tengine::Job::Edge::StatusError, "transmit not available on closed"
-    # else # IG
+      raise Tengine::Job::Edge::StatusError, "transmit not available #{status_key.inspect} at edge #{id.to_s} from #{origin.name_path} to #{destination.name_path}"
     end
   end
 
@@ -50,8 +52,7 @@ class Tengine::Job::Edge
     when :transmitting then
       self.status_key = :transmitted
     when :active, :suspended, :keeping, :closed then
-      raise Tengine::Job::Edge::StatusError, "transmit not available on closed"
-    # else # IG
+      raise Tengine::Job::Edge::StatusError, "transmit not available on #{status_key.inspect} at edge #{id.to_s} from #{origin.name_path} to #{destination.name_path}"
     end
   end
 
