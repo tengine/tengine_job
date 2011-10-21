@@ -46,7 +46,7 @@ class Tengine::Job::Signal
     def initialize(source, event_type_name, options = {})
       @source, @event_type_name = source, event_type_name
       @options  = options
-      @options[:source_name] ||= "job:#{Tengine::Event.host_name}/#{Process.pid.to_s}/#{source.root.id.to_s}/#{source.id.to_s}"
+      @options[:source_name] ||= source.name_as_resource
     end
 
     def fire_args
@@ -55,6 +55,8 @@ class Tengine::Job::Signal
   end
 
   def fire(source, event_type_name, properties, options = {})
+    properties[:execution_id] ||= self.execution.id.to_s
+    properties[:root_jobnet_id] ||= source.root.id.to_s
     options ||= {}
     options[:properties] = properties
     properties.each do |key, value|
