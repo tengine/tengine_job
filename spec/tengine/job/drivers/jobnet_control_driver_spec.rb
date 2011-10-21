@@ -152,21 +152,25 @@ describe 'job_control_driver' do
     it "最初のリクエスト" do
       @root.phase_key = :ready
       @root.save!
-      tengine.should_fire(:"start.job.job.tengine", :properties => {
-          :target_edge_id => @ctx[:e2].id.to_s,
+      tengine.should_fire(:"start.job.job.tengine",
+        :source_name => @ctx.vertex(:j11).name_as_resource,
+        :properties => {
+          :target_job_id => @ctx[:j11].id.to_s,
         }.update(@base_props))
-      tengine.should_fire(:"start.job.job.tengine", :properties => {
-          :target_edge_id => @ctx[:e3].id.to_s,
+      tengine.should_fire(:"start.job.job.tengine",
+        :source_name => @ctx.vertex(:j12).name_as_resource,
+        :properties => {
+          :target_job_id => @ctx[:j12].id.to_s,
         }.update(@base_props))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
       @root.reload
       @root.phase_key.should == :starting
       @root.started_at.utc.iso8601.should == @now.utc.iso8601
-      @ctx.vertex(:j11).phase_key.should == :ready
-      @ctx.vertex(:j12).phase_key.should == :ready
+      @ctx.vertex(:j11).phase_key.should == :starting
+      @ctx.vertex(:j12).phase_key.should == :starting
       @ctx.edge(:e1).status_key.should == :transmitted
-      @ctx.edge(:e2).status_key.should == :active
-      @ctx.edge(:e3).status_key.should == :active
+      @ctx.edge(:e2).status_key.should == :transmitting
+      @ctx.edge(:e3).status_key.should == :transmitting
       @ctx.edge(:e4).status_key.should == :active
       @ctx.edge(:e5).status_key.should == :active
       @ctx.edge(:e6).status_key.should == :active
@@ -188,7 +192,7 @@ describe 'job_control_driver' do
         @ctx[:j11].phase_key = :success
         @root.save!
         tengine.should_not_fire
-        tengine.receive("finished.job.job.tengine", :properties => {
+        tengine.receive("success.job.job.tengine", :properties => {
             :target_job_id => @ctx[:j11].id.to_s,
           }.update(@base_props))
         @root.reload
@@ -202,7 +206,7 @@ describe 'job_control_driver' do
         @ctx[:j11].phase_key = :error
         @root.save!
         tengine.should_not_fire
-        tengine.receive("finished.job.job.tengine", :properties => {
+        tengine.receive("error.job.job.tengine", :properties => {
             :target_job_id => @ctx[:j11].id.to_s
           }.update(@base_props))
         @root.reload

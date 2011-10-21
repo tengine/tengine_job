@@ -59,6 +59,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     when :ready, :success then
       raise Tengine::Job::Executable::PhaseError, "ack not available on #{phase_key.inspect}"
     when :starting, :running, :dying, :stuck then
+      return if self.edges.any?(&:alive?)
       self.phase_key = :error
       self.finished_at = signal.event.occurred_at
       signal.fire(self, :"error.jobnet.job.tengine", {
