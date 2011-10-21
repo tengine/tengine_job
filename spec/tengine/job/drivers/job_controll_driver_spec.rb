@@ -36,7 +36,7 @@ describe 'job_control_driver' do
         args.first.should =~ %r<MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_ACTUAL_JOB_NAME_PATH=\"/rjn0001/j11\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\">
         args.first.should =~ %r<job_test j11>
       end
-      tengine.receive("start.job.tengine", :properties => {
+      tengine.receive("start.job.job.tengine", :properties => {
           :execution_id => @execution.id.to_s,
           :root_jobnet_id => @jobnet.id.to_s,
           :target_jobnet_id => @jobnet.id.to_s,
@@ -92,7 +92,7 @@ describe 'job_control_driver' do
 
       it do
         tengine.should_not_fire
-        tengine.receive("start.job.tengine", :properties => {
+        tengine.receive("start.job.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
             :target_jobnet_id => @jobnet.id.to_s,

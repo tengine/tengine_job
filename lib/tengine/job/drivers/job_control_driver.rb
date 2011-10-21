@@ -3,7 +3,7 @@
 # ジョブ制御ドライバ
 driver :job_control_driver do
 
-  on :'start.job.tengine' do
+  on :'start.job.job.tengine' do
     execution = Tengine::Job::Execution.find(event[:execution_id])
     signal = Tengine::Job::Signal.new(execution)
     # activate
