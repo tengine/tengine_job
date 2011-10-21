@@ -14,7 +14,7 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#D26C1
   STATE_TRANSITION_METHODS = [:transmit, :activate, :ack, :succeed, :fail].freeze
   STATE_TRANSITION_METHODS.each do |method_name|
-    class_eval(<<-END_OF_METHOD)
+    class_eval(<<-END_OF_METHOD, __FILE__, __LINE__ + 1)
       def #{method_name}(signal)
         script_executable? ?
           job_#{method_name}(signal) :
