@@ -3,7 +3,8 @@ require 'spec_helper'
 
 describe Tengine::Job::Edge do
   before do
-    @event = mock(:event)
+    @now = Time.now.utc
+    @event = mock(:event, :occurred_at => @now)
     @execution = mock(:execution, :id => "execution_id")
     @signal = Tengine::Job::Signal.new(@event)
     @signal.stub!(:execution).and_return(@execution)
@@ -78,13 +79,17 @@ describe Tengine::Job::Edge do
         @ctx[:e5].status_key.should == :active
         @ctx[:e6].status_key.should == :active
         @signal.reservations.should be_empty
+        @ctx[:root].phase_key = :running
         @ctx[:root].save!
         @ctx[:e5].transmit(@signal)
         @ctx[:e4].status_key.should == :transmitted
         @ctx[:e5].status_key.should == :transmitted
         @ctx[:J1].activatable?.should == true
         @ctx[:e6].status_key.should == :transmitted
-        @signal.reservations.should be_empty
+        @signal.reservations.first.tap do |r|
+          r.event_type_name.should == :"success.jobnet.job.tengine"
+          r.options[:properties][:target_jobnet_id].should == @ctx[:root].id.to_s
+        end
       end
     end
 
