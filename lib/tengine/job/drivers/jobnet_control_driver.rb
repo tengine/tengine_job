@@ -35,9 +35,10 @@ driver :jobnet_control_driver do
       target_job = root_jobnet.find_descendant(event[:target_job_id])
       signal.with_paths_backup do
         edge = target_job.next_edges.first
-        edge.accept_visitor(Tengine::Job::Edge::Closer.new)
-        # edge.transmit(signal)
+        edge.close_followings
       end
+      target_jobnet = target_job.parent
+      target_jobnet.jobnet_fail(signal)
     end
     signal.reservations.each{|r| fire(*r.fire_args)}
   end

@@ -7,7 +7,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   def jobnet_transmit(signal)
     case self.phase_key
     when :ready then
-      self.started_at = Time.now.utc
+      self.started_at = signal.event.occurred_at
       self.phase_key = :starting
       activate(signal)
     end
@@ -45,6 +45,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
       raise Tengine::Job::Executable::PhaseError, "ack not available on #{phase_key.inspect}"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :success
+      self.finished_at = signal.event.occurred_at
       signal.fire(self, :"success.jobnet.job.tengine", {
           :target_jobnet_id => self.id,
         })
@@ -58,6 +59,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
       raise Tengine::Job::Executable::PhaseError, "ack not available on #{phase_key.inspect}"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :error
+      self.finished_at = signal.event.occurred_at
       signal.fire(self, :"error.jobnet.job.tengine", {
           :target_jobnet_id => self.id,
         })

@@ -8,6 +8,7 @@ module Tengine::Job::Jobnet::JobStateTransition
     case self.phase_key
     when :ready then
       self.phase_key = :starting
+      self.started_at = signal.event.occurred_at
       signal.fire(self, :"start.job.job.tengine", {
           :target_jobnet_id => parent.id,
           :target_job_id => self.id,
@@ -48,6 +49,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       raise Tengine::Job::Executable::PhaseError, "ack not available on succeed"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :success
+      self.finished_at = signal.event.occurred_at
       signal.fire(self, :"success.job.job.tengine", {
           :target_jobnet_id => parent.id,
           :target_job_id => self.id,
@@ -62,6 +64,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       raise Tengine::Job::Executable::PhaseError, "ack not available on succeed"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :error
+      self.finished_at = signal.event.occurred_at
       signal.fire(self, :"error.job.job.tengine", {
           :target_jobnet_id => parent.id,
           :target_job_id => self.id,

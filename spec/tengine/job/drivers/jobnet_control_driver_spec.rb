@@ -71,11 +71,14 @@ describe 'job_control_driver' do
         @ctx[:e1].status_key = :transmitted
         @ctx[:j11].phase_key = :error
         @root.save!
-        tengine.should_fire(:"error.jobnet.job.tengine", :properties => @base_props)
+        tengine.should_fire(:"error.jobnet.job.tengine",
+          :source_name => @root.name_as_resource,
+          :properties => @base_props)
         tengine.receive("error.job.job.tengine", :properties => {
             :target_job_id => @ctx[:j11].id.to_s
           }.update(@base_props))
         @root.reload
+        @ctx.vertex(:j11).phase_key.should == :error
         @ctx.vertex(:j12).phase_key.should == :ready
         @ctx.edge(:e2).status_key.should == :closed
         @ctx.edge(:e3).status_key.should == :closed

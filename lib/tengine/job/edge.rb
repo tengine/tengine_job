@@ -22,12 +22,15 @@ class Tengine::Job::Edge
   validates :destination_id, :presence => true
 
   selectable_attr :status_cd do
-    entry  0, :active      , "active"
-    entry 10, :transmitting, "transmitting"
-    entry 20, :transmitted , "transmitted"
-    entry 30, :suspended   , "suspended"
-    entry 31, :keeping     , "keeping"
+    entry  0, :active      , "active"      , :alive => true
+    entry 10, :transmitting, "transmitting", :alive => true
+    entry 20, :transmitted , "transmitted" , :alive => false
+    entry 30, :suspended   , "suspended"   , :alive => true
+    entry 31, :keeping     , "keeping"     , :alive => true
+    entry 40, :closed      , "closed"      , :alive => false
   end
+
+  def alive?; !!status_entry[:alive]; end
 
   status_keys.each do |status_key|
     class_eval(<<-END_OF_METHOD)
@@ -64,5 +67,28 @@ class Tengine::Job::Edge
       raise Tengine::Job::Edge::StatusError, "transmit not available on #{status_key.inspect} at edge #{id.to_s} from #{origin.name_path} to #{destination.name_path}"
     end
   end
+
+  def close_followings
+    accept_visitor(Tengine::Job::Edge::Closer.new)
+  end
+
+  def accept_visitor(visitor)
+    visitor.visit(self)
+  end
+
+  class Closer
+    def visit(obj)
+      if obj.is_a?(Tengine::Job::Vertex)
+        obj.next_edges.each{|edge| edge.accept_visitor(self)}
+      elsif obj.is_a?(Tengine::Job::Edge)
+        obj.status_key = :closed
+        obj.destination.accept_visitor(self)
+      else
+        raise "Unsupported class #{obj.inspect}"
+      end
+    end
+
+  end
+
 
 end
