@@ -3,7 +3,8 @@ require 'spec_helper'
 
 describe Tengine::Job::Edge do
   before do
-    @signal = Tengine::Job::Signal.new(mock(:execution))
+    @execution = mock(:execution, :id => "execution_id")
+    @signal = Tengine::Job::Signal.new(@execution)
   end
 
   describe :transmit do
