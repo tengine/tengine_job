@@ -33,7 +33,8 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   # このackは、子要素のTengine::Job::End#activateから呼ばれます
   def jobnet_finish(signal)
-    end_vertex.prev_edge.closed? ?
+    edge = end_vertex.prev_edges.first
+    edge.closed? ?
       jobnet_fail(signal) :
       jobnet_succeed(signal)
   end

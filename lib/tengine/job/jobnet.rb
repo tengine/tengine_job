@@ -42,6 +42,10 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     self.children.detect{|child| child.is_a?(Tengine::Job::Start)}
   end
 
+  def end_vertex
+    self.children.detect{|child| child.is_a?(Tengine::Job::End)}
+  end
+
   def finally_vertex
     self.children.detect{|child| child.is_a?(Tengine::Job::Jobnet) && (child.jobnet_type_key == :finally)}
   end

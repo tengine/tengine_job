@@ -92,10 +92,13 @@ describe 'job_control_driver' do
         @root.phase_key = :running
         @ctx[:e1].status_key = :transmitted
         @ctx[:e2].status_key = :transmitted
+        @ctx[:j11].phase_key = :success
         @ctx[:j12].phase_key = :success
         @root.save!
-        tengine.should_fire(:"finished.jobnet.job.tengine", :properties => @base_props)
-        tengine.receive("finished.job.job.tengine", :properties => {
+        tengine.should_fire(:"success.jobnet.job.tengine",
+          :source_name => @root.name_as_resource,
+          :properties => @base_props)
+        tengine.receive("success.job.job.tengine", :properties => {
             :target_job_id => @ctx[:j12].id.to_s
           }.update(@base_props))
         @root.reload
@@ -108,10 +111,13 @@ describe 'job_control_driver' do
         @root.phase_key = :running
         @ctx[:e1].status_key = :transmitted
         @ctx[:e2].status_key = :transmitted
+        @ctx[:j11].phase_key = :success
         @ctx[:j12].phase_key = :error
         @root.save!
-        tengine.should_fire(:"finished.jobnet.job.tengine", :properties => @base_props)
-        tengine.receive("finished.job.job.tengine", :properties => {
+        tengine.should_fire(:"error.jobnet.job.tengine",
+          :source_name => @root.name_as_resource,
+          :properties => @base_props)
+        tengine.receive("error.job.job.tengine", :properties => {
             :target_job_id => @ctx[:j12].id.to_s
           }.update(@base_props))
         @root.reload
