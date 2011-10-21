@@ -30,6 +30,7 @@ module Tengine::Job
   autoload :Expansion           , "tengine/job/expansion"
 
   autoload :Root                , "tengine/job/root"
+  autoload :NamePath            , "tengine/job/name_path"
   autoload :Executable          , "tengine/job/executable"
   autoload :Stoppable           , "tengine/job/stoppable"
   autoload :Killing             , "tengine/job/killing"

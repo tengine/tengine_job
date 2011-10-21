@@ -6,6 +6,7 @@ require 'tengine/job'
 class Tengine::Job::Vertex
   include Mongoid::Document
   include Tengine::Job::Signal::Transmittable
+  include Tengine::Job::NamePath
 
   self.cyclic = true
   with_options(:class_name => self.name, :cyclic => true) do |c|
