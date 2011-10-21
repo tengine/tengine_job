@@ -31,5 +31,6 @@ class Rjn0002SimpleParallelJobnetBuilder < JobnetFixtureBuilder
     root.edges << new_edge(:j12, :J1)
     root.edges << new_edge(:J1, :E1)
     root.save!
+    root
   end
 end

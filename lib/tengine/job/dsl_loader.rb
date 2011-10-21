@@ -24,6 +24,7 @@ module Tengine::Job::DslLoader
       end
       klass.new(options)
     end
+    result.with_start
     @jobnet.children << result if @jobnet
     __stack_instance_variable__(:@auto_sequence,  auto_sequence || @auto_sequence) do
       __stack_instance_variable__(:@redirections,  []) do
@@ -69,8 +70,7 @@ module Tengine::Job::DslLoader
     result = __with_redirection__(options) do
       Tengine::Job::JobnetTemplate.new(:name => name, :jobnet_type_key => :hadoop_job)
     end
-    # result.children << start  = Tengine::Job::Start.new # 生成時に自動的に追加されます
-    start = result.children.first
+    result.children << start  = Tengine::Job::Start.new
     result.children << fork   = Tengine::Job::Fork.new
     result.children << map    = Tengine::Job::JobnetTemplate.new(:name => "Map"   , :jobnet_type_key => :map_phase   )
     result.children << reduce = Tengine::Job::JobnetTemplate.new(:name => "Reduce", :jobnet_type_key => :reduce_phase)

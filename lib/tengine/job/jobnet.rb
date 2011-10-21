@@ -28,8 +28,6 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
 
   embeds_many :edges, :class_name => "Tengine::Job::Edge", :inverse_of => :owner
 
-  after_initialize :build_start
-
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#D26C1
   STATE_TRANSITION_METHODS = [:transmit, :activate, :ack, :succeed, :fail].freeze
   STATE_TRANSITION_METHODS.each do |method_name|
@@ -56,9 +54,9 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     self.children.detect{|child| child.is_a?(Tengine::Job::Start)}
   end
 
-  def build_start
-    return unless self.children.empty?
+  def with_start
     self.children << Tengine::Job::Start.new
+    self
   end
 
   def prepare_end

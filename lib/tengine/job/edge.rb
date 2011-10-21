@@ -18,6 +18,9 @@ class Tengine::Job::Edge
   field :origin_id     , :type => BSON::ObjectId # 辺の遷移元となるvertexのid
   field :destination_id, :type => BSON::ObjectId # 辺の遷移先となるvertexのid
 
+  validates :origin_id, :presence => true
+  validates :destination_id, :presence => true
+
   selectable_attr :status_cd do
     entry  0, :active      , "active"
     entry 10, :transmitting, "transmitting"

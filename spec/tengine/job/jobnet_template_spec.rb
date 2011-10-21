@@ -23,11 +23,11 @@ describe Tengine::Job::JobnetTemplate do
       # jobnet1/jobnet12/job121
       # jobnet1/jobnet12/job122
       it "レシーバ以下のジョブネットに対してシーケンシャルにedgesを構築する" do
-        jobnet1 = Tengine::Job::JobnetTemplate.new(:name => "jobnet1")
-        jobnet1 .children << jobnet11 = Tengine::Job::JobnetTemplate.new(:name => "jobnet11")
+        jobnet1 = Tengine::Job::JobnetTemplate.new(:name => "jobnet1").with_start
+        jobnet1 .children << jobnet11 = Tengine::Job::JobnetTemplate.new(:name => "jobnet11").with_start
         jobnet11.children << job111   = Tengine::Job::JobnetTemplate.new(:name => "job111", :script => "job111.sh")
         jobnet11.children << job112   = Tengine::Job::JobnetTemplate.new(:name => "job112", :script => "job112.sh")
-        jobnet1 .children << jobnet12 = Tengine::Job::JobnetTemplate.new(:name => "jobnet12")
+        jobnet1 .children << jobnet12 = Tengine::Job::JobnetTemplate.new(:name => "jobnet12").with_start
         jobnet12.children << job121   = Tengine::Job::JobnetTemplate.new(:name => "job121", :script => "job121.sh")
         jobnet12.children << job122   = Tengine::Job::JobnetTemplate.new(:name => "job122", :script => "job122.sh")
 
@@ -96,11 +96,11 @@ describe Tengine::Job::JobnetTemplate do
       # jobnet1/finally/job121
       # jobnet1/finally/job122
       it "レシーバ以下のジョブネットに対してシーケンシャルにedgesを構築する" do
-        jobnet1 = Tengine::Job::JobnetTemplate.new(:name => "jobnet1")
-        jobnet1 .children << jobnet11 = Tengine::Job::JobnetTemplate.new(:name => "jobnet11")
+        jobnet1 = Tengine::Job::JobnetTemplate.new(:name => "jobnet1").with_start
+        jobnet1 .children << jobnet11 = Tengine::Job::JobnetTemplate.new(:name => "jobnet11").with_start
         jobnet11.children << job111   = Tengine::Job::JobnetTemplate.new(:name => "job111", :script => "job111.sh")
         jobnet11.children << job112   = Tengine::Job::JobnetTemplate.new(:name => "job112", :script => "job112.sh")
-        jobnet1 .children << finally = Tengine::Job::JobnetTemplate.new(:name => "finally", :jobnet_type_key => :finally)
+        jobnet1 .children << finally = Tengine::Job::JobnetTemplate.new(:name => "finally", :jobnet_type_key => :finally).with_start
         finally.children << job121   = Tengine::Job::JobnetTemplate.new(:name => "job121", :script => "job121.sh")
         finally.children << job122   = Tengine::Job::JobnetTemplate.new(:name => "job122", :script => "job122.sh")
 
