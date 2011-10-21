@@ -39,6 +39,18 @@ class JobnetFixtureBuilder
     self
   end
 
+  def vertex(vertex_name)
+    cached = self[vertex_name.to_sym]
+    raise ArgumentError, "no vertex found for #{vertex_name.inspect}" unless cached
+    self[:root].vertex(cached.id)
+  end
+
+  def edge(edge_name)
+    cached = self[edge_name.to_sym]
+    raise ArgumentError, "no edge found for #{edge_name.inspect}" unless cached
+    self[:root].edge(cached.id)
+  end
+
   def create(options = {})
     raise NotImplementedError, "You must use inherited class of FixtureBuilder"
   end
@@ -50,6 +62,8 @@ class JobnetFixtureBuilder
     [:actual  , :jobnet     ] => Tengine::Job::JobnetActual      ,
     [:template, :script     ] => Tengine::Job::JobnetTemplate    ,
     [:actual  , :script     ] => Tengine::Job::JobnetActual      ,
+    [:template, :finally    ] => Tengine::Job::JobnetTemplate    ,
+    [:actual  , :finally    ] => Tengine::Job::JobnetActual      ,
   }.freeze
 
   %w[root_jobnet jobnet script].each do |method_name|
@@ -66,6 +80,13 @@ class JobnetFixtureBuilder
       end
     EOS
   end
+
+  def new_finally
+    klass = MODE_AND_METHOD_TO_CLASS[ [@mode, :finally] ]
+    result = klass.new(:name => "_finally", :jobnet_type_key => :finally)
+    result
+  end
+
 
   ABBREVIATES = {
     'start' => 'S',
@@ -88,11 +109,13 @@ class JobnetFixtureBuilder
   end
 
   def new_edge(origin, dest)
-    origin = self[origin] if origin.is_a?(Symbol)
-    dest   = self[dest  ] if dest  .is_a?(Symbol)
+    origin_vertex = origin.is_a?(Symbol) ? self[origin] : origin
+    dest_vertex   = dest  .is_a?(Symbol) ? self[dest  ] : dest
+    raise "no origin vertex found: #{origin.inspect}" unless origin_vertex
+    raise "no dest   vertex found: #{dest.inspect  }" unless dest_vertex
     @edge_count += 1
     name = "e#{@edge_count}"
-    result = Tengine::Job::Edge.new(:origin_id => origin.id, :destination_id => dest.id)
+    result = Tengine::Job::Edge.new(:origin_id => origin_vertex.id, :destination_id => dest_vertex.id)
     @instances[name.to_sym] = result
     result
   end

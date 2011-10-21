@@ -3,12 +3,14 @@
 # 実行用ジョブネットを扱うフィクスチャ生成のためのクラスです。
 #
 # in [j10]
-# [S] --e1-->[j11]--e2-->[E]
+# [S] --e1-->[j11]--e2-->[j12]--e3-->[E]
 
 class Rjn0001SimpleJobnetBuilder < JobnetFixtureBuilder
   DSL = <<-EOS
-    jobnet("rjn0001") do
-      job("j11", "$HOME/j11.sh")
+    jobnet("rjn0001", :server_name => "hadoop_master_node", :credential_name => "goku_ssh_pw") do
+      auto_sequence
+      job("j11", "job_test j11")
+      job("j12", "job_test j12")
     end
   EOS
 
@@ -17,16 +19,19 @@ class Rjn0001SimpleJobnetBuilder < JobnetFixtureBuilder
     resource_fixture.goku_ssh_pw
     resource_fixture.hadoop_master_node
 
-    root = new_root_jobnet("rjn0001", options)
-    root.children << new_script("j11", :script => "$HOME/j11.sh",
-      :server_name => "hadoop_master_node", :credential_name => "goku_ssh_pw")
+    root = new_root_jobnet("rjn0001",
+      {:server_name => "hadoop_master_node", :credential_name => "goku_ssh_pw"}.update(options || { }))
+    root.children << Tengine::Job::Start.new
+    root.children << new_script("j11", :script => "job_test j11")
+    root.children << new_script("j12", :script => "job_test j12")
     root.prepare_end
     root.build_sequencial_edges
     root.save!
     self[:S1] = root.children[0]
-    self[:E1] = root.children[2]
+    self[:E1] = root.children[3]
     self[:e1] = root.edges[0]
     self[:e2] = root.edges[1]
+    self[:e3] = root.edges[2]
     root
   end
 end
