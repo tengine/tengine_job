@@ -49,12 +49,12 @@ module Tengine::Job::ScriptExecutable
     end
   end
 
-  def ack(pid)
-    @acked_pid = pid
-    self.executing_pid = pid
-    self.phase_key = :running
-    self.previous_edges.each{|edge| edge.status_key = :transmitted}
-  end
+#   def ack(pid)
+#     @acked_pid = pid
+#     self.executing_pid = pid
+#     self.phase_key = :running
+#     self.previous_edges.each{|edge| edge.status_key = :transmitted}
+#   end
 
   def build_command(execution)
     result = []

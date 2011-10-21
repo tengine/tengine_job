@@ -7,16 +7,16 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   def jobnet_transmit(signal)
     case self.phase_key
     when :ready then
+      self.started_at = Time.now.utc
       self.phase_key = :starting
-      signal.fire(self, :"start.jobnet.job.tengine", {
-          :target_jobnet_id => self.id,
-        })
+      activate(signal)
     end
   end
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def jobnet_activate(signal)
-    complete_origin_edge(signal)
+    complete_origin_edge(signal) if prev_edges && !prev_edges.empty?
+    self.start_vertex.transmit(signal)
   end
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ

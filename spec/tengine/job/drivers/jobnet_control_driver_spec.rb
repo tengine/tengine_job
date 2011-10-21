@@ -32,7 +32,7 @@ describe 'job_control_driver' do
     end
 
     it "最初のリクエスト" do
-      @jobnet.phase_key = :ready # :ready-->startingに変更するのは上位のジョブネットあるいはExecutionについての制御で行われます
+      @jobnet.phase_key = :ready
       @jobnet.save!
       tengine.should_fire(:"start.job.job.tengine",
         :source_name => @ctx[:j11].name_as_resource,
