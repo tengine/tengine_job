@@ -51,6 +51,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       self.phase_key = :success
       self.finished_at = signal.event.occurred_at
       signal.fire(self, :"success.job.job.tengine", {
+          :exit_status => self.exit_status,
           :target_jobnet_id => parent.id,
           :target_job_id => self.id,
         })
@@ -66,6 +67,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       self.phase_key = :error
       self.finished_at = signal.event.occurred_at
       signal.fire(self, :"error.job.job.tengine", {
+          :exit_status => self.exit_status,
           :target_jobnet_id => parent.id,
           :target_job_id => self.id,
         })
