@@ -29,6 +29,12 @@ class Tengine::Job::Edge
     entry 31, :keeping     , "keeping"
   end
 
+  status_keys.each do |status_key|
+    class_eval(<<-END_OF_METHOD)
+      def #{status_key}?; status_key == #{status_key.inspect}; end
+    END_OF_METHOD
+  end
+
   def origin
     owner.children.detect{|c| c.id == origin_id}
   end

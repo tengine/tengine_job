@@ -8,7 +8,7 @@ module Tengine::Job::Jobnet::JobStateTransition
     case self.phase_key
     when :ready then
       self.phase_key = :starting
-      signal.fire(:"start.job.job.tengine", {
+      signal.fire(self, :"start.job.job.tengine", {
           :target_jobnet_id => parent.id,
           :target_job_id => self.id,
         })
@@ -19,6 +19,7 @@ module Tengine::Job::Jobnet::JobStateTransition
   def job_activate(signal)
     complete_origin_edge(signal)
     # 実際にSSHでスクリプトを実行
+    execute(signal.execution)
   end
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
@@ -39,7 +40,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       raise Tengine::Job::Vertex::PhaseError, "ack not available on succeed"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :success
-      signal.fire(:"success.job.job.tengine", {
+      signal.fire(self, :"success.job.job.tengine", {
           :target_jobnet_id => parent.id,
           :target_job_id => self.id,
         })
@@ -53,7 +54,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       raise Tengine::Job::Vertex::PhaseError, "ack not available on succeed"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :error
-      signal.fire(:"error.job.job.tengine", {
+      signal.fire(self, :"error.job.job.tengine", {
           :target_jobnet_id => parent.id,
           :target_job_id => self.id,
         })

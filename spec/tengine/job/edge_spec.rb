@@ -2,6 +2,10 @@
 require 'spec_helper'
 
 describe Tengine::Job::Edge do
+  before do
+    @signal = Tengine::Job::Signal.new(mock(:execution))
+  end
+
   describe :transmit do
     context "シンプルなケース" do
       # in [j10]
@@ -13,10 +17,15 @@ describe Tengine::Job::Edge do
       end
 
       it "e1をtransmitするとtransmittingになってj11はactivateされてstartingになる" do
-        jobs = @ctx[:e1].transmit(Tengine::Job::Signal.new)
-        jobs.should == [@ctx[:j11]]
+        @ctx[:e1].transmit(@signal)
         @ctx[:e1].status_key.should == :transmitting
         @ctx[:j11].phase_key.should == :starting
+        @signal.reservations.length.should == 1
+        reservation = @signal.reservations.first
+        reservation.event_type_name.should == :"start.job.job.tengine"
+        reservation.options[:properties][:target_jobnet_id].should == @ctx[:root].id.to_s
+        reservation.options[:properties][:target_job_id].should == @ctx[:j11].id.to_s
+        reservation.options[:source_name].should =~ %r<^job:.+/\d+/#{@ctx[:root].id.to_s}/#{@ctx[:j11].id.to_s}$>
       end
     end
 
@@ -32,35 +41,47 @@ describe Tengine::Job::Edge do
       end
 
       it "e1をtransmitするとe2とe3はtransmittedでj11とj12はstartingになる" do
-        jobs = @ctx[:e1].transmit(Tengine::Job::Signal.new)
-        jobs.should == [@ctx[:j11], @ctx[:j12]]
+        @ctx[:e1].transmit(@signal)
         @ctx[:e1].status_key.should == :transmitted
         @ctx[:e2].status_key.should == :transmitting
         @ctx[:e3].status_key.should == :transmitting
         @ctx[:j11].phase_key.should == :starting
         @ctx[:j12].phase_key.should == :starting
+        @signal.reservations.length.should == 2
+        @signal.reservations.first.tap do |r|
+          r.event_type_name.should == :"start.job.job.tengine"
+          r.options[:properties][:target_jobnet_id].should == @ctx[:root].id.to_s
+          r.options[:properties][:target_job_id].should == @ctx[:j11].id.to_s
+          r.options[:source_name].should =~ %r<^job:.+/\d+/#{@ctx[:root].id.to_s}/#{@ctx[:j11].id.to_s}$>
+        end
+        @signal.reservations.last.tap do |r|
+          r.event_type_name.should == :"start.job.job.tengine"
+          r.options[:properties][:target_jobnet_id].should == @ctx[:root].id.to_s
+          r.options[:properties][:target_job_id].should == @ctx[:j12].id.to_s
+          r.options[:source_name].should =~ %r<^job:.+/\d+/#{@ctx[:root].id.to_s}/#{@ctx[:j12].id.to_s}$>
+        end
       end
 
       it "e4をtransmitするとtransmittedになるけどe6は変わらず" do
-        jobs = @ctx[:e4].transmit(Tengine::Job::Signal.new)
-        jobs.should == []
+        @ctx[:e4].transmit(@signal)
         @ctx[:e4].status_key.should == :transmitted
         @ctx[:e6].status_key.should == :active
+        @signal.reservations.should be_empty
       end
 
       it "e4をtransmitした後、e5をtransmitするとe6もtransmittedになる" do
-        jobs = @ctx[:e4].transmit(Tengine::Job::Signal.new)
-        jobs.should == []
+        @ctx[:e4].transmit(@signal)
         @ctx[:e4].status_key.should == :transmitted
         @ctx[:e5].status_key.should == :active
         @ctx[:e6].status_key.should == :active
+        @signal.reservations.should be_empty
         @ctx[:root].save!
-        jobs = @ctx[:e5].transmit(Tengine::Job::Signal.new)
-        jobs.should == []
+        @ctx[:e5].transmit(@signal)
         @ctx[:e4].status_key.should == :transmitted
         @ctx[:e5].status_key.should == :transmitted
-        @ctx[:J1].possible?.should == true
+        @ctx[:J1].activatable?.should == true
         @ctx[:e6].status_key.should == :transmitted
+        @signal.reservations.should be_empty
       end
     end
 
@@ -79,32 +100,47 @@ describe Tengine::Job::Edge do
       end
 
       it "e6.transmitしてもe12には伝搬しない" do
-        jobs = @ctx[:e6].transmit(Tengine::Job::Signal.new)
-        jobs.should == [@ctx[:j14]]
+        @ctx[:e6].transmit(@signal)
         @ctx[:e6].status_key.should == :transmitted
         @ctx[:e7].status_key.should == :transmitting
         @ctx[:e8].status_key.should == :transmitted
         @ctx[:e12].status_key.should == :active
+        @signal.reservations.length.should == 1
+        @signal.reservations.first.tap do |r|
+          r.event_type_name.should == :"start.job.job.tengine"
+          r.options[:properties][:target_jobnet_id].should == @ctx[:root].id.to_s
+          r.options[:properties][:target_job_id].should == @ctx[:j14].id.to_s
+          r.options[:source_name].should =~ %r<^job:.+/\d+/#{@ctx[:root].id.to_s}/#{@ctx[:j14].id.to_s}$>
+        end
       end
 
       it "e5とe6の両方をtransmitするとe12に伝搬する" do
-        jobs = @ctx[:e6].transmit(Tengine::Job::Signal.new)
-        jobs.should == [@ctx[:j14]]
+        @ctx[:e6].transmit(@signal)
         @ctx[:e6].status_key.should == :transmitted
         @ctx[:e7].status_key.should == :transmitting
         @ctx[:e8].status_key.should == :transmitted
         @ctx[:e9].status_key.should == :active
         @ctx[:e10].status_key.should == :active
         @ctx[:e12].status_key.should == :active
-
-        jobs = @ctx[:e5].transmit(Tengine::Job::Signal.new)
-        jobs.should == [ @ctx[:j17], @ctx[:j15] ]
+        @signal.reservations.clear
+        @ctx[:e5].transmit(@signal)
         @ctx[:e6].status_key.should == :transmitted
         @ctx[:e7].status_key.should == :transmitting
         @ctx[:e8].status_key.should == :transmitted
         @ctx[:e9].status_key.should == :transmitted
         @ctx[:e10].status_key.should == :transmitting
         @ctx[:e12].status_key.should == :transmitting
+        @signal.reservations.length.should == 2
+        @signal.reservations.first.tap do |r|
+          r.event_type_name.should == :"start.job.job.tengine"
+          r.options[:properties][:target_jobnet_id].should == @ctx[:root].id.to_s
+          r.options[:properties][:target_job_id].should == @ctx[:j17].id.to_s
+        end
+        @signal.reservations.last.tap do |r|
+          r.event_type_name.should == :"start.job.job.tengine"
+          r.options[:properties][:target_jobnet_id].should == @ctx[:root].id.to_s
+          r.options[:properties][:target_job_id].should == @ctx[:j15].id.to_s
+        end
       end
 
     end
