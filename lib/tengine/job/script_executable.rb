@@ -15,12 +15,6 @@ module Tengine::Job::ScriptExecutable
     execute(execution)
   end
 
-  def finish(exit_status, finished_at)
-    self.exit_status = exit_status
-    self.phase_key = (exit_status.to_s == '0') ? :success : :error
-  end
-
-
   def execute(execution)
     return ack(@acked_pid) if @acked_pid
     cmd = build_command(execution)

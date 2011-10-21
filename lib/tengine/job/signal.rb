@@ -6,12 +6,16 @@ class Tengine::Job::Signal
   class Error < StandardError
   end
 
-  attr_reader :paths, :reservations, :execution
+  attr_reader :paths, :reservations, :event
 
-  def initialize(execution)
+  def initialize(event)
     @paths = []
     @reservations = []
-    @execution = execution
+    @event = event
+  end
+
+  def execution
+    @execution ||= Tengine::Job::Execution.find(event[:execution_id])
   end
 
   def leave(obj)

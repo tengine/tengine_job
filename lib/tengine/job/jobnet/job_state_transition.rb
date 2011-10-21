@@ -33,6 +33,14 @@ module Tengine::Job::Jobnet::JobStateTransition
     end
   end
 
+  def job_finish(signal)
+    self.exit_status = signal.event[:exit_status]
+    self.finished_at = signal.event.occurred_at
+    (self.exit_status.to_s == '0') ?
+      job_succeed(signal) :
+      job_fail(signal)
+  end
+
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_succeed(signal)
     case self.phase_key

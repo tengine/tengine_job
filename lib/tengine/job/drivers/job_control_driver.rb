@@ -4,8 +4,7 @@
 driver :job_control_driver do
 
   on :'start.job.job.tengine' do
-    execution = Tengine::Job::Execution.find(event[:execution_id])
-    signal = Tengine::Job::Signal.new(execution)
+    signal = Tengine::Job::Signal.new(event)
     # activate
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
     root_jobnet.update_with_lock do
@@ -16,20 +15,18 @@ driver :job_control_driver do
       end
     end
     root_jobnet.reload # update_with_lockした内容があるのでリロードしないとlock_versionが食い違ってしまいます
-
-    signal.reservations.each do |reservation|
-      fire(*reservation.fire_args)
-    end
+    signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
   on :'finished.process.job.tengine' do
+    signal = Tengine::Job::Signal.new(event)
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
     # finish
     root_jobnet.update_with_lock do
       job = root_jobnet.find_descendant(event[:target_job_id])
-      job.finish(event[:exit_status], event.occurred_at)
+      job.finish(signal)
     end
-    fire(:'finished.job.tengine', :properties => event.properties)
+    signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
 end
