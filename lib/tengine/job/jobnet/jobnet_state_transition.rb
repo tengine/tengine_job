@@ -9,6 +9,16 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     when :ready then
       self.started_at = signal.event.occurred_at
       self.phase_key = :starting
+      if signal.paths.any?{|obj| obj.is_a?(Tengine::Job::Jobnet) && !obj.script_executable?}
+        complete_origin_edge(signal) if prev_edges && !prev_edges.empty?
+        signal.fire(self, :"start.jobnet.job.tengine", {
+            :target_jobnet_id => self.id,
+          })
+      else
+        activate(signal)
+      end
+    when :starting then
+      complete_origin_edge(signal) if prev_edges && !prev_edges.empty?
       activate(signal)
     end
   end
@@ -16,6 +26,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def jobnet_activate(signal)
     complete_origin_edge(signal) if prev_edges && !prev_edges.empty?
+    signal.paths << self
     self.start_vertex.transmit(signal)
   end
 

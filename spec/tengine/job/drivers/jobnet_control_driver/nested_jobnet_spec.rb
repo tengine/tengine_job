@@ -2,7 +2,7 @@
 require 'spec_helper'
 require 'tengine/rspec'
 
-describe 'job_control_driver' do
+describe 'jobnet_control_driver' do
   include Tengine::RSpec::Extension
 
   target_dsl File.expand_path("../../../../../lib/tengine/job/drivers/jobnet_control_driver.rb", File.dirname(__FILE__))
@@ -40,7 +40,9 @@ describe 'job_control_driver' do
     end
 
     it "S1から起動" do
-      tengine.should_fire(:"start.jobnet.job.tengine", :properties => @base_props.merge({
+      tengine.should_fire(:"start.jobnet.job.tengine",
+        :source_name => @ctx[:j1100].name_as_resource,
+        :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1100].id.to_s,
         }))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
@@ -59,16 +61,19 @@ describe 'job_control_driver' do
         @ctx.vertex(:j1100).phase_key = :starting
         @ctx[:e1].status_key = :transmitted
         @root.save!
-        tengine.should_fire(:"start.job.job.tengine", :properties => @base_props.merge({
+        tengine.should_fire(:"start.job.job.tengine",
+          :source_name => @ctx[:j1110].name_as_resource,
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1100].id.to_s,
-            :target_edge_id => @ctx[:e5].id.to_s,
+            :target_job_id => @ctx[:j1110].id.to_s,
           }))
         tengine.receive(:"start.jobnet.job.tengine", :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1100].id.to_s,
           }))
         @root.reload
         @ctx.edge(:e1).status_key.should == :transmitted
-        (2..15).each do |idx|
+        @ctx.edge(:e5).status_key.should == :transmitting
+        ((2..4).to_a + (6..15).to_a).each do |idx|
           @ctx.edge(:"e#{idx}").status_key.should == :active
         end
         @ctx.vertex(:j1100).phase_key.should == :starting
@@ -83,10 +88,18 @@ describe 'job_control_driver' do
         @ctx[:e1].status_key = :transmitted
         @ctx[:e5].status_key = :transmitted
         @root.save!
-        tengine.should_fire(:"start.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.should_not_fire(:"start.job.job.tengine",
+          :source_name => @ctx[:j1110].name_as_resource,
+          :properties => @base_props.merge({
+            :target_jobnet_id => @ctx[:j1100].id.to_s,
+            :target_job_id => @ctx[:j1110].id.to_s,
+          }))
+        tengine.should_fire(:"start.jobnet.job.tengine",
+          :source_name => @ctx[:j1120].name_as_resource,
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1120].id.to_s,
           }))
-        tengine.receive("finished.job.job.tengine", :properties => @base_props.merge({
+        tengine.receive("success.job.job.tengine", :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1100].id.to_s,
             :target_job_id => @ctx[:j1110].id.to_s,
           }))
@@ -99,6 +112,7 @@ describe 'job_control_driver' do
         end
         @ctx.vertex(:j1100).phase_key.should == :running
         @ctx.vertex(:j1110).phase_key.should == :success
+        @ctx.vertex(:j1120).phase_key.should == :starting
       end
 
       it "失敗した場合" do
