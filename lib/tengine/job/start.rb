@@ -10,7 +10,7 @@ class Tengine::Job::Start < Tengine::Job::Vertex
   end
 
   def activate(signal)
-    next_edges.each{|edge| edge.transmit(signal)}
+    signal.leave(self)
   end
 
 end
