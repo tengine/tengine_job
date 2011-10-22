@@ -2,7 +2,7 @@
 require 'spec_helper'
 require 'tengine/rspec'
 
-describe 'job_control_driver' do
+describe 'jobnet_control_driver' do
   include Tengine::RSpec::Extension
 
   target_dsl File.expand_path("../../../../../lib/tengine/job/drivers/jobnet_control_driver.rb", File.dirname(__FILE__))
