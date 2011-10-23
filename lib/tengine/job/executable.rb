@@ -11,19 +11,20 @@ module Tengine::Job::Executable
   end
 
   included do
-    field :phase_cd   , :type => Integer, :default => 0 # 進行状況。とりうる値は以下を参照してください。詳しくは「tengine_jobパッケージ設計書」の「ジョブ／ジョブネット状態遷移」を参照してください
+    field :phase_cd   , :type => Integer, :default => 20 # 進行状況。とりうる値は以下を参照してください。詳しくは「tengine_jobパッケージ設計書」の「ジョブ／ジョブネット状態遷移」を参照してください
     field :started_at , :type => Time     # 開始時刻。以前はDateTimeでしたが、実績ベースの予定終了時刻の計算のためにTimeにしました
     field :finished_at, :type => Time     # 終了時刻。強制終了時にも設定されます。
 
     include SelectableAttr::Base
     selectable_attr :phase_cd do
-      entry  0, :ready     , "ready"
-      entry 20, :starting  , "starting"
-      entry 21, :running   , "running"
-      entry 30, :dying     , "dying"
-      entry 10, :success   , "success"
-      entry 40, :error     , "error"
-      entry 50, :stuck     , "stuck"
+      entry 20, :initialized, 'initialized'
+      entry 30, :ready      , "ready"
+      entry 50, :starting   , "starting"
+      entry 60, :running    , "running"
+      entry 70, :dying      , "dying"
+      entry 40, :success    , "success"
+      entry 80, :error      , "error"
+      entry 90, :stuck      , "stuck"
     end
   end
 

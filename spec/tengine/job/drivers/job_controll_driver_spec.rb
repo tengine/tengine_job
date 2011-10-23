@@ -19,8 +19,9 @@ describe 'job_control_driver' do
         })
     end
 
-    it "最初のリクエスト" do
+    it "ジョブの起動イベントを受け取ったら" do
       @ctx.edge(:e1).status_key = :transmitting
+      @ctx.vertex(:j11).phase_key = :ready
       @jobnet.save!
       @jobnet.reload
       tengine.should_not_fire
@@ -42,6 +43,25 @@ describe 'job_control_driver' do
           :target_jobnet_id => @jobnet.id.to_s,
           :target_job_id => @ctx.vertex(:j11).id.to_s,
         })
+      @jobnet.reload
+      @ctx.edge(:e1).status_key.should == :transmitted
+      @ctx.edge(:e2).status_key.should == :active
+      @ctx.vertex(:j11).phase_key.should == :starting
+    end
+
+    it "PIDを取得できたら" do
+      @ctx.edge(:e1).status_key = :transmitted
+      @ctx.edge(:e2).status_key = :active
+      @ctx.vertex(:j11).phase_key = :starting
+      @jobnet.save!
+      @jobnet.reload
+      tengine.should_not_fire
+      mock_event = mock(:event)
+      signal = Tengine::Job::Signal.new(mock_event)
+      @ctx.vertex(:j11).ack(signal) # このメソッド内ではsaveされないので、ここでreloadもしません。
+      @ctx.edge(:e1).status_key.should == :transmitted
+      @ctx.edge(:e2).status_key.should == :active
+      @ctx.vertex(:j11).phase_key.should == :running
     end
 
     {
@@ -75,9 +95,12 @@ describe 'job_control_driver' do
             :exit_status => exit_status
           })
         @jobnet.reload
-        j11 = @jobnet.find_descendant_by_name_path("/rjn0001/j11")
-        j11.phase_key.should == phase_key
-        j11.exit_status.should == exit_status
+        @ctx.edge(:e1).status_key.should == :transmitted
+        @ctx.edge(:e2).status_key.should == :active
+        @ctx.vertex(:j11).tap do |j|
+          j.phase_key.should == phase_key
+          j.exit_status.should == exit_status
+        end
       end
     end
 

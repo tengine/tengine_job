@@ -6,8 +6,8 @@ module Tengine::Job::Jobnet::JobStateTransition
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def job_transmit(signal)
     case self.phase_key
-    when :ready then
-      self.phase_key = :starting
+    when :initialized then
+      self.phase_key = :ready
       self.started_at = signal.event.occurred_at
       signal.fire(self, :"start.job.job.tengine", {
           :target_jobnet_id => parent.id,
@@ -18,19 +18,26 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_activate(signal)
-    complete_origin_edge(signal)
-    # 実際にSSHでスクリプトを実行
-    execute(signal.execution)
+    case self.phase_key
+    when :ready then
+      complete_origin_edge(signal)
+      self.phase_key = :starting
+      self.started_at = signal.event.occurred_at
+      # 実際にSSHでスクリプトを実行
+      execute(signal.execution)
+    when :initialized then
+      raise Tengine::Job::Executable::PhaseError, "activate not available on #{phase_key.inspect}"
+    end
   end
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   # スクリプトのプロセスのPIDを取得できたときに実行されます
   def job_ack(signal)
     case self.phase_key
-    when :ready then
-      raise Tengine::Job::Executable::PhaseError, "ack not available on ready"
     when :starting then
       self.phase_key = :running
+    when :initialized, :ready then
+      raise Tengine::Job::Executable::PhaseError, "ack not available on #{phase_key.inspect}"
     end
   end
 
