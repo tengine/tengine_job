@@ -59,9 +59,8 @@ class Tengine::Job::Edge
     when :suspended then
       self.status_key = :keeping
     when :closed
-      # raise Tengine::Job::Edge::StatusError, "transmit not available #{status_key.inspect} at #{self.inspect}"
-      # closedなedgeに辿り着いたら、上位のジョブネットをエラーにします
-      owner.jobnet_fail(signal)
+      signal.paths << self
+      owner.end_vertex.transmit(signal)
     end
   end
 

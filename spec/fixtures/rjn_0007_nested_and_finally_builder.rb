@@ -123,10 +123,10 @@ class Rjn0007NestedAndFinallyBuilder < JobnetFixtureBuilder
 
     self[:j2000].tap do |j2000|
       j2000.children << new_start
-      j2000.children << new_script("j2000", :script => "job_test j2000")
+      j2000.children << new_script("j2100", :script => "job_test j2100")
       j2000.children << new_end
-      j2000.edges << new_edge(:S8   , :j2000)
-      j2000.edges << new_edge(:j2000, :E8   )
+      j2000.edges << new_edge(:S8   , :j2100)
+      j2000.edges << new_edge(:j2100, :E8   )
     end
 
     root.finally_vertex.tap do |root_finally|

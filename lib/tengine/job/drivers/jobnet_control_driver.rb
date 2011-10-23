@@ -67,8 +67,13 @@ driver :jobnet_control_driver do
     root_jobnet.update_with_lock do
       target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id])
       signal.with_paths_backup do
-        edge = target_jobnet.next_edges.first
-        edge.close_followings
+        case target_jobnet.jobnet_type_key
+        when :finally then
+          (target_jobnet.parent || event.execution).fail(signal)
+        else
+          edge = target_jobnet.next_edges.first
+          edge.close_followings
+        end
       end
       target_parent = target_jobnet.parent
       target_parent.end_vertex.transmit(signal)
