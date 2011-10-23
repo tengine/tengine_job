@@ -46,6 +46,10 @@ class Tengine::Job::Edge
     owner.children.detect{|c| c.id == destination_id}
   end
 
+  def inspect
+    "#<#{self.class.name} #{id.to_s} from #{origin.name_path} to #{destination.name_path}>"
+  end
+
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#3E9EA
   def transmit(signal)
     case status_key
@@ -55,7 +59,7 @@ class Tengine::Job::Edge
     when :suspended then
       self.status_key = :keeping
     when :closed
-      # raise Tengine::Job::Edge::StatusError, "transmit not available #{status_key.inspect} at edge #{id.to_s} from #{origin.name_path} to #{destination.name_path}"
+      # raise Tengine::Job::Edge::StatusError, "transmit not available #{status_key.inspect} at #{self.inspect}"
       # closedなedgeに辿り着いたら、上位のジョブネットをエラーにします
       owner.jobnet_fail(signal)
     end
@@ -66,7 +70,7 @@ class Tengine::Job::Edge
     when :transmitting then
       self.status_key = :transmitted
     when :active, :suspended, :keeping, :closed then
-      raise Tengine::Job::Edge::StatusError, "transmit not available on #{status_key.inspect} at edge #{id.to_s} from #{origin.name_path} to #{destination.name_path}"
+      raise Tengine::Job::Edge::StatusError, "transmit not available on #{status_key.inspect} at #{self.inspect}"
     end
   end
 

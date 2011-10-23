@@ -61,6 +61,7 @@ class Tengine::Job::Signal
   def fire(source, event_type_name, properties, options = {})
     properties[:execution_id] ||= self.execution.id.to_s
     properties[:root_jobnet_id] ||= source.root.id.to_s
+    # properties[:target_jobnet_name] = source.root.vertex(properties[:target_jobnet_id]).name_path
     options ||= {}
     options[:properties] = properties
     properties.each do |key, value|
