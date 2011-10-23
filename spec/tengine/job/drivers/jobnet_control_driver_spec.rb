@@ -13,8 +13,8 @@ describe 'job_control_driver' do
     Time.stub!(:now).and_return(@now)
   end
 
-  # in [j10]
-  # [S] --e1-->[j11]--e2-->[j12]--e3-->[E]
+  # in [rjn0001]
+  # (S1) --e1-->(j11)--e2-->(j12)--e3-->(E1)
   context "rjn0001" do
     before do
       Tengine::Job::Vertex.delete_all
@@ -31,7 +31,7 @@ describe 'job_control_driver' do
       }
     end
 
-    it "最初のリクエスト" do
+    it "ジョブネット起動イベントを受信したら" do
       @root.phase_key = :ready
       @root.save!
       tengine.should_fire(:"start.job.job.tengine",
@@ -41,8 +41,10 @@ describe 'job_control_driver' do
         }.update(@base_props))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
       @root.reload
-      @root.phase_key.should == :starting
+      @root.phase_key.should == :running
       @root.started_at.utc.iso8601.should == @now.utc.iso8601
+      @ctx.edge(:e1).status_key.should == :transmitting
+      @ctx.vertex(:j11).phase_key.should == :ready
     end
 
 
@@ -57,11 +59,13 @@ describe 'job_control_driver' do
           :properties => {
             :target_job_id => @ctx[:j12].id.to_s,
           }.update(@base_props))
-        tengine.receive("success.job.job.tengine", :properties => {
+        tengine.receive("success.job.job.tengine",
+          :source_name => @ctx[:j11].name_as_resource,
+          :properties => {
             :target_job_id => @ctx[:j11].id.to_s,
           }.update(@base_props))
         @root.reload
-        @ctx.vertex(:j12).phase_key.should == :starting
+        @ctx.vertex(:j12).phase_key.should == :ready
         @ctx.edge(:e2).status_key.should == :transmitting
         @ctx.edge(:e3).status_key.should == :active
       end
@@ -79,7 +83,7 @@ describe 'job_control_driver' do
           }.update(@base_props))
         @root.reload
         @ctx.vertex(:j11).phase_key.should == :error
-        @ctx.vertex(:j12).phase_key.should == :ready
+        @ctx.vertex(:j12).phase_key.should == :initialized
         @ctx.edge(:e2).status_key.should == :closed
         @ctx.edge(:e3).status_key.should == :closed
         @root.phase_key.should == :error
@@ -129,10 +133,10 @@ describe 'job_control_driver' do
 
   end
 
-  # in [j10]
-  #              |--e2-->[j11]--e4-->|
-  # [S1]--e1-->[F1]                [J1]--e6-->[E1]
-  #              |--e3-->[j12]--e5-->|
+  # in [rjn0002]
+  #              |--e2-->(j11)--e4-->|
+  # (S1)--e1-->[F1]                [J1]--e6-->(E1)
+  #              |--e3-->(j12)--e5-->|
   context "rjn0002" do
     before do
       Tengine::Job::Vertex.delete_all
@@ -150,6 +154,7 @@ describe 'job_control_driver' do
     end
 
     it "最初のリクエスト" do
+      [:e1, :e2, :e3, :e4, :e5, :e6].each{|name| @ctx[name].status_key = :active}
       @root.phase_key = :ready
       @root.save!
       tengine.should_fire(:"start.job.job.tengine",
@@ -164,10 +169,10 @@ describe 'job_control_driver' do
         }.update(@base_props))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
       @root.reload
-      @root.phase_key.should == :starting
+      @root.phase_key.should == :running
       @root.started_at.utc.iso8601.should == @now.utc.iso8601
-      @ctx.vertex(:j11).phase_key.should == :starting
-      @ctx.vertex(:j12).phase_key.should == :starting
+      @ctx.vertex(:j11).phase_key.should == :ready
+      @ctx.vertex(:j12).phase_key.should == :ready
       @ctx.edge(:e1).status_key.should == :transmitted
       @ctx.edge(:e2).status_key.should == :transmitting
       @ctx.edge(:e3).status_key.should == :transmitting
@@ -314,11 +319,10 @@ describe 'job_control_driver' do
 
   end
 
-
-  # in [j10]
-  #              |-----e2----->[j11]-----e4----->|
+  # in [rjn0005]
+  #              |-----e2----->(j11)-----e4----->|
   # [S1]--e1-->[F1]                            [J1]--e7-->[E1]
-  #              |--e3-->[j12]--e5-->[j13]--e6-->|
+  #              |--e3-->(j12)--e5-->(j13)--e6-->|
   context "rjn0005" do
     before do
       Tengine::Job::Vertex.delete_all
@@ -383,6 +387,5 @@ describe 'job_control_driver' do
     end
 
   end
-
 
 end
