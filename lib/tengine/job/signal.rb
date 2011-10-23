@@ -76,10 +76,11 @@ class Tengine::Job::Signal
     def transmit(signal); raise NotImplementedError; end
     def activate(signal); raise NotImplementedError; end
 
-    def complete_origin_edge(signal)
+    def complete_origin_edge(signal, options = {})
       origin_edge = signal.paths.last
       origin_edge ||= prev_edges.first
       begin
+        return if options[:except_closed] && origin_edge.closed?
         origin_edge.complete(signal)
       rescue Exception => e
         puts "[#{e.class.name}] #{e.message}\nsignal.paths: #{@paths.inspect}"

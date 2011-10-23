@@ -14,7 +14,7 @@ class Tengine::Job::End < Tengine::Job::Vertex
   end
 
   def activate(signal)
-    complete_origin_edge(signal)
+    complete_origin_edge(signal, :except_closed => true)
     jobnet = self.parent # Endのparentであるジョブネット
     jobnet.finish(signal)
   end
