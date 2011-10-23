@@ -5,7 +5,6 @@ module Tengine::Job::Jobnet::JobnetStateTransition
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ or ジョブ起動ドライバ
   def jobnet_transmit(signal)
-puts "#{__FILE__}##{__LINE__}"
     case self.phase_key
     when :initialized then
       self.phase_key = :ready

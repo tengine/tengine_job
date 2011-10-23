@@ -57,14 +57,17 @@ describe 'jobnet_control_driver' do
         @ctx.vertex(:j1000).phase_key = :running
         @ctx.vertex(:j1100).phase_key = :success
         @ctx.vertex(:j1110).phase_key = :success
-        @ctx.vertex(:j1200).phase_key = :ready
-        @ctx.vertex(:j1000).finally_vertex.phase_key = :ready
+        @ctx.vertex(:j1200).phase_key = :initialized
+        @ctx.vertex(:j1000).finally_vertex.phase_key = :initialized
         [:e1, :e4, :e7, :e8].each{|name| @ctx.edge(name).status_key = :transmitted}
         @root.save!
-        tengine.should_fire(:"start.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.should_fire(:"start.jobnet.job.tengine",
+          :source_name => @ctx[:j1200].name_as_resource,
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1200].id.to_s,
           }))
-        tengine.receive(:"finished.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.receive(:"success.jobnet.job.tengine",
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1100].id.to_s,
           }))
         @root.reload
@@ -72,7 +75,7 @@ describe 'jobnet_control_driver' do
         [:e2, :e3, :e6          ].each{|name| @ctx.edge(name).status_key = :active     }
         @ctx.vertex(:j1100).phase_key.should == :success
         @ctx.vertex(:j1200).phase_key.should == :ready
-        @ctx.vertex(:j1000).finally_vertex.phase_key.should == :ready
+        @ctx.vertex(:j1000).finally_vertex.phase_key.should == :initialized
       end
 
       it "j1100が失敗した場合、j1200ではなく、j1f00が実行するイベントが発火される" do
@@ -80,16 +83,19 @@ describe 'jobnet_control_driver' do
         @ctx.vertex(:j1000).phase_key = :running
         @ctx.vertex(:j1100).phase_key = :error
         @ctx.vertex(:j1110).phase_key = :error
-        @ctx.vertex(:j1200).phase_key = :ready
-        @ctx.vertex(:j1000).finally_vertex.phase_key = :ready
+        @ctx.vertex(:j1200).phase_key = :initialized
+        @ctx.vertex(:j1000).finally_vertex.phase_key = :initialized
         [:e1, :e4, :e7].each{ |name| @ctx.edge(name).status_key = :transmitted}
         [:e8          ].each{ |name| @ctx.edge(name).status_key = :closed     }
         [:e5, :e6     ].each{ |name| @ctx.edge(name).status_key = :active     }
         @root.save!
-        tengine.should_fire(:"start.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.should_fire(:"start.jobnet.job.tengine",
+          :source_name => @ctx[:j1000].finally_vertex.name_as_resource,
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].finally_vertex.id.to_s,
           }))
-        tengine.receive(:"finished.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.receive(:"error.jobnet.job.tengine",
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1100].id.to_s,
           }))
         @root.reload
@@ -97,7 +103,7 @@ describe 'jobnet_control_driver' do
         [:e5, :e6, :e8].each{ |name| [name, @ctx.edge(name).status_key].should == [name, :closed     ]}
         [:e2, :e3     ].each{ |name| [name, @ctx.edge(name).status_key].should == [name, :active     ]}
         @ctx.vertex(:j1100).phase_key.should == :error
-        @ctx.vertex(:j1200).phase_key.should == :ready
+        @ctx.vertex(:j1200).phase_key.should == :initialized
         @ctx.vertex(:j1000).finally_vertex.phase_key.should == :ready
       end
     end
@@ -110,14 +116,16 @@ describe 'jobnet_control_driver' do
         @ctx.vertex(:j1110).phase_key = :success
         @ctx.vertex(:j1200).phase_key = :success
         @ctx.vertex(:j1210).phase_key = :success
-        @ctx.vertex(:j1000).finally_vertex.phase_key = :ready
+        @ctx.vertex(:j1000).finally_vertex.phase_key = :initialized
         [:e1, :e4, :e5, :e7, :e8, :e9, :e10].each{|name| @ctx.edge(name).status_key = :transmitted}
         [:e2, :e3, :e6,                    ].each{|name| @ctx.edge(name).status_key = :active     }
         @root.save!
-        tengine.should_fire(:"start.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.should_fire(:"start.jobnet.job.tengine",
+          :source_name => @ctx[:j1000].finally_vertex.name_as_resource,
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].finally_vertex.id.to_s,
           }))
-        tengine.receive(:"finished.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.receive(:"success.jobnet.job.tengine", :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1200].id.to_s,
           }))
         @root.reload
@@ -137,14 +145,17 @@ describe 'jobnet_control_driver' do
         @ctx.vertex(:j1110).phase_key = :success
         @ctx.vertex(:j1200).phase_key = :error
         @ctx.vertex(:j1210).phase_key = :error
-        @ctx.vertex(:j1000).finally_vertex.phase_key = :ready
+        @ctx.vertex(:j1000).finally_vertex.phase_key = :initialized
         [:e1, :e4, :e5, :e7, :e8, :e9].each{|name| @ctx.edge(name).status_key = :transmitted}
         [:e10                        ].each{|name| @ctx.edge(name).status_key = :closed     }
         @root.save!
-        tengine.should_fire(:"start.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.should_fire(:"start.jobnet.job.tengine",
+          :source_name => @ctx[:j1000].finally_vertex.name_as_resource,
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].finally_vertex.id.to_s,
           }))
-        tengine.receive(:"finished.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.receive(:"error.jobnet.job.tengine",
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1200].id.to_s,
           }))
         @root.reload
@@ -160,7 +171,6 @@ describe 'jobnet_control_driver' do
     end
 
     context "j1f00が終了" do
-      before { pending }
       it "j1f00が成功した場合" do
         @root.phase_key = :running
         @ctx.vertex(:j1000).phase_key = :running
@@ -175,10 +185,13 @@ describe 'jobnet_control_driver' do
         [:e1, :e4, :e5, :e6, :e7, :e8, :e9, :e10, :e11, :e12, :e13, :e14, :e15, :e16].
           each{|name| @ctx.edge(name).status_key = :transmitted}
         @root.save!
-        tengine.should_fire(:"finished.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.should_fire(:"success.jobnet.job.tengine",
+          :source_name => @ctx[:j1000].name_as_resource,
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].id.to_s,
           }))
-        tengine.receive(:"finished.jobnet.job.tengine", :properties => @base_props.merge({
+        tengine.receive(:"success.jobnet.job.tengine",
+          :properties => @base_props.merge({
             :target_jobnet_id => @ctx.vertex(:j1000).finally_vertex.id.to_s,
           }))
         @root.reload

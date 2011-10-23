@@ -6,17 +6,17 @@ class Tengine::Job::End < Tengine::Job::Vertex
 
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#D26C1
   def transmit(signal)
-    if parent_finally = parent.finally_vertex
-      parent_finally.transmit(signal)
-    else
-      activate(signal)
-    end
+    activate(signal)
   end
 
   def activate(signal)
     complete_origin_edge(signal, :except_closed => true)
-    jobnet = self.parent # Endのparentであるジョブネット
-    jobnet.finish(signal)
+    parent = self.parent # Endのparentであるジョブネット
+    if parent_finally = parent.finally_vertex
+      parent_finally.transmit(signal)
+    else
+      parent.finish(signal)
+    end
   end
 
 end
