@@ -23,6 +23,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       complete_origin_edge(signal)
       self.phase_key = :starting
       self.started_at = signal.event.occurred_at
+      parent.ack(signal)
       # 実際にSSHでスクリプトを実行
       execute(signal.execution)
     when :initialized then

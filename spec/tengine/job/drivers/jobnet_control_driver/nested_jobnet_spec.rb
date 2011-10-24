@@ -51,13 +51,13 @@ describe 'jobnet_control_driver' do
       @root.reload
       @ctx.edge(:e1).status_key.should == :transmitting
       (2..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-      @root.phase_key.should == :running
+      @root.phase_key.should == :starting
       @ctx.vertex(:j1100).phase_key.should == :ready
     end
 
     context "j1100を起動" do
       it do
-        @root.phase_key = :running
+        @root.phase_key = :starting
         @ctx.vertex(:j1100).phase_key = :ready
         @ctx[:e1].status_key = :transmitting
         (2..15).each{|idx| @ctx[:"e#{idx}"].status_key = :active }
@@ -72,17 +72,18 @@ describe 'jobnet_control_driver' do
             :target_jobnet_id => @ctx[:j1100].id.to_s,
           }))
         @root.reload
+        @root.phase_key = :running
         @ctx.edge(:e1).status_key.should == :transmitted
         @ctx.edge(:e5).status_key.should == :transmitting
         (2..4).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
         (6..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-        @ctx.vertex(:j1100).phase_key.should == :running
+        @ctx.vertex(:j1100).phase_key.should == :starting
       end
     end
 
     context 'j1110を実行' do
       it "成功した場合" do
-        @root.phase_key = :running
+        @root.phase_key = :starting
         @ctx.vertex(:j1100).phase_key = :running
         @ctx.vertex(:j1110).phase_key = :success
         @ctx[:e1].status_key = :transmitted
@@ -104,6 +105,7 @@ describe 'jobnet_control_driver' do
             :target_job_id => @ctx[:j1110].id.to_s,
           }))
         @root.reload
+        @root.phase_key = :running
         @ctx.edge(:e1).status_key.should == :transmitted
         @ctx.edge(:e5).status_key.should == :transmitted
         @ctx.edge(:e6).status_key.should == :transmitting

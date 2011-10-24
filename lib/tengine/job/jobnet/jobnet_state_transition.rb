@@ -21,6 +21,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
       self.phase_key = :starting
       self.started_at = signal.event.occurred_at
       complete_origin_edge(signal) if prev_edges && !prev_edges.empty?
+      (parent || signal.execution).ack(signal)
       signal.paths << self
       self.start_vertex.transmit(signal)
     end

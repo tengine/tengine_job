@@ -11,7 +11,6 @@ class Tengine::Job::Start < Tengine::Job::Vertex
 
   def activate(signal)
     signal.leave(self)
-    parent.ack(signal)
   end
 
 end

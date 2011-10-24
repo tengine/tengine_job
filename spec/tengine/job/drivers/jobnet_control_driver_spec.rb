@@ -41,7 +41,7 @@ describe 'job_control_driver' do
         }.update(@base_props))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
       @root.reload
-      @root.phase_key.should == :running
+      @root.phase_key.should == :starting
       @root.started_at.utc.iso8601.should == @now.utc.iso8601
       @ctx.edge(:e1).status_key.should == :transmitting
       @ctx.vertex(:j11).phase_key.should == :ready
@@ -65,6 +65,7 @@ describe 'job_control_driver' do
             :target_job_id => @ctx[:j11].id.to_s,
           }.update(@base_props))
         @root.reload
+        @root.phase_key.should == :running
         @ctx.vertex(:j12).phase_key.should == :ready
         @ctx.edge(:e2).status_key.should == :transmitting
         @ctx.edge(:e3).status_key.should == :active
@@ -169,7 +170,7 @@ describe 'job_control_driver' do
         }.update(@base_props))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
       @root.reload
-      @root.phase_key.should == :running
+      @root.phase_key.should == :starting
       @root.started_at.utc.iso8601.should == @now.utc.iso8601
       @ctx.vertex(:j11).phase_key.should == :ready
       @ctx.vertex(:j12).phase_key.should == :ready
