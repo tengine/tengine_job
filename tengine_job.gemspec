@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{tengine_job}
-  s.version = "0.0.7"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{akima}]
-  s.date = %q{2011-10-17}
+  s.date = %q{2011-10-24}
   s.description = %q{tengine_job provides jobnet management}
   s.email = %q{akima@nautilus-technologies.com}
   s.extra_rdoc_files = [
@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
     "lib/tengine/job/category.rb",
     "lib/tengine/job/connectable.rb",
     "lib/tengine/job/drivers/job_control_driver.rb",
+    "lib/tengine/job/drivers/jobnet_control_driver.rb",
     "lib/tengine/job/dsl_evaluator.rb",
     "lib/tengine/job/dsl_loader.rb",
     "lib/tengine/job/edge.rb",
@@ -40,6 +41,8 @@ Gem::Specification.new do |s|
     "lib/tengine/job/job.rb",
     "lib/tengine/job/jobnet.rb",
     "lib/tengine/job/jobnet/builder.rb",
+    "lib/tengine/job/jobnet/job_state_transition.rb",
+    "lib/tengine/job/jobnet/jobnet_state_transition.rb",
     "lib/tengine/job/jobnet_actual.rb",
     "lib/tengine/job/jobnet_template.rb",
     "lib/tengine/job/join.rb",
@@ -47,10 +50,12 @@ Gem::Specification.new do |s|
     "lib/tengine/job/killing.rb",
     "lib/tengine/job/mm_compatibility.rb",
     "lib/tengine/job/mm_compatibility/connectable.rb",
+    "lib/tengine/job/name_path.rb",
     "lib/tengine/job/root.rb",
     "lib/tengine/job/root_jobnet_actual.rb",
     "lib/tengine/job/root_jobnet_template.rb",
     "lib/tengine/job/script_executable.rb",
+    "lib/tengine/job/signal.rb",
     "lib/tengine/job/start.rb",
     "lib/tengine/job/stoppable.rb",
     "lib/tengine/job/vertex.rb",
@@ -59,6 +64,9 @@ Gem::Specification.new do |s|
     "spec/fixtures/rjn_0002_simple_parallel_jobnet_builder.rb",
     "spec/fixtures/rjn_0003_fork_join_jobnet_builder.rb",
     "spec/fixtures/rjn_0004_tree_sequential_jobnet_builder.rb",
+    "spec/fixtures/rjn_0005_2jobs_and_1job_parallel_jobnet_builder.rb",
+    "spec/fixtures/rjn_0006_nested_fork_jobnet_builder.rb",
+    "spec/fixtures/rjn_0007_nested_and_finally_builder.rb",
     "spec/fixtures/rjn_means_root_jobnet",
     "spec/mongoid.yml",
     "spec/spec_helper.rb",
@@ -66,6 +74,9 @@ Gem::Specification.new do |s|
     "spec/tengine/job/category_spec.rb",
     "spec/tengine/job/connectable_spec.rb",
     "spec/tengine/job/drivers/job_controll_driver_spec.rb",
+    "spec/tengine/job/drivers/jobnet_control_driver/nested_and_finally_spec.rb",
+    "spec/tengine/job/drivers/jobnet_control_driver/nested_jobnet_spec.rb",
+    "spec/tengine/job/drivers/jobnet_control_driver_spec.rb",
     "spec/tengine/job/dsl_loader_spec.rb",
     "spec/tengine/job/dsls/0001_hadoop_job_run.rb",
     "spec/tengine/job/dsls/0002_join_and_join.rb",
