@@ -24,6 +24,7 @@ describe Tengine::Job::RootJobnetTemplate do
         root.edges[0].tap{|edge| edge.origin.should == root.children[0]; edge.destination.should == root.children[1]}
         root.edges[1].tap{|edge| edge.origin.should == root.children[1]; edge.destination.should == root.children[2]}
         root.edges[2].tap{|edge| edge.origin.should == root.children[2]; edge.destination.should == root.children[3]}
+        root.template.id.should == @jobnet.id
       end
     end
 
@@ -52,6 +53,7 @@ describe Tengine::Job::RootJobnetTemplate do
         root.edges[3].tap{|edge| edge.origin.should == root.children[2]; edge.destination.should == root.children[4]}
         root.edges[4].tap{|edge| edge.origin.should == root.children[3]; edge.destination.should == root.children[4]}
         root.edges[5].tap{|edge| edge.origin.should == root.children[4]; edge.destination.should == root.children[5]}
+        root.template.id.should == @jobnet.id
       end
     end
 
@@ -152,6 +154,7 @@ describe Tengine::Job::RootJobnetTemplate do
           jf000.edges[0].tap{|edge| edge.origin.should == jf000.children[0]; edge.destination.should == jf000.children[1]}
           jf000.edges[1].tap{|edge| edge.origin.should == jf000.children[1]; edge.destination.should == jf000.children[2]}
         end
+        root.template.id.should == @jobnet.id
       end
 
     end

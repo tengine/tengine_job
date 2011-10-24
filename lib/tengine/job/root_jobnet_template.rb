@@ -13,4 +13,9 @@ class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
   def actual_class
     Tengine::Job::RootJobnetActual
   end
+  def generate(klass = actual_class)
+    result = super(klass)
+    result.template = self
+    result
+  end
 end
