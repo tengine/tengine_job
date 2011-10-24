@@ -8,4 +8,9 @@ class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
   field :dsl_filepath, :type => String  # ルートジョブネットを定義した際にロードされたDSLのファイル名(Tengine::Core::Config#dsl_dir_pathからの相対パス)
   field :dsl_lineno  , :type => Integer # ルートジョブネットを定義するjobnetメソッドの呼び出しの、ロードされたDSLのファイルでの行番号
   field :dsl_version , :type => String  # ルートジョブネットを定義した際のDSLのバージョン
+
+
+  def actual_class
+    Tengine::Job::RootJobnetActual
+  end
 end
