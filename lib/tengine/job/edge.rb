@@ -7,6 +7,7 @@ require 'selectable_attr'
 class Tengine::Job::Edge
   include SelectableAttr::Base
   include Mongoid::Document
+  include Mongoid::Timestamps
   include Tengine::Job::Signal::Transmittable
 
   class StatusError < StandardError

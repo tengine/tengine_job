@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 class Tengine::Job::Execution
   include Mongoid::Document
+  include Mongoid::Timestamps
   include Tengine::Job::Executable
 
   field :target_actual_ids, :type => Array

@@ -3,6 +3,8 @@ require 'tengine/job'
 
 class Tengine::Job::Category
   include Mongoid::Document
+  include Mongoid::Timestamps
+
   field :dsl_version, :type => String # DSLをロードしたときのバージョン。Tengine::Core::Config#dsl_version が設定されます。
   field :name       , :type => String # カテゴリ名。ディレクトリ名を元に設定されるので、"/"などは使用不可。
   field :caption    , :type => String # カテゴリの表示名。各ディレクトリ名に対応する表示名。通常dictionary.ymlに定義する。

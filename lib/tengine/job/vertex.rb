@@ -5,6 +5,7 @@ require 'tengine/job'
 # 自身がツリー構造を
 class Tengine::Job::Vertex
   include Mongoid::Document
+  include Mongoid::Timestamps
   include Tengine::Job::Signal::Transmittable
   include Tengine::Job::NamePath
 
