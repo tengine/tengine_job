@@ -12,6 +12,7 @@ driver :jobnet_control_driver do
         target_jobnet.activate(signal)
       end
     end
+    signal.execution.save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
@@ -47,17 +48,21 @@ driver :jobnet_control_driver do
     signal = Tengine::Job::Signal.new(event)
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
     root_jobnet.update_with_lock do
-      target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id])
+      target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id]) || root_jobnet
       signal.with_paths_backup do
         case target_jobnet.jobnet_type_key
         when :finally then
-          (target_jobnet.parent || event.execution).succeed(signal)
+          target_jobnet.parent.succeed(signal)
         else
-          edge = target_jobnet.next_edges.first
-          edge.transmit(signal)
+          if edge = (target_jobnet.next_edges || []).first
+            edge.transmit(signal)
+          else
+            (target_jobnet.parent || signal.execution).succeed(signal)
+          end
         end
       end
     end
+    signal.execution.save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
@@ -65,19 +70,24 @@ driver :jobnet_control_driver do
     signal = Tengine::Job::Signal.new(event)
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
     root_jobnet.update_with_lock do
-      target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id])
+      target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id]) || root_jobnet
       signal.with_paths_backup do
         case target_jobnet.jobnet_type_key
         when :finally then
-          (target_jobnet.parent || event.execution).fail(signal)
+          target_jobnet.parent.fail(signal)
         else
-          edge = target_jobnet.next_edges.first
-          edge.close_followings
+          if edge = (target_jobnet.next_edges || []).first
+            edge.close_followings
+          else
+            (target_jobnet.parent || signal.execution).fail(signal)
+          end
         end
       end
-      target_parent = target_jobnet.parent
-      target_parent.end_vertex.transmit(signal)
+      if target_parent = target_jobnet.parent
+        target_parent.end_vertex.transmit(signal)
+      end
     end
+    signal.execution.save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 

@@ -58,9 +58,16 @@ class Tengine::Job::Signal
     end
   end
 
-  def fire(source, event_type_name, properties, options = {})
-    properties[:execution_id] ||= self.execution.id.to_s
-    properties[:root_jobnet_id] ||= source.root.id.to_s
+  def fire(source, event_type_name, properties = {}, options = {})
+    case source
+    when Tengine::Job::Execution then
+      properties[:execution_id] ||= source.id.to_s
+      properties[:root_jobnet_id] ||= source.root_jobnet.id.to_s
+      properties[:target_jobnet_id] ||= source.root_jobnet.id.to_s
+    else
+      properties[:execution_id] ||= self.execution.id.to_s
+      properties[:root_jobnet_id] ||= source.root.id.to_s
+    end
     # デバッグ用
     # properties[:target_jobnet_name] = source.root.vertex(properties[:target_jobnet_id]).name_path
     options ||= {}

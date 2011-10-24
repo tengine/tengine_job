@@ -32,6 +32,8 @@ describe 'job_control_driver' do
     end
 
     it "ジョブネット起動イベントを受信したら" do
+      @execution.phase_key = :starting
+      @execution.save!
       @root.phase_key = :ready
       @root.save!
       tengine.should_fire(:"start.job.job.tengine",
@@ -40,6 +42,8 @@ describe 'job_control_driver' do
           :target_job_id => @ctx[:j11].id.to_s,
         }.update(@base_props))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
+      @execution.reload
+      @execution.phase_key.should == :running
       @root.reload
       @root.phase_key.should == :starting
       @root.started_at.utc.iso8601.should == @now.utc.iso8601
@@ -71,6 +75,25 @@ describe 'job_control_driver' do
         @ctx.edge(:e3).status_key.should == :active
       end
 
+      it "ルートジョブネットの成功を受けてそのexecutionが成功する" do
+        @execution.phase_key = :running
+        @execution.save!
+        @root.phase_key = :success
+        @ctx[:e1].status_key = :transmitted
+        @ctx[:e2].status_key = :transmitted
+        @ctx[:e3].status_key = :transmitted
+        @ctx[:j11].phase_key = :success
+        @ctx[:j12].phase_key = :success
+        @root.save!
+        tengine.should_fire(:"success.execution.job.tengine",
+          :source_name => @execution.name_as_resource,
+          :properties => @base_props)
+        tengine.receive("success.jobnet.job.tengine", :properties => @base_props)
+        @execution.reload
+        @execution.phase_key.should == :success
+      end
+
+
       it "失敗した場合" do
         @root.phase_key = :running
         @ctx[:e1].status_key = :transmitted
@@ -90,6 +113,25 @@ describe 'job_control_driver' do
         @root.phase_key.should == :error
         @root.finished_at.utc.iso8601.should == @now.utc.iso8601
       end
+
+      it "ルートジョブネットの失敗を受けてそのexecutionが失敗する" do
+        @execution.phase_key = :running
+        @execution.save!
+        @root.phase_key = :error
+        @ctx[:e1].status_key = :transmitted
+        @ctx[:e2].status_key = :closed
+        @ctx[:e3].status_key = :closed
+        @ctx[:j11].phase_key = :error
+        @ctx[:j12].phase_key = :initialized
+        @root.save!
+        tengine.should_fire(:"error.execution.job.tengine",
+          :source_name => @execution.name_as_resource,
+          :properties => @base_props)
+        tengine.receive("error.jobnet.job.tengine", :properties => @base_props)
+        @execution.reload
+        @execution.phase_key.should == :error
+      end
+
     end
 
     context 'j12を実行' do

@@ -22,10 +22,15 @@ class Tengine::Job::Execution
     (started_at + (estimated_time || 0)).utc
   end
 
+  def name_as_resource
+    root_jobnet.name_as_resource.sub(/^job:/, 'execution:')
+  end
+
   def transmit(signal)
     case phase_key
     when :initialized then
       self.phase_key = :ready
+      activate(signal)
     end
   end
 
@@ -33,6 +38,7 @@ class Tengine::Job::Execution
     case phase_key
     when :ready then
       self.phase_key = :starting
+      root_jobnet.transmit(signal)
     end
   end
 
@@ -42,6 +48,26 @@ class Tengine::Job::Execution
       raise Tengine::Job::Executable::PhaseError, "ack not available on #{phase_key.inspect}"
     when :starting then
       self.phase_key = :running
+    end
+  end
+
+  def succeed(signal)
+    case phase_key
+    when :initialized, :ready, :error then
+      raise Tengine::Job::Executable::PhaseError, "succeed not available on #{phase_key.inspect}"
+    when :starting, :running, :dying, :stuck then
+      self.phase_key = :success
+      signal.fire(self, :"success.execution.job.tengine")
+    end
+  end
+
+  def fail(signal)
+    case phase_key
+    when :initialized, :ready, :success then
+      raise Tengine::Job::Executable::PhaseError, "fail not available on #{phase_key.inspect}"
+    when :starting, :running, :dying, :stuck then
+      self.phase_key = :error
+      signal.fire(self, :"error.execution.job.tengine")
     end
   end
 
