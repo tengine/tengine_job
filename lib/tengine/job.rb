@@ -52,4 +52,9 @@ module Tengine::Job
     end
 
   end
+
+  # DSLの記述に問題があることを示す例外
+  class DslError < ::Tengine::DslError
+  end
+
 end
