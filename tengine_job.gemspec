@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{tengine_job}
-  s.version = "0.1.2"
+  s.name = "tengine_job"
+  s.version = "0.1.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = [%q{akima}]
-  s.date = %q{2011-10-25}
-  s.description = %q{tengine_job provides jobnet management}
-  s.email = %q{akima@nautilus-technologies.com}
+  s.authors = ["akima"]
+  s.date = "2011-10-25"
+  s.description = "tengine_job provides jobnet management"
+  s.email = "akima@nautilus-technologies.com"
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"
@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
     "lib/tengine/job/drivers/job_control_driver.rb",
     "lib/tengine/job/drivers/job_execution_driver.rb",
     "lib/tengine/job/drivers/jobnet_control_driver.rb",
+    "lib/tengine/job/dsl_binder.rb",
     "lib/tengine/job/dsl_evaluator.rb",
     "lib/tengine/job/dsl_loader.rb",
     "lib/tengine/job/edge.rb",
@@ -106,17 +107,17 @@ Gem::Specification.new do |s|
     "tengine_job.gemspec",
     "tmp/log/.gitignore"
   ]
-  s.homepage = %q{http://github.com/akm/tengine_job}
-  s.licenses = [%q{MIT}]
-  s.require_paths = [%q{lib}]
-  s.rubygems_version = %q{1.8.6}
-  s.summary = %q{tengine_job provides jobnet management}
+  s.homepage = "http://github.com/akm/tengine_job"
+  s.licenses = ["MIT"]
+  s.require_paths = ["lib"]
+  s.rubygems_version = "1.8.10"
+  s.summary = "tengine_job provides jobnet management"
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<tengine_core>, ["~> 0.1.11"])
+      s.add_runtime_dependency(%q<tengine_core>, ["~> 0.1.13"])
       s.add_runtime_dependency(%q<tengine_resource>, ["~> 0.0.4"])
       s.add_development_dependency(%q<rspec>, ["~> 2.6.0"])
       s.add_development_dependency(%q<factory_girl>, ["~> 2.1.2"])
@@ -126,7 +127,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<simplecov>, ["~> 0.5.3"])
       s.add_development_dependency(%q<ZenTest>, ["~> 4.6.2"])
     else
-      s.add_dependency(%q<tengine_core>, ["~> 0.1.11"])
+      s.add_dependency(%q<tengine_core>, ["~> 0.1.13"])
       s.add_dependency(%q<tengine_resource>, ["~> 0.0.4"])
       s.add_dependency(%q<rspec>, ["~> 2.6.0"])
       s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
@@ -137,7 +138,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<ZenTest>, ["~> 4.6.2"])
     end
   else
-    s.add_dependency(%q<tengine_core>, ["~> 0.1.11"])
+    s.add_dependency(%q<tengine_core>, ["~> 0.1.13"])
     s.add_dependency(%q<tengine_resource>, ["~> 0.0.4"])
     s.add_dependency(%q<rspec>, ["~> 2.6.0"])
     s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
