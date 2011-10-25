@@ -20,6 +20,8 @@ describe "job DSL examples" do
   context "load and bind" do
     Dir.glob("#{example_dir}/*.rb") do |job_dsl_path|
       it "load #{job_dsl_path}" do
+        Tengine::Core::Driver.delete_all
+        Tengine::Core::HandlerPath.delete_all
         Tengine::Job::Vertex.delete_all
         Tengine::Job::Vertex.count.should == 0
         expect {
@@ -31,12 +33,14 @@ describe "job DSL examples" do
       it "bind #{job_dsl_path}" do
         Tengine::Core::Driver.delete_all
         Tengine::Core::HandlerPath.delete_all
+        Tengine::Job::Vertex.delete_all
 
         config = Tengine::Core::Config.new({
             :tengined => {
               :load_path => job_dsl_path,
             }
         })
+        load_dsl(File.basename(job_dsl_path))
         @binder = Tengine::Core::DslBindingContext.new(mock(:kernel))
         @binder.extend(Tengine::Core::DslBinder)
         @binder.config = config
