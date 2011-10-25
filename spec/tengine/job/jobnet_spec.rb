@@ -206,4 +206,57 @@ describe Tengine::Job::Jobnet do
 
   end
 
+
+  context "バリデーションエラーでraiseされる例外から原因を判断できるように" do
+    before do
+      @j1000 = Tengine::Job::JobnetTemplate.new(:name => "j1000").with_start
+      @j1000.children << @j1100 = Tengine::Job::JobnetTemplate.new(:name => "j1100").with_start
+      @j1100.children << @j1110 = Tengine::Job::JobnetTemplate.new(:name => "j1110", :script => "j1110.sh")
+      @j1100.children << @j1120 = Tengine::Job::JobnetTemplate.new(:name => "j1120", :script => "j1120.sh")
+      @j1000.prepare_end
+      @j1100.prepare_end
+      @j1000.build_sequencial_edges
+      # @j1100.build_sequencial_edges
+      @j1000.edges << @e1 = Tengine::Job::Edge.new(:origin_id => @j1000.start_vertex.id, :destination_id => @j1100.id)
+      @j1000.edges << @e2 = Tengine::Job::Edge.new(:origin_id => @j1110.id, :destination_id => @j1000.end_vertex.id)
+      @j1100.edges << @e3 = Tengine::Job::Edge.new(:origin_id => @j1100.start_vertex.id, :destination_id => @j1110.id)
+      @j1100.edges << @e4 = Tengine::Job::Edge.new(:origin_id => @j1110.id, :destination_id => @j1120.id)
+      @j1100.edges << @e5 = Tengine::Job::Edge.new(:origin_id => @j1120.id, :destination_id => @j1100.end_vertex.id)
+    end
+
+    it "save!" do
+      @e3.origin_id = nil # バリデーションエラーにする
+      begin
+        @j1000.save!
+        fail
+      rescue Mongoid::Errors::Validations => e
+        msg = "Origin can't be blank"
+        e.message.should =~ %r<edge\([0-9a-f]+\) from no origin to /j1000/j1100/j1110 #{msg}>
+      end
+    end
+
+    it "update_attributes!" do
+      @j1000.save!
+      begin
+        @e3.origin_id = nil # バリデーションエラーにする
+        @j1000.update_attributes!(:description => "test description")
+        fail
+      rescue Mongoid::Errors::Validations => e
+        msg = "Origin can't be blank"
+        e.message.should =~ %r<edge\([0-9a-f]+\) from no origin to /j1000/j1100/j1110 #{msg}>
+      end
+    end
+
+    it "create!" do
+      begin
+        Tengine::Job::RootJobnetTemplate.create!(:name => nil)
+        fail
+      rescue Mongoid::Errors::Validations => e
+        msg = "Name can't be blank"
+        e.message.should =~ %r</ #{msg}>
+      end
+    end
+
+  end
+
 end

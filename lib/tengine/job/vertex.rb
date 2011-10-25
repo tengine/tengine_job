@@ -21,6 +21,50 @@ class Tengine::Job::Vertex
 #   alias_method :long_inspect, :inspect
 #   alias_method :inspect, :short_inspect
 
+  class VertexValidations < Mongoid::Errors::Validations
+    def translate(key, options)
+      ::I18n.translate(
+        "#{Mongoid::Errors::MongoidError::BASE_KEY}.validations",
+        {:errors => Tengine::Job::Vertex.flatten_errors(document).to_a.join(', ')})
+    end
+  end
+
+
+  class << self
+    def flatten_errors(vertex, dest = nil)
+      dest ||= []
+      children_errors = vertex.errors.messages.delete(:children)
+      edges_errors = vertex.errors.messages.delete(:edges)
+      vertex.errors.full_messages.each{|msg| dest << "#{vertex.name_path} #{msg}"}
+      vertex.children.each{|child| flatten_errors(child, dest)}
+      if vertex.respond_to?(:edges)
+        vertex.edges.each do|edge|
+          edge.errors.full_messages.each{|msg| dest << "#{edge.name_for_message} #{msg}"}
+        end
+      end
+      dest
+    end
+
+    def raise_flatten_errors
+      yield if block_given?
+    rescue Mongoid::Errors::Validations => e
+      raise VertexValidations, e.document
+    end
+
+    def create!(*args, &block)
+      raise_flatten_errors{ super(*args, &block) }
+    end
+  end
+
+  def save!(*args)
+    self.class.raise_flatten_errors{ super(*args) }
+  end
+  def update_attributes!(*args)
+    self.class.raise_flatten_errors{ super(*args) }
+  end
+
+
+
   def previous_edges
     return nil unless parent
     parent.edges.select{|edge| edge.destination_id == self.id}
@@ -100,6 +144,31 @@ class Tengine::Job::Vertex
         end
       end
       return nil
+    end
+  end
+
+  class AllVisitor
+    def initialize(&block)
+      @block = block
+    end
+
+    def visit(vertex)
+      @block.call(vertex)
+      vertex.children.each do |child|
+        child.accept_visitor(self)
+      end
+    end
+  end
+
+  class AllVisitorWithEdge < AllVisitor
+    def visit(obj)
+      if obj.respond_to?(:children)
+        super(obj)
+      else
+        @block.call(obj)
+      end
+      return unless obj.respond_to?(:edges)
+      obj.edges.each{|edge| edge.accept_visitor(self)}
     end
   end
 

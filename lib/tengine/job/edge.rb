@@ -47,8 +47,12 @@ class Tengine::Job::Edge
     owner.children.detect{|c| c.id == destination_id}
   end
 
+  def name_for_message
+    "edge(#{id.to_s}) from #{origin ? origin.name_path : 'no origin'} to #{destination ? destination.name_path : 'no destination'}"
+  end
+
   def inspect
-    "#<#{self.class.name} #{id.to_s} from #{origin.name_path} to #{destination.name_path}>"
+    "#<#{self.class.name} #{name_for_message}>"
   end
 
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#3E9EA
