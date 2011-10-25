@@ -161,4 +161,26 @@ describe Tengine::Job::RootJobnetTemplate do
 
   end
 
+  describe :execute do
+
+    before do
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @jobnet = builder.create_template
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @jobnet.id,
+        })
+    end
+
+    it "create Execution" do
+      execution = @jobnet.execute
+      execution.should be_a(Tengine::Job::Execution)
+      root_jobnet_actual = execution.root_jobnet
+      root_jobnet_actual.should be_a(Tengine::Job::RootJobnetActual)
+      root_jobnet_actual.template.id.should == @jobnet.id
+    end
+
+  end
+
 end

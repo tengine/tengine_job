@@ -9,7 +9,6 @@ class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
   field :dsl_lineno  , :type => Integer # ルートジョブネットを定義するjobnetメソッドの呼び出しの、ロードされたDSLのファイルでの行番号
   field :dsl_version , :type => String  # ルートジョブネットを定義した際のDSLのバージョン
 
-
   def actual_class
     Tengine::Job::RootJobnetActual
   end
@@ -18,4 +17,12 @@ class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
     result.template = self
     result
   end
+
+  def execute(options = {})
+    actual = generate
+    Tengine::Job::Execution.create!(
+      (options || {}).update(:root_jobnet => actual)
+      )
+  end
+
 end
