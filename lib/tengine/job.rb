@@ -4,6 +4,7 @@ require 'tengine_job'
 module Tengine::Job
   autoload :DslEvaluator        , "tengine/job/dsl_evaluator"
   autoload :DslLoader           , "tengine/job/dsl_loader"
+  autoload :DslBinder           , "tengine/job/dsl_binder"
 
   autoload :Signal              , 'tengine/job/signal'
 
