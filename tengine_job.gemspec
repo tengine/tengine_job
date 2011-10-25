@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{tengine_job}
-  s.version = "0.1.1"
+  s.version = "0.1.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{akima}]
-  s.date = %q{2011-10-24}
+  s.date = %q{2011-10-25}
   s.description = %q{tengine_job provides jobnet management}
   s.email = %q{akima@nautilus-technologies.com}
   s.extra_rdoc_files = [
@@ -25,10 +25,14 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "examples/0004_retry_one_layer.rb",
+    "examples/0005_retry_two_layer.rb",
+    "examples/0006_retry_three_layer.rb",
     "lib/tengine/job.rb",
     "lib/tengine/job/category.rb",
     "lib/tengine/job/connectable.rb",
     "lib/tengine/job/drivers/job_control_driver.rb",
+    "lib/tengine/job/drivers/job_execution_driver.rb",
     "lib/tengine/job/drivers/jobnet_control_driver.rb",
     "lib/tengine/job/dsl_evaluator.rb",
     "lib/tengine/job/dsl_loader.rb",
@@ -74,6 +78,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/category_spec.rb",
     "spec/tengine/job/connectable_spec.rb",
     "spec/tengine/job/drivers/job_controll_driver_spec.rb",
+    "spec/tengine/job/drivers/job_execution_driver_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver/nested_and_finally_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver/nested_jobnet_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver_spec.rb",
@@ -86,6 +91,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/dsls/0006_expansion.rb",
     "spec/tengine/job/dsls/VERSION",
     "spec/tengine/job/edge_spec.rb",
+    "spec/tengine/job/examples_spec.rb",
     "spec/tengine/job/execution_spec.rb",
     "spec/tengine/job/expansion_spec.rb",
     "spec/tengine/job/job_spec.rb",
