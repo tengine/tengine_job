@@ -80,7 +80,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
       self.children.delete_all
       return
     end
-    if auto_sequence
+    if auto_sequence || boot_job_names.empty?
       prepare_end
       build_sequencial_edges
     else

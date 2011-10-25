@@ -27,9 +27,11 @@ module Tengine::Job::DslLoader
     result.with_start
     @jobnet.children << result if @jobnet
     __stack_instance_variable__(:@auto_sequence,  auto_sequence || @auto_sequence) do
-      __stack_instance_variable__(:@redirections,  []) do
-        __stack_instance_variable__(:@jobnet, result, &block)
-        result.build_edges(@auto_sequence, @boot_job_names, @redirections)
+      __stack_instance_variable__(:@boot_job_names,  []) do
+        __stack_instance_variable__(:@redirections,  []) do
+          __stack_instance_variable__(:@jobnet, result, &block)
+          result.build_edges(@auto_sequence, @boot_job_names, @redirections)
+        end
       end
     end
     result.save! if result.parent.nil?
