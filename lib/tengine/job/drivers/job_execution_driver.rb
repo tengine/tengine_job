@@ -4,6 +4,9 @@
 driver :job_execution_driver do
 
   on :'start.execution.job.tengine' do
+
+Tengine.logger.info("job_execution_driver  start.execution.job.tengine event:\n" << event.inspect)
+
     signal = Tengine::Job::Signal.new(event)
     execution = signal.execution
     root_jobnet = execution.root_jobnet

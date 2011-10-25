@@ -44,6 +44,16 @@ module Tengine::Job
   class << self
     # tengine_coreからそのプラグインへ通知を受けるための
     def notify(sender, msg)
+Tengine::Core.stdout_logger.info("*" * 100)
+        Dir[File.expand_path("job/drivers/*.rb", File.dirname(__FILE__))].each do |f|
+Tengine::Core.stdout_logger.info("#{self.name}.notify  #{f}")
+        end
+      if (msg == :after___evaluate__)
+        Dir[File.expand_path("job/drivers/*.rb", File.dirname(__FILE__))].each do |f|
+          Tengine::Core.stdout_logger.debug("#{self.name} now evaluating #{f}")
+          sender.instance_eval(File.read(f), f)
+        end
+      end
       if (msg == :after_load_dsl) && sender.respond_to?(:config)
         Tengine::Job::Category.update_for(
           sender.config.dsl_version,
