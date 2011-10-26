@@ -5,7 +5,6 @@ class Tengine::Job::Category
   include Mongoid::Document
   include Mongoid::Timestamps
 
-  field :dsl_version, :type => String # DSLをロードしたときのバージョン。Tengine::Core::Config#dsl_version が設定されます。
   field :name       , :type => String # カテゴリ名。ディレクトリ名を元に設定されるので、"/"などは使用不可。
   field :caption    , :type => String # カテゴリの表示名。各ディレクトリ名に対応する表示名。通常dictionary.ymlに定義する。
 
@@ -15,8 +14,8 @@ class Tengine::Job::Category
   end
 
   class << self
-    def update_for(dsl_version, base_dir)
-      root_jobnets = Tengine::Job::RootJobnetTemplate.all(:conditions => {:dsl_version => dsl_version})
+    def update_for(base_dir)
+      root_jobnets = Tengine::Job::RootJobnetTemplate.all
       root_jobnets.each do |root_jobnet|
         dirs = File.dirname(root_jobnet.dsl_filepath || "").split('/')
         last_category = nil
@@ -32,8 +31,7 @@ class Tengine::Job::Category
           category = Tengine::Job::Category.find_or_create_by(
             :name => dir,
             :caption => caption || dir,
-            :parent_id => last_category ? last_category.id : nil,
-            :dsl_version => dsl_version)
+            :parent_id => last_category ? last_category.id : nil)
           dic_dir = File.join(dic_dir, dir)
           last_category = category
         end

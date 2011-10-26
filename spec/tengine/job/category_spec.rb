@@ -39,81 +39,99 @@ describe Tengine::Job::Category do
       end
 
       context "指定されたバージョンのRootJobneTTemplateからカテゴリを生成します" do
-        it "バージョンが1の場合" do
+        it "全ドキュメントを対象にしています・・・" do
           expect{
-            Tengine::Job::Category.update_for("1", @base_dir)
-          }.to change(Tengine::Job::Category, :count).by(2)
+            Tengine::Job::Category.update_for(@base_dir)
+          }.to change(Tengine::Job::Category, :count).by(4)
           foo = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
           foo.name.should == "foo"
           foo.caption.should == "ほげ"
           foo.should_not be_nil
-          foo.children.count.should == 1
-          foo.children.first.tap do |c|
+          foo.children.count.should == 3
+          foo.children[0].tap do |c|
             c.name.should == "bar1"
             c.caption.should == "ばー1"
             c.parent_id.should == foo.id
-            c.dsl_version.should == "1"
             @root1.reload
             @root1.category_id.should == c.id
           end
-        end
-
-        it "バージョンが2の場合" do
-          expect{
-            Tengine::Job::Category.update_for("2", @base_dir)
-          }.to change(Tengine::Job::Category, :count).by(3)
-          foo = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
-          foo.name.should == "foo"
-          foo.caption.should == "ほげ"
-          foo.should_not be_nil
-          foo.children.count.should == 2
-          foo.children.first.tap do |c|
+          foo.children[1].tap do |c|
             c.name.should == "bar2"
             c.caption.should == "ばー2"
             c.parent_id.should == foo.id
-            c.dsl_version.should == "2"
             @root2.reload
             @root2.category_id.should == c.id
           end
-          foo.children.last.tap do |c|
+          foo.children[2].tap do |c|
             c.name.should == "bar3"
             c.caption.should == "bar3"
             c.parent_id.should == foo.id
-            c.dsl_version.should == "2"
             @root3.reload
             @root3.category_id.should == c.id
           end
         end
       end
 
+      it "後から追加された場合" do
+        expect{
+          Tengine::Job::Category.update_for(@base_dir)
+        }.to change(Tengine::Job::Category, :count).by(4)
+        @root4 = Tengine::Job::RootJobnetTemplate.create!({
+            :name => "root_jobnet_template01",
+            :dsl_filepath => "foo/bar3/baz1/jobnet2.rb",
+            :dsl_lineno => 4,
+            :dsl_version => "3"
+          })
+        expect{
+          Tengine::Job::Category.update_for(@base_dir)
+        }.to change(Tengine::Job::Category, :count).by(1)
+        foo = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
+        foo.children[2].tap do |bar3|
+          bar3.name.should == "bar3"
+          bar3.caption.should == "bar3"
+          bar3.parent_id.should == foo.id
+          bar3.children.first.tap do |baz1|
+           baz1.name.should == "baz1"
+           baz1.caption.should == "baz1"
+           baz1.parent_id.should == bar3.id
+            @root4.reload
+            @root4.category_id.should == baz1.id
+          end
+        end
+      end
+
       it "Tengine::Job.notifyでジョブDSLのロード終了を通知された場合" do
         mock_config = mock(:config)
-        mock_config.should_receive(:dsl_version).and_return("2")
         mock_config.should_receive(:dsl_dir_path).and_return(@base_dir)
         mock_sender = mock(:sender)
         mock_sender.should_receive(:respond_to?).with(:config).and_return(true)
-        mock_sender.should_receive(:config).twice.and_return(mock_config)
+        mock_sender.should_receive(:config).and_return(mock_config)
         expect{
           Tengine::Job.notify(mock_sender, :after_load_dsl)
-        }.to change(Tengine::Job::Category, :count).by(3)
+        }.to change(Tengine::Job::Category, :count).by(4)
         foo = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
         foo.name.should == "foo"
         foo.caption.should == "ほげ"
         foo.should_not be_nil
-        foo.children.count.should == 2
-        foo.children.first.tap do |c|
+        foo.children.count.should == 3
+        foo.children[0].tap do |c|
+          c.name.should == "bar1"
+          c.caption.should == "ばー1"
+          c.parent_id.should == foo.id
+          @root1.reload
+          @root1.category_id.should == c.id
+        end
+        foo.children[1].tap do |c|
           c.name.should == "bar2"
           c.caption.should == "ばー2"
           c.parent_id.should == foo.id
-          c.dsl_version.should == "2"
           @root2.reload
           @root2.category_id.should == c.id
         end
-        foo.children.last.tap do |c|
+        foo.children[2].tap do |c|
           c.name.should == "bar3"
           c.caption.should == "bar3"
           c.parent_id.should == foo.id
-          c.dsl_version.should == "2"
           @root3.reload
           @root3.category_id.should == c.id
         end

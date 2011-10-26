@@ -55,10 +55,8 @@ Tengine::Core.stdout_logger.info("#{self.name}.notify  #{f}")
         end
       end
       if (msg == :after_load_dsl) && sender.respond_to?(:config)
-        Tengine::Job::Category.update_for(
-          sender.config.dsl_version,
-          sender.config.dsl_dir_path
-          ) # RootJobnetTemplateのdsl_filepathからCategoryを生成します
+        # RootJobnetTemplateのdsl_filepathからCategoryを生成します
+        Tengine::Job::Category.update_for(sender.config.dsl_dir_path)
       end
     end
 
