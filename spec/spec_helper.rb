@@ -49,6 +49,13 @@ Tengine::Core::Kernel.event_exception_reporter = :except_test
 
 RSpec.configure do |config|
   config.include Factory::Syntax::Methods
+
+  config.before(:all) do
+    unless Tengine::Core::Setting.first(:conditions => {:name => "dsl_version"})
+      Tengine::Core::Setting.create!(:name => "dsl_version", :value => "1234567890")
+    end
+  end
+
 end
 
 Dir["#{File.expand_path('factories', File.dirname(__FILE__))}/**/*.rb"].each {|f| require f}
