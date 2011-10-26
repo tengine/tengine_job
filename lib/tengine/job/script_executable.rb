@@ -19,19 +19,22 @@ module Tengine::Job::ScriptExecutable
     return ack(@acked_pid) if @acked_pid
     cmd = build_command(execution)
     # puts "cmd:\n" << cmd
+    Tengine.logger.info("connecting to #{actual_server.hostname_or_ipv4}")
     actual_credential.connect(actual_server.hostname_or_ipv4) do |ssh|
       # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
       ssh.open_channel do |channel|
+        Tengine.logger.info("now exec on ssh: " << cmd)
         channel.exec(cmd) do |ch, success|
           abort "could not execute command" unless success
 
           channel.on_data do |ch, data|
+            Tengine.logger.debug("got stdout: #{data}")
             # puts "on_data: #{data.inspect}"
             ack(data.strip)
           end
 
           channel.on_extended_data do |ch, type, data|
-            puts "got stderr: #{data}"
+            Tengine.logger.warn("got stderr: #{data}")
           end
 
           channel.on_close do |ch|
@@ -56,7 +59,7 @@ module Tengine::Job::ScriptExecutable
     # ~/.bash_profile, ~/.bashrc などは非対応。
     # ファイルが存在していたらsourceで読み込むようにしたいのですが、一旦保留します。
     # http://www.syns.net/10/
-    ["/etc/profile", "$HOME/.bashrc", "$HOME/.bash_profile"].each do |path|
+    ["/etc/profile", "/etc/bashrc", "$HOME/.bashrc", "$HOME/.bash_profile"].each do |path|
       result << "if [ -f #{path} ]; then source #{path}; fi"
     end
     mm_env = build_mm_env(execution).map{|k,v| "#{k}=#{v}"}.join(" ")
