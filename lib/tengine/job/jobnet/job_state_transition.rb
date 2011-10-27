@@ -54,7 +54,7 @@ module Tengine::Job::Jobnet::JobStateTransition
   def job_succeed(signal)
     case self.phase_key
     when :ready, :error then
-      raise Tengine::Job::Executable::PhaseError, "ack not available on succeed"
+      raise Tengine::Job::Executable::PhaseError, "succeed not available on succeed"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :success
       self.finished_at = signal.event.occurred_at
@@ -70,7 +70,7 @@ module Tengine::Job::Jobnet::JobStateTransition
   def job_fail(signal)
     case self.phase_key
     when :ready, :success then
-      raise Tengine::Job::Executable::PhaseError, "ack not available on succeed"
+      raise Tengine::Job::Executable::PhaseError, "fail not available on succeed"
     when :starting, :running, :dying, :stuck then
       self.phase_key = :error
       self.finished_at = signal.event.occurred_at
