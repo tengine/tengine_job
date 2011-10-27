@@ -64,4 +64,10 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   end
   available :jobnet_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
 
+  def jobnet_stop(signal)
+    self.phase_key = :dying
+    self.stopped_at = signal.event.occurred_at
+    self.stop_reason = signal.event[:stop_reason]
+  end
+  available :jobnet_stop, :on => :running, :ignored => [:dying, :success, :error, :stuck]
 end

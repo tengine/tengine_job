@@ -23,7 +23,7 @@ module Tengine::Job::Jobnet::JobStateTransition
     self.started_at = signal.event.occurred_at
     parent.ack(signal)
     # 実際にSSHでスクリプトを実行
-    execute(signal.execution)
+    run(signal.execution)
   end
   available(:job_activate, :on => :ready,
     :ignored => [:starting, :running, :dying, :success, :error, :stuck])
@@ -67,5 +67,13 @@ module Tengine::Job::Jobnet::JobStateTransition
       })
   end
   available :job_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
+
+  def job_stop(signal)
+    self.phase_key = :dying
+    self.stopped_at = signal.event.occurred_at
+    self.stop_reason = signal.event[:stop_reason]
+    kill(signal.execution)
+  end
+  available :job_stop, :on => :running, :ignored => [:dying, :success, :error, :stuck]
 
 end

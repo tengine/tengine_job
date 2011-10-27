@@ -12,7 +12,7 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
   field :was_expansion, :type => Boolean # テンプレートがTenigne::Job::Expansionであった場合にtrueです。
 
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#D26C1
-  STATE_TRANSITION_METHODS = [:transmit, :activate, :ack, :finish, :succeed, :fail].freeze
+  STATE_TRANSITION_METHODS = [:transmit, :activate, :ack, :finish, :succeed, :fail, :stop].freeze
   STATE_TRANSITION_METHODS.each do |method_name|
     class_eval(<<-END_OF_METHOD, __FILE__, __LINE__ + 1)
       def #{method_name}(signal)

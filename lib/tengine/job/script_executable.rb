@@ -12,13 +12,13 @@ module Tengine::Job::ScriptExecutable
   end
 
   def run(execution)
-    execute(execution)
-  end
-
-  def execute(execution)
     return ack(@acked_pid) if @acked_pid
     cmd = build_command(execution)
     # puts "cmd:\n" << cmd
+    execute(cmd)
+  end
+
+  def execute(cmd)
     Tengine.logger.info("connecting to #{actual_server.hostname_or_ipv4}")
     actual_credential.connect(actual_server.hostname_or_ipv4) do |ssh|
       # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
@@ -46,6 +46,18 @@ module Tengine::Job::ScriptExecutable
     end
   end
 
+  def kill(execution)
+    lines = source_profiles
+    cmd = executable_command("tengine_job_agent_kill %s --signals=%s --interval=%d" % [
+        self.executing_pid,
+        self.actual_killing_signals.join(","),
+        self.actual_killing_signal_interval
+      ])
+    lines << cmd
+    cmd = lines.join(' && ')
+    execute(cmd)
+  end
+
 #   def ack(pid)
 #     @acked_pid = pid
 #     self.executing_pid = pid
@@ -54,14 +66,7 @@ module Tengine::Job::ScriptExecutable
 #   end
 
   def build_command(execution)
-    result = []
-    # RubyのNet::SSHでは設定ファイルが読み込まれないので、ロードするようにします。
-    # ~/.bash_profile, ~/.bashrc などは非対応。
-    # ファイルが存在していたらsourceで読み込むようにしたいのですが、一旦保留します。
-    # http://www.syns.net/10/
-    ["/etc/profile", "/etc/bashrc", "$HOME/.bashrc", "$HOME/.bash_profile"].each do |path|
-      result << "if [ -f #{path} ]; then source #{path}; fi"
-    end
+    result = source_profiles
     mm_env = build_mm_env(execution).map{|k,v| "#{k}=#{v}"}.join(" ")
     # Hadoopジョブの場合は環境変数をセットする
     if is_a?(Tengine::Job::Jobnet) && (jobnet_type_key == :hadoop_job_run)
@@ -75,7 +80,7 @@ module Tengine::Job::ScriptExecutable
     # プロセスの監視／強制停止のためにtengine_job_agent/bin/tengine_job_agent_run
     # からこれらを実行させるためにはcmdを編集します。
     # tengine_job_agent_runは、標準出力に監視対象となる起動したプロセスのPIDを出力します。
-    runner_path = ENV["MM_RUNNER_PATH"] || "tengine_job_agent_run"
+    runner_path = ENV["MM_RUNNER_PATH"] || executable_command("tengine_job_agent_run")
     runner_option = ""
     # 実装するべきか要検討
     # runner_option << " --stdout" if execution.keeping_stdout
@@ -84,6 +89,24 @@ module Tengine::Job::ScriptExecutable
     script = "#{runner_path}#{runner_option} #{self.script}" # runnerのオプションを指定する際は -- の前に設定してください
     result << script
     result.join(" && ")
+  end
+
+  def source_profiles
+    # RubyのNet::SSHでは設定ファイルが読み込まれないので、ロードするようにします。
+    # ~/.bash_profile, ~/.bashrc などは非対応。
+    # ファイルが存在していたらsourceで読み込むようにしたいのですが、一旦保留します。
+    # http://www.syns.net/10/
+    ["/etc/profile", "/etc/bashrc", "$HOME/.bashrc", "$HOME/.bash_profile"].map do |path|
+      "if [ -f #{path} ]; then source #{path}; fi"
+    end
+  end
+
+  def executable_command(command)
+    if prefix = ENV["MM_CMD_PREFIX"]
+      "#{prefix} #{command}"
+    else
+      command
+    end
   end
 
   # MMから実行されるシェルスクリプトに渡す環境変数のHashを返します。
@@ -115,7 +138,7 @@ module Tengine::Job::ScriptExecutable
       "MM_SCHEDULE_ESTIMATED_TIME" => execution.estimated_time,
     }
     if estimated_end = execution.actual_estimated_end
-      result["MM_SCHEDULE_ESTIMATED_END"] = execution.actual_estimated_end.strftime("%Y%m%d%H%M%S")
+      result["MM_SCHEDULE_ESTIMATED_END"] = estimated_end.strftime("%Y%m%d%H%M%S")
     end
     if rjt = root.template
       t = rjt.find_descendant_by_name_path(self.name_path)

@@ -5,7 +5,11 @@ describe Tengine::Job::Edge do
   before do
     @now = Time.now.utc
     @event = mock(:event, :occurred_at => @now)
-    @execution = mock(:execution, :id => "execution_id")
+    @execution = mock(:execution,
+      :id => "execution_id",
+      :estimated_time => 600,
+      :actual_estimated_end => Time.utc(2011,10,27,19,8),
+      :preparation_command => nil)
     @signal = Tengine::Job::Signal.new(@event)
     @signal.stub!(:execution).and_return(@execution)
   end

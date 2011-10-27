@@ -18,8 +18,11 @@
 # (S5)--e14-->(j1310)--e15-->(E5)
 #
 class Rjn0006NestedForkJobnetBuilder < JobnetFixtureBuilder
+  include TestCredentialFixture
+  include TestServerFixture
+
   DSL = <<-EOS
-    jobnet("rjn0006") do
+    jobnet("rjn0006", :server_name => "test_server1", :credential_name => "test_credential1") do
       auto_sequence
       jobnet("j1100") do
         job("j1110", "job_test j1110")
@@ -39,7 +42,7 @@ class Rjn0006NestedForkJobnetBuilder < JobnetFixtureBuilder
   EOS
 
   def create(options = {})
-    root = new_root_jobnet("rjn0006")
+    root = new_root_jobnet("rjn0006", :server_name => test_server1.name, :credential_name => test_credential1.name)
     root.children << new_start
     root.children << new_jobnet("j1100")
     root.children << new_script("j1200", :script => "job_test j1200")

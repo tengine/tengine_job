@@ -25,7 +25,7 @@ module Tengine::Job::Jobnet::StateTransition
           when #{ignored_phase_keys.map(&:inspect).join(', ')} then
             return
           else
-            raise Tengine::Job::Executable::PhaseError, "#{method_name} not available on \#{phase_key.inspect}"
+            raise Tengine::Job::Executable::PhaseError, "#{method_name} not available on \#{self.phase_key.inspect}"
           end
         end
       EOS
