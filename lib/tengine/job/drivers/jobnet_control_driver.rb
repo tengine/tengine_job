@@ -91,4 +91,15 @@ driver :jobnet_control_driver do
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
+
+  on :'stop.jobnet.job.tengine' do
+    signal = Tengine::Job::Signal.new(event)
+    root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
+    root_jobnet.update_with_lock do
+      target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id]) || root_jobnet
+      target_jobnet.stop(signal)
+    end
+    signal.reservations.each{|r| fire(*r.fire_args)}
+  end
+
 end

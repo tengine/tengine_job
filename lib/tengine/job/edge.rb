@@ -78,6 +78,13 @@ class Tengine::Job::Edge
     end
   end
 
+  def close(signal)
+    case status_key
+    when :active, :suspended, :keeping, :transmitting then
+      self.status_key = :closed
+    end
+  end
+
   def close_followings
     accept_visitor(Tengine::Job::Edge::Closer.new)
   end

@@ -18,7 +18,8 @@ describe Tengine::Job::Stoppable do
         @execution = Tengine::Job::Execution.create!({
             :root_jobnet_id => @root.id,
           })
-        @mock_event = mock(:event)
+        @mock_event = mock(:event,
+          :occurred_at => Time.utc(2011,10,28,0,50))
         @mock_event.stub!(:[]).with(:execution_id).and_return(@execution.id.to_s)
         @signal = Tengine::Job::Signal.new(@mock_event)
       end
@@ -34,8 +35,9 @@ describe Tengine::Job::Stoppable do
           end
         end
 
-        (Tengine::Job::JobnetActual.phase_keys - [:running, :dying, :success, :error, :stuck]).each do |phase_key|
+        (Tengine::Job::JobnetActual.phase_keys - [:initialized, :ready, :starting, :running, :dying, :success, :error, :stuck]).each do |phase_key|
           it "#{phase_key}の場合" do
+            @mock_event.should_receive(:[]).with(:stop_reason).and_return("test_stopping")
             @ctx[:j1110].phase_key = phase_key
             expect{
               @ctx[:j1110].stop(@signal)

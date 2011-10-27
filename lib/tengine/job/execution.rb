@@ -71,4 +71,18 @@ class Tengine::Job::Execution
     end
   end
 
+#   def fire_stop(signal)
+#     return if self.phase_key == :initialized
+#     signal.fire(self, :"stop.execution.job.tengine", {
+#         :execution_id => self.id,
+#         :root_jobnet_id => root_jobnet.id,
+#         :target_jobnet_id => root_jobnet.id,
+#       })
+#   end
+
+  def stop(signal)
+    self.phase_key = :dying
+    root_jobnet.fire_stop(signal)
+  end
+
 end

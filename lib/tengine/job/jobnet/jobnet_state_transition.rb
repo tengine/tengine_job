@@ -64,10 +64,26 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   end
   available :jobnet_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
 
+  def jobnet_fire_stop(signal)
+    return if self.phase_key == :initialized
+    signal.fire(self, :"stop.jobnet.job.tengine", {
+        :target_jobnet_id => self.id,
+      })
+  end
+
   def jobnet_stop(signal)
     self.phase_key = :dying
     self.stopped_at = signal.event.occurred_at
     self.stop_reason = signal.event[:stop_reason]
+    close(signal)
+    children.each do |child|
+      child.fire_stop(signal) if child.respond_to?(:fire_stop)
+    end
   end
-  available :jobnet_stop, :on => :running, :ignored => [:dying, :success, :error, :stuck]
+  available :jobnet_stop, :on => [:initialized, :ready, :starting, :running], :ignored => [:dying, :success, :error, :stuck]
+
+  def close(signal)
+    self.edges.each{|edge| edge.close(signal)}
+  end
+
 end

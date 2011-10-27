@@ -105,6 +105,44 @@ describe 'job_control_driver' do
       end
     end
 
+    it "強制停止" do
+      @pid = "123"
+      @jobnet.reload
+      j11 = @jobnet.find_descendant_by_name_path("/rjn0001/j11")
+      j11.executing_pid = @pid
+      j11.phase_key = :running
+      j11.previous_edges.length.should == 1
+      j11.previous_edges.first.status_key = :transmitted
+      @ctx[:root].save!
+
+      tengine.should_not_fire
+      mock_ssh = mock(:ssh)
+      mock_channel = mock(:channel)
+      Net::SSH.should_receive(:start).
+        with("184.72.20.1", "goku", :password => "dragonball").and_yield(mock_ssh)
+      mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
+      mock_channel.should_receive(:exec) do |*args|
+        args.length.should == 1
+        args.first.should =~ %r<source \/etc\/profile>
+        args.first.should =~ %r<tengine_job_agent_kill #{@pid}>
+      end
+      tengine.receive(:"stop.job.job.tengine",
+        :source_name => @ctx[:j11].name_as_resource,
+        :properties => {
+          :execution_id => @execution.id.to_s,
+          :root_jobnet_id => @jobnet.id.to_s,
+          :target_jobnet_id => @jobnet.id.to_s,
+          :target_job_id => @ctx[:j11].id.to_s,
+        })
+      @jobnet.reload
+      @ctx.edge(:e1).status_key.should == :transmitted
+      @ctx.edge(:e2).status_key.should == :active
+      @ctx.vertex(:j11).tap do |j|
+        j.phase_key.should == :dying
+        j.exit_status.should == nil
+      end
+    end
+
 
     if ENV['PASSWORD']
     context "実際にSSHで接続", :ssh_actual => true do

@@ -14,7 +14,19 @@ driver :job_control_driver do
         target_job.activate(signal) # transmitは既にされているはず。
       end
     end
-    root_jobnet.reload # update_with_lockした内容があるのでリロードしないとlock_versionが食い違ってしまいます
+    signal.reservations.each{|r| fire(*r.fire_args)}
+  end
+
+  on :'stop.job.job.tengine' do
+    signal = Tengine::Job::Signal.new(event)
+    root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
+    root_jobnet.update_with_lock do
+      target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id]) || root_jobnet
+      target_job = target_jobnet.find_descendant(event[:target_job_id])
+      signal.with_paths_backup do
+        target_job.stop(signal)
+      end
+    end
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 

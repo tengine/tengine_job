@@ -17,9 +17,6 @@ describe 'stop.jobnet.job.tengine' do
       @execution = Tengine::Job::Execution.create!({
           :root_jobnet_id => @root.id,
         })
-      @execution = Tengine::Job::Execution.create!({
-          :root_jobnet_id => @root.id,
-        })
     end
 
     context "j1120" do
@@ -47,88 +44,65 @@ describe 'stop.jobnet.job.tengine' do
             @root.save!
           end
 
-          it "j1120をstopすると自身をdyingにして、j1121については何もしません" do
+          it "j1120をstopすると自身をdyingにして、エッジをcloseして、j1121については何もしません" do
             tengine.should_not_fire
             tengine.receive(:"stop.jobnet.job.tengine",
               :source_name => @ctx[:j1120].name_as_resource,
-              :properties => @base_props.merge({
-                  :target_jobnet_id => @ctx[:j1120].id.to_s,
-                }))
+              :properties => @base_props)
             @root.reload
             @root.phase_key.should == :running
-            @ctx[:j1100].tap{|j| j.phase_key.should == :running}
-            @ctx[:j1110].tap{|j| j.phase_key.should == :success}
-            @ctx[:j1120].tap{|j| j.phase_key.should == :dying}
-            @ctx[:j1121].tap{|j| j.phase_key.should == :initialized}
+            @ctx.vertex(:j1100).tap{|j| j.phase_key.should == :running}
+            @ctx.vertex(:j1110).tap{|j| j.phase_key.should == :success}
+            @ctx.vertex(:j1120).tap{|j| j.phase_key.should == :dying}
+            @ctx.vertex(:j1121).tap{|j| j.phase_key.should == :initialized}
             [:e1, :e5, :e6].each{|name| @ctx.edge(name).status_key.should == :transmitted }
-            (2..4).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-            (6..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
+            (2..4).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
+            (7..9).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
+            (10..11).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :closed] }
+            (12..15).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
           end
         end
 
-        context "j1121がready" do
-          before do
-            @ctx[:j1121].tap{|j| j.phase_key = :ready}
-            [:e10].each{|name| @ctx[name].status_key = :transmitting}
-            @root.save!
-          end
+        [
+          [:ready   , :transmitting, :closed],
+          [:starting, :transmitted , :transmitted],
+          [:running , :transmitted , :transmitted],
+        ].each do |(j1121_phase_key, e10_status_key, e10_new_status_key)|
 
-          it "j1120をstopすると自身をdyingにして、j1121については何もしません" do
-            tengine.should_fire(:"stop.job.job.tengine",
-              :source_name => @ctx[:j1121].name_as_resource,
-              :properties => @base_props.merge({
-                :target_job_id => @ctx[:j1121].id.to_s,
-              }))
-            tengine.receive(:"stop.jobnet.job.tengine",
-              :source_name => @ctx[:j1120].name_as_resource,
-              :properties => @base_props.merge({
-                  :target_jobnet_id => @ctx[:j1120].id.to_s,
+          context "j1121が#{j1121_phase_key}" do
+            before do
+              @ctx[:j1121].tap{|j| j.phase_key = j1121_phase_key}
+              [:e10].each{|name| @ctx[name].status_key = e10_status_key}
+              @root.save!
+            end
+
+            it "j1120をstopすると自身をdyingにして、エッジをcloseして、j1121についてはstop.job.job.tengineを発火します" do
+              tengine.should_fire(:"stop.job.job.tengine",
+                :source_name => @ctx[:j1121].name_as_resource,
+                :properties => @base_props.merge({
+                  :target_job_id => @ctx[:j1121].id.to_s,
                 }))
-            @root.reload
-            @root.phase_key.should == :running
-            @ctx[:j1100].tap{|j| j.phase_key.should == :running}
-            @ctx[:j1110].tap{|j| j.phase_key.should == :success}
-            @ctx[:j1120].tap{|j| j.phase_key.should == :dying}
-            @ctx[:j1121].tap{|j| j.phase_key.should == :ready}
-            [:e1, :e5, :e6].each{|name| @ctx.edge(name).status_key.should == :transmitted }
-            [:e10].each{|name| @ctx.edge(name).status_key.should == :transmitting }
-            (2..4).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-            (6..9).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-            (11..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
+              tengine.receive(:"stop.jobnet.job.tengine",
+                :source_name => @ctx[:j1120].name_as_resource,
+                :properties => @base_props.merge({
+                    :target_jobnet_id => @ctx[:j1120].id.to_s,
+                  }))
+              @root.reload
+              @root.phase_key.should == :running
+              @ctx.vertex(:j1100).tap{|j| j.phase_key.should == :running}
+              @ctx.vertex(:j1110).tap{|j| j.phase_key.should == :success}
+              @ctx.vertex(:j1120).tap{|j| j.phase_key.should == :dying}
+              @ctx.vertex(:j1121).tap{|j| j.phase_key.should == j1121_phase_key}
+              [:e1, :e5, :e6].each{|name| @ctx.edge(name).status_key.should == :transmitted }
+              [:e10].each{|name| @ctx.edge(name).status_key.should == e10_new_status_key }
+              [:e11].each{|name| @ctx.edge(name).status_key.should == :closed }
+              (2..4).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
+              (7..9).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
+              (12..15).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
+            end
           end
         end
 
-
-        context "j1121がrunning" do
-          before do
-            @ctx[:j1121].tap{|j| j.phase_key = :running; j.executing_pid = "1121"}
-            [:e10].each{|name| @ctx[name].status_key = :transmitted}
-            @root.save!
-          end
-
-          it "j1120をstopすると自身をdyingにして、エッジをcloseして、stop.job.job.tengineを発火します" do
-            tengine.should_fire(:"stop.job.job.tengine",
-              :source_name => @ctx[:j1121].name_as_resource,
-              :properties => @base_props.merge({
-                :target_job_id => @ctx[:j1121].id.to_s,
-              }))
-            tengine.receive(:"stop.jobnet.job.tengine",
-              :source_name => @ctx[:j1120].name_as_resource,
-              :properties => @base_props.merge({
-                  :target_jobnet_id => @ctx[:j1120].id.to_s,
-                }))
-            @root.reload
-            @root.phase_key.should == :running
-            @ctx[:j1100].tap{|j| j.phase_key.should == :running}
-            @ctx[:j1110].tap{|j| j.phase_key.should == :success}
-            @ctx[:j1120].tap{|j| j.phase_key.should == :dying}
-            @ctx[:j1120].tap{|j| j.phase_key.should == :dying}
-            [:e1, :e5, :e6, :e10].each{|name| @ctx.edge(name).status_key.should == :transmitted }
-            (2..4).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-            (6..9).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-            (11..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-          end
-        end
       end
     end
 

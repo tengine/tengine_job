@@ -44,6 +44,30 @@ describe 'job_execution_driver' do
       @root.phase_key.should == :ready
     end
 
+
+    it "強制停止イベントを受け取ったら" do
+      @execution.phase_key = :running
+      @execution.save!
+      @root.phase_key = :running
+      @root.save!
+      tengine.should_fire(:"stop.jobnet.job.tengine",
+        :source_name => @root.name_as_resource,
+        :properties => {
+          :execution_id => @execution.id.to_s,
+          :root_jobnet_id => @root.id.to_s,
+          :target_jobnet_id => @root.id.to_s
+        })
+      tengine.receive("stop.execution.job.tengine", :properties => {
+          :execution_id => @execution.id.to_s,
+          :root_jobnet_id => @root.id.to_s,
+          :target_jobnet_id => @root.id.to_s,
+        })
+      @execution.reload
+      @execution.phase_key.should == :dying
+      @root.reload
+      @root.phase_key.should == :running
+    end
+
     # jobnet_control_driverでexecution起動後の処理を行っています
   end
 
