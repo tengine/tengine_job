@@ -44,32 +44,46 @@ describe Tengine::Job::Stoppable do
         end
       end
 
-      it "j1121をstopするとSSHでtengine_job_agent_killを実行する" do
-        @pid = "1234"
-        mock_ssh = mock(:ssh)
-        mock_channel = mock(:channel)
-        Net::SSH.should_receive(:start).
-          with(test_server1.hostname_or_ipv4,
-          test_credential1.auth_values['username'],
-          :password => test_credential1.auth_values['password']).and_yield(mock_ssh)
-        mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
-        mock_channel.should_receive(:exec) do |*args|
-          args.length.should == 1
-          args.first.tap do |cmd|
-            cmd.should =~ %r<source \/etc\/profile>
-            cmd.should =~ /tengine_job_agent_kill #{@pid} --signals=INT,HUP,QUIT,KILL --interval=30/
+      shared_examples_for "SSHでtengine_job_agent_killを実行する" do |name, signals, interval|
+        it do
+          @pid = "111"
+          mock_ssh = mock(:ssh)
+          mock_channel = mock(:channel)
+          Net::SSH.should_receive(:start).
+            with(test_server1.hostname_or_ipv4,
+            test_credential1.auth_values['username'],
+            :password => test_credential1.auth_values['password']).and_yield(mock_ssh)
+          mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
+          mock_channel.should_receive(:exec) do |*args|
+            args.length.should == 1
+            args.first.tap do |cmd|
+              cmd.should =~ %r<source \/etc\/profile>
+              cmd.should =~ /tengine_job_agent_kill #{@pid} --signals=#{signals} --interval=#{interval}/
+            end
+          end
+          t = Time.now.utc
+          @mock_event.should_receive(:occurred_at).and_return(t)
+          @mock_event.should_receive(:[]).with(:stop_reason).and_return("test stopping")
+          @ctx[name].tap do |j|
+            j.phase_key = :running
+            j.executing_pid = @pid
+            j.stop(@signal)
+            j.phase_key.should == :dying
+            j.stop_reason.should == "test stopping"
+            j.stopped_at.to_time.iso8601.should == t.utc.iso8601
           end
         end
-        t = Time.now.utc
-        @mock_event.should_receive(:occurred_at).and_return(t)
-        @mock_event.should_receive(:[]).with(:stop_reason).and_return("test stopping")
-        @ctx[:j1110].tap do |j|
-          j.phase_key = :running
-          j.executing_pid = @pid
-          j.stop(@signal)
-          j.stop_reason.should == "test stopping"
-          j.stopped_at.to_time.iso8601.should == t.utc.iso8601
-        end
+      end
+
+      [
+        [:j1110, "INT,HUP,QUIT,KILL", 30],
+        [:j1121, "INT,HUP,QUIT,KILL", 30],
+        [:j1131, "INT,HUP,QUIT,KILL", 30],
+        [:j1140, "INT,HUP,QUIT,KILL", 30],
+        [:j1200, "KILL", 10],
+        [:j1310, "KILL", 10],
+      ].each do |args|
+        it_should_behave_like "SSHでtengine_job_agent_killを実行する", *args
       end
 
     end
