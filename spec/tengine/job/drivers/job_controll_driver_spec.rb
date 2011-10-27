@@ -20,6 +20,7 @@ describe 'job_control_driver' do
     end
 
     it "ジョブの起動イベントを受け取ったら" do
+      @jobnet.phase_key = :starting
       @ctx.edge(:e1).status_key = :transmitting
       @ctx.vertex(:j11).phase_key = :ready
       @jobnet.save!

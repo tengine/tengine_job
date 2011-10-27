@@ -9,6 +9,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   include SelectableAttr::Base
 
   autoload :Builder, "tengine/job/jobnet/builder"
+  autoload :StateTransition, 'tengine/job/jobnet/state_transition'
   autoload :JobStateTransition, 'tengine/job/jobnet/job_state_transition'
   autoload :JobnetStateTransition, 'tengine/job/jobnet/jobnet_state_transition'
 

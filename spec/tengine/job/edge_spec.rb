@@ -36,6 +36,7 @@ describe Tengine::Job::Edge do
       end
 
       it "j11がactivateされると、e1はcompleteされてtransmittedになり、j11はstartingになる" do
+        @ctx[:root].phase_key = :starting
         @ctx[:e1].status_key = :transmitting
         @ctx[:j11].phase_key = :ready
         @ctx[:root].save!
