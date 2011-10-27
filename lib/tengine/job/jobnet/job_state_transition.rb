@@ -6,24 +6,24 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def job_transmit(signal)
-      self.phase_key = :ready
-      self.started_at = signal.event.occurred_at
-      signal.fire(self, :"start.job.job.tengine", {
-          :target_jobnet_id => parent.id,
-          :target_job_id => self.id,
-        })
+    self.phase_key = :ready
+    self.started_at = signal.event.occurred_at
+    signal.fire(self, :"start.job.job.tengine", {
+        :target_jobnet_id => parent.id,
+        :target_job_id => self.id,
+      })
   end
   available(:job_transmit, :on => :initialized,
     :ignored => [:ready, :starting, :running, :dying, :success, :error, :stuck])
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_activate(signal)
-      complete_origin_edge(signal)
-      self.phase_key = :starting
-      self.started_at = signal.event.occurred_at
-      parent.ack(signal)
-      # 実際にSSHでスクリプトを実行
-      execute(signal.execution)
+    complete_origin_edge(signal)
+    self.phase_key = :starting
+    self.started_at = signal.event.occurred_at
+    parent.ack(signal)
+    # 実際にSSHでスクリプトを実行
+    execute(signal.execution)
   end
   available(:job_activate, :on => :ready,
     :ignored => [:starting, :running, :dying, :success, :error, :stuck])
@@ -31,7 +31,7 @@ module Tengine::Job::Jobnet::JobStateTransition
   # ハンドリングするドライバ: ジョブ制御ドライバ
   # スクリプトのプロセスのPIDを取得できたときに実行されます
   def job_ack(signal)
-      self.phase_key = :running
+    self.phase_key = :running
   end
   available(:job_ack, :on => :starting,
     :ignored => [:running, :dying, :success, :error, :stuck])
@@ -40,31 +40,31 @@ module Tengine::Job::Jobnet::JobStateTransition
     self.exit_status = signal.event[:exit_status]
     self.finished_at = signal.event.occurred_at
     (self.exit_status.to_s == '0') ?
-      job_succeed(signal) :
+    job_succeed(signal) :
       job_fail(signal)
   end
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_succeed(signal)
-      self.phase_key = :success
-      self.finished_at = signal.event.occurred_at
-      signal.fire(self, :"success.job.job.tengine", {
-          :exit_status => self.exit_status,
-          :target_jobnet_id => parent.id,
-          :target_job_id => self.id,
-        })
+    self.phase_key = :success
+    self.finished_at = signal.event.occurred_at
+    signal.fire(self, :"success.job.job.tengine", {
+        :exit_status => self.exit_status,
+        :target_jobnet_id => parent.id,
+        :target_job_id => self.id,
+      })
   end
   available :job_succeed, :on => [:starting, :running, :dying, :stuck], :ignored => [:success]
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_fail(signal)
-      self.phase_key = :error
-      self.finished_at = signal.event.occurred_at
-      signal.fire(self, :"error.job.job.tengine", {
-          :exit_status => self.exit_status,
-          :target_jobnet_id => parent.id,
-          :target_job_id => self.id,
-        })
+    self.phase_key = :error
+    self.finished_at = signal.event.occurred_at
+    signal.fire(self, :"error.job.job.tengine", {
+        :exit_status => self.exit_status,
+        :target_jobnet_id => parent.id,
+        :target_job_id => self.id,
+      })
   end
   available :job_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
 
