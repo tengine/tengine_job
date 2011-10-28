@@ -18,16 +18,25 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_activate(signal)
-    complete_origin_edge(signal)
-    self.phase_key = :starting
-    self.started_at = signal.event.occurred_at
-    parent.ack(signal)
-    # 実際にSSHでスクリプトを実行
-    execution = signal.execution
-    execution.signal = signal # ackを呼び返してもらうための苦肉の策
-    run(execution)
+    case phase_key
+    when :initialized then
+      # 特別ルール「starting直前stop」
+      # initializedに戻されたジョブに対して、:readyになる際にtransmitで送信されたイベントを受け取って、
+      # activateしようとすると状態は遷移しないが、後続のエッジを実行する。
+      # (エッジを実行しようとした際、エッジがclosedならばそのジョブネットのEndに遷移する。)
+      next_edges.first.transmit(signal)
+    when :ready then
+      complete_origin_edge(signal)
+      self.phase_key = :starting
+      self.started_at = signal.event.occurred_at
+      parent.ack(signal)
+      # 実際にSSHでスクリプトを実行
+      execution = signal.execution
+      execution.signal = signal # ackを呼び返してもらうための苦肉の策
+      run(execution)
+    end
   end
-  available(:job_activate, :on => :ready,
+  available(:job_activate, :on => [:initialized, :ready],
     :ignored => [:starting, :running, :dying, :success, :error, :stuck])
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
@@ -73,11 +82,6 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   def job_fire_stop(signal)
     return if self.phase_key == :initialized
-
-    if self.executing_pid.blank?
-      Tengine.logger.warn("PID is blank when fire_stop!!\n#{self.inspect}\n  " << caller.join("\n  "))
-    end
-
     signal.fire(self, :"stop.job.job.tengine", {
         :target_jobnet_id => parent.id,
         :target_job_id => self.id,
@@ -85,10 +89,19 @@ module Tengine::Job::Jobnet::JobStateTransition
   end
 
   def job_stop(signal)
-    self.phase_key = :dying
-    self.stopped_at = signal.event.occurred_at
-    self.stop_reason = signal.event[:stop_reason]
-    kill(signal.execution)
+    case phase_key
+    when :ready then
+      self.phase_key = :initialized
+      self.stopped_at = signal.event.occurred_at
+      self.stop_reason = signal.event[:stop_reason]
+      next_edges.first.transmit(signal)
+    when :starting then
+    when :running then
+      self.phase_key = :dying
+      self.stopped_at = signal.event.occurred_at
+      self.stop_reason = signal.event[:stop_reason]
+      kill(signal.execution)
+    end
   end
   available :job_stop, :on => [:ready, :starting, :running], :ignored => [:initialized, :dying, :success, :error, :stuck]
 

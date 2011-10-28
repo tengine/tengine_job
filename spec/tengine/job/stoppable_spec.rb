@@ -24,7 +24,7 @@ describe Tengine::Job::Stoppable do
         @signal = Tengine::Job::Signal.new(@mock_event)
       end
 
-      context "何も変更なし" do
+      context "強制停止しても何も変更なし" do
         ([:dying, :success, :error, :stuck]).each do |phase_key|
           it "#{phase_key}の場合" do
             @ctx[:j1110].phase_key = phase_key
@@ -34,17 +34,47 @@ describe Tengine::Job::Stoppable do
             @ctx[:j1110].phase_key.should == phase_key
           end
         end
+      end
 
-        (Tengine::Job::JobnetActual.phase_keys - [:initialized, :ready, :starting, :running, :dying, :success, :error, :stuck]).each do |phase_key|
-          it "#{phase_key}の場合" do
-            @mock_event.should_receive(:[]).with(:stop_reason).and_return("test_stopping")
-            @ctx[:j1110].phase_key = phase_key
-            expect{
-              @ctx[:j1110].stop(@signal)
-            }.to raise_error(Tengine::Job::Executable::PhaseError, "job_stop not available on #{phase_key.inspect}")
+      context ":readyならば:initializedに戻す" do
+        # 特別ルール「starting直前stop」
+        # initializedに戻されたジョブに対して、:readyになる際にtransmitで送信されたイベントを受け取って、
+        # activateしようとすると状態は遷移しないが、後続のエッジを実行する。
+        # (エッジを実行しようとした際、エッジがclosedならばそのジョブネットのEndに遷移する。)
+
+        it "(ジョブネットに対するstopによって)後続のエッジをcloseしてある場合" do
+          t = Time.now.utc
+          @mock_event.should_receive(:occurred_at).and_return(t)
+          @mock_event.should_receive(:[]).with(:stop_reason).and_return("test stopping")
+          [:e6, :e7, :e8, :e9].each{|name| @ctx[name].status_key = :closed}
+          @ctx[:j1110].tap do |j|
+            j.phase_key = :ready
+            j.executing_pid = nil
+            @ctx[:j1100].should_receive(:jobnet_fail).with(@signal)
+            j.stop(@signal)
+            j.phase_key.should == :initialized
+            j.stop_reason.should == "test stopping"
+            j.stopped_at.to_time.iso8601.should == t.utc.iso8601
           end
         end
+
+        it "(ジョブを単体で停止する)エッジはcloseしていない場合" do
+          t = Time.now.utc
+          @mock_event.should_receive(:occurred_at).and_return(t)
+          @mock_event.should_receive(:[]).with(:stop_reason).and_return("test stopping")
+          @ctx[:j1110].tap do |j|
+            j.phase_key = :ready
+            j.executing_pid = nil
+            @ctx[:j1120].should_receive(:transmit).with(@signal)
+            j.stop(@signal)
+            j.phase_key.should == :initialized
+            j.stop_reason.should == "test stopping"
+            j.stopped_at.to_time.iso8601.should == t.utc.iso8601
+          end
+        end
+
       end
+
 
       shared_examples_for "SSHでtengine_job_agent_killを実行する" do |name, interval, signals|
         it do

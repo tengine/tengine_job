@@ -19,36 +19,74 @@ describe 'job_control_driver' do
         })
     end
 
-    it "ジョブの起動イベントを受け取ったら" do
-      @jobnet.phase_key = :starting
-      @ctx.edge(:e1).status_key = :transmitting
-      @ctx.vertex(:j11).phase_key = :ready
-      @jobnet.save!
-      @jobnet.reload
-      tengine.should_not_fire
-      mock_ssh = mock(:ssh)
-      mock_channel = mock(:channel)
-      Net::SSH.should_receive(:start).
-        with("184.72.20.1", "goku", :password => "dragonball").and_yield(mock_ssh)
-      mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
-      mock_channel.should_receive(:exec) do |*args|
-        args.length.should == 1
-        # args.first.should =~ %r<source \/etc\/profile && export MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" MM_ACTUAL_JOB_NAME_PATH=\\"/rjn0001/j11\\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" && tengine_job_agent_run -- \$HOME/j11\.sh>
-        args.first.should =~ %r<source \/etc\/profile>
-        args.first.should =~ %r<MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_ACTUAL_JOB_NAME_PATH=\"/rjn0001/j11\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\">
-        args.first.should =~ %r<job_test j11>
+    context "ジョブの起動イベントを受け取ったら" do
+      it "通常の場合" do
+        @jobnet.phase_key = :starting
+        @ctx.edge(:e1).status_key = :transmitting
+        @ctx.vertex(:j11).phase_key = :ready
+        @jobnet.save!
+        @jobnet.reload
+        tengine.should_not_fire
+        mock_ssh = mock(:ssh)
+        mock_channel = mock(:channel)
+        Net::SSH.should_receive(:start).
+          with("184.72.20.1", "goku", :password => "dragonball").and_yield(mock_ssh)
+        mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
+        mock_channel.should_receive(:exec) do |*args|
+          args.length.should == 1
+          # args.first.should =~ %r<source \/etc\/profile && export MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" MM_ACTUAL_JOB_NAME_PATH=\\"/rjn0001/j11\\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" && tengine_job_agent_run -- \$HOME/j11\.sh>
+          args.first.should =~ %r<source \/etc\/profile>
+          args.first.should =~ %r<MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_ACTUAL_JOB_NAME_PATH=\"/rjn0001/j11\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\">
+          args.first.should =~ %r<job_test j11>
+        end
+        tengine.receive("start.job.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_id => @jobnet.id.to_s,
+            :target_job_id => @ctx.vertex(:j11).id.to_s,
+          })
+        @jobnet.reload
+        @ctx.edge(:e1).status_key.should == :transmitted
+        @ctx.edge(:e2).status_key.should == :active
+        @ctx.vertex(:j11).phase_key.should == :starting
       end
-      tengine.receive("start.job.job.tengine", :properties => {
-          :execution_id => @execution.id.to_s,
-          :root_jobnet_id => @jobnet.id.to_s,
-          :target_jobnet_id => @jobnet.id.to_s,
-          :target_job_id => @ctx.vertex(:j11).id.to_s,
-        })
-      @jobnet.reload
-      @ctx.edge(:e1).status_key.should == :transmitted
-      @ctx.edge(:e2).status_key.should == :active
-      @ctx.vertex(:j11).phase_key.should == :starting
+
+      context "starting直前stopによってinitializedになっている場合" do
+        [:starting, :running].each do |root_phase_key|
+
+          it "ルートが#{root_phase_key}" do
+            @jobnet.phase_key = root_phase_key
+            @ctx[:e1].status_key = :closed
+            @ctx[:e2].status_key = :closed
+            @ctx[:e3].status_key = :closed
+            @ctx[:j11].phase_key = :initialized
+            @jobnet.save!
+            @jobnet.reload
+            tengine.should_fire(:"error.jobnet.job.tengine", {
+                :source_name => @ctx[:root].name_as_resource,
+                :properties=>{
+                  :execution_id => @execution.id.to_s,
+                  :root_jobnet_id => @jobnet.id.to_s,
+                  :target_jobnet_id => @jobnet.id.to_s,
+                }
+              })
+            tengine.receive("start.job.job.tengine", :properties => {
+                :execution_id => @execution.id.to_s,
+                :root_jobnet_id => @jobnet.id.to_s,
+                :target_jobnet_id => @jobnet.id.to_s,
+                :target_job_id => @ctx.vertex(:j11).id.to_s,
+              })
+            @jobnet.reload
+            @ctx.edge(:e1).status_key.should == :closed
+            @ctx.edge(:e2).status_key.should == :closed
+            @ctx.vertex(:j11).phase_key.should == :initialized
+            @jobnet.phase_key.should == :error
+          end
+        end
+
+      end
     end
+
 
     it "PIDを取得できたら" do
       @ctx.edge(:e1).status_key = :transmitted
