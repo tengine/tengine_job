@@ -16,6 +16,8 @@ class Tengine::Job::Execution
 
   belongs_to :root_jobnet, :class_name => "Tengine::Job::RootJobnetActual", :index => true, :inverse_of => :executions
 
+  attr_accessor :signal # runを実行して、ackを返す際に一時的にsignalを記録しておく属性です。それ以外には使用しないでください。
+
   # 実開始日時から求める予定終了時刻
   def actual_estimated_end
     return nil unless started_at

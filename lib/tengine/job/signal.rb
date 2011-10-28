@@ -8,10 +8,15 @@ class Tengine::Job::Signal
 
   attr_reader :paths, :reservations, :event
 
+  # @attribute 受け渡しのためにデータを一時的に保持する属性。
+  # 現時点ではジョブのrunからackを返す際にPIDを保持するために使用します。
+  attr_accessor :data
+
   def initialize(event)
     @paths = []
     @reservations = []
     @event = event
+    @data = nil
   end
 
   def execution

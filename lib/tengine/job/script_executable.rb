@@ -15,7 +15,12 @@ module Tengine::Job::ScriptExecutable
     return ack(@acked_pid) if @acked_pid
     cmd = build_command(execution)
     # puts "cmd:\n" << cmd
-    execute(cmd)
+    execute(cmd) do |ch, data|
+      if signal = execution.signal
+        signal.data = {:executing_pid => data.strip}
+        ack(signal)
+      end
+    end
   end
 
   def execute(cmd)
@@ -29,8 +34,7 @@ module Tengine::Job::ScriptExecutable
 
           channel.on_data do |ch, data|
             Tengine.logger.debug("got stdout: #{data}")
-            # puts "on_data: #{data.inspect}"
-            ack(data.strip)
+            yield(ch, data) if block_given?
           end
 
           channel.on_extended_data do |ch, type, data|
@@ -48,6 +52,11 @@ module Tengine::Job::ScriptExecutable
 
   def kill(execution)
     lines = source_profiles
+
+    if self.executing_pid.blank?
+      Tengine.logger.warn("PID is blank when kill!!\n#{self.inspect}\n  " << caller.join("\n  "))
+    end
+
     cmd = executable_command("tengine_job_agent_kill %s %d %s" % [
         self.executing_pid,
         self.actual_killing_signal_interval,

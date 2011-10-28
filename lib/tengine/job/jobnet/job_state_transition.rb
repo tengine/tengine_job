@@ -23,7 +23,9 @@ module Tengine::Job::Jobnet::JobStateTransition
     self.started_at = signal.event.occurred_at
     parent.ack(signal)
     # 実際にSSHでスクリプトを実行
-    run(signal.execution)
+    execution = signal.execution
+    execution.signal = signal # ackを呼び返してもらうための苦肉の策
+    run(execution)
   end
   available(:job_activate, :on => :ready,
     :ignored => [:starting, :running, :dying, :success, :error, :stuck])
@@ -31,6 +33,7 @@ module Tengine::Job::Jobnet::JobStateTransition
   # ハンドリングするドライバ: ジョブ制御ドライバ
   # スクリプトのプロセスのPIDを取得できたときに実行されます
   def job_ack(signal)
+    self.executing_pid = (signal.data || {})[:executing_pid]
     self.phase_key = :running
   end
   available(:job_ack, :on => :starting,
@@ -70,6 +73,11 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   def job_fire_stop(signal)
     return if self.phase_key == :initialized
+
+    if self.executing_pid.blank?
+      Tengine.logger.warn("PID is blank when fire_stop!!\n#{self.inspect}\n  " << caller.join("\n  "))
+    end
+
     signal.fire(self, :"stop.job.job.tengine", {
         :target_jobnet_id => parent.id,
         :target_job_id => self.id,

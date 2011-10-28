@@ -45,6 +45,7 @@ describe Tengine::Job::Edge do
         @ctx[:j11].phase_key = :ready
         @ctx[:root].save!
         @ctx[:j11].should_receive(:execute)
+        @execution.should_receive(:signal=).with(@signal)
         @ctx[:j11].activate(@signal)
         @ctx[:e1].status_key.should == :transmitted
         @ctx[:j11].phase_key.should == :starting
