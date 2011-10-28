@@ -48,10 +48,10 @@ module Tengine::Job::ScriptExecutable
 
   def kill(execution)
     lines = source_profiles
-    cmd = executable_command("tengine_job_agent_kill %s --signals=%s --interval=%d" % [
+    cmd = executable_command("tengine_job_agent_kill %s %d %s" % [
         self.executing_pid,
+        self.actual_killing_signal_interval,
         self.actual_killing_signals.join(","),
-        self.actual_killing_signal_interval
       ])
     lines << cmd
     cmd = lines.join(' && ')

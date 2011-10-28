@@ -46,7 +46,7 @@ describe Tengine::Job::Stoppable do
         end
       end
 
-      shared_examples_for "SSHでtengine_job_agent_killを実行する" do |name, signals, interval|
+      shared_examples_for "SSHでtengine_job_agent_killを実行する" do |name, interval, signals|
         it do
           @pid = "111"
           mock_ssh = mock(:ssh)
@@ -60,7 +60,7 @@ describe Tengine::Job::Stoppable do
             args.length.should == 1
             args.first.tap do |cmd|
               cmd.should =~ %r<source \/etc\/profile>
-              cmd.should =~ /tengine_job_agent_kill #{@pid} --signals=#{signals} --interval=#{interval}/
+              cmd.should =~ /tengine_job_agent_kill #{@pid} #{interval} #{signals}/
             end
           end
           t = Time.now.utc
@@ -78,12 +78,12 @@ describe Tengine::Job::Stoppable do
       end
 
       [
-        [:j1110, "INT,HUP,QUIT,KILL", 30],
-        [:j1121, "INT,HUP,QUIT,KILL", 30],
-        [:j1131, "INT,HUP,QUIT,KILL", 30],
-        [:j1140, "INT,HUP,QUIT,KILL", 30],
-        [:j1200, "KILL", 10],
-        [:j1310, "KILL", 10],
+        [:j1110, 30, "INT,HUP,QUIT,KILL"],
+        [:j1121, 30, "INT,HUP,QUIT,KILL"],
+        [:j1131, 30, "INT,HUP,QUIT,KILL"],
+        [:j1140, 30, "INT,HUP,QUIT,KILL"],
+        [:j1200, 10, "KILL"],
+        [:j1310, 10, "KILL"],
       ].each do |args|
         it_should_behave_like "SSHでtengine_job_agent_killを実行する", *args
       end

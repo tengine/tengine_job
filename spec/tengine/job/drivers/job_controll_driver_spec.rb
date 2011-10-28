@@ -122,9 +122,10 @@ describe 'job_control_driver' do
         with("184.72.20.1", "goku", :password => "dragonball").and_yield(mock_ssh)
       mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
       mock_channel.should_receive(:exec) do |*args|
+        interval = Tengine::Job::Killing::DEFAULT_KILLING_SIGNAL_INTERVAL
         args.length.should == 1
         args.first.should =~ %r<source \/etc\/profile>
-        args.first.should =~ %r<tengine_job_agent_kill #{@pid}>
+        args.first.should =~ %r<tengine_job_agent_kill #{@pid} #{interval} KILL$>
       end
       tengine.receive(:"stop.job.job.tengine",
         :source_name => @ctx[:j11].name_as_resource,

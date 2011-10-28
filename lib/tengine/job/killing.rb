@@ -12,6 +12,8 @@ module Tengine::Job::Killing
     field :killing_signal_interval, :type => Integer # 強制停止時にkilling_signalsで定義されるシグナルを順次送信する間隔。
   end
 
+  DEFAULT_KILLING_SIGNAL_INTERVAL = 10
+
   def actual_killing_signals
     killing_signals ? killing_signals :
       (parent ? parent.actual_killing_signals : ['KILL'])
@@ -19,7 +21,7 @@ module Tengine::Job::Killing
 
   def actual_killing_signal_interval
     killing_signals ? killing_signal_interval :
-      (parent ? parent.actual_killing_signal_interval : 10)
+      (parent ? parent.actual_killing_signal_interval : DEFAULT_KILLING_SIGNAL_INTERVAL)
   end
 
 end
