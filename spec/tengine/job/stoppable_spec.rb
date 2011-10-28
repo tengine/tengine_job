@@ -77,13 +77,14 @@ describe Tengine::Job::Stoppable do
         end
       end
 
+      default_interval = Tengine::Job::Killing::DEFAULT_KILLING_SIGNAL_INTERVAL
       [
         [:j1110, 30, "INT,HUP,QUIT,KILL"],
         [:j1121, 30, "INT,HUP,QUIT,KILL"],
         [:j1131, 30, "INT,HUP,QUIT,KILL"],
         [:j1140, 30, "INT,HUP,QUIT,KILL"],
-        [:j1200, 10, "KILL"],
-        [:j1310, 10, "KILL"],
+        [:j1200, default_interval, "KILL"],
+        [:j1310, default_interval, "KILL"],
       ].each do |args|
         it_should_behave_like "SSHでtengine_job_agent_killを実行する", *args
       end

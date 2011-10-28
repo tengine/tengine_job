@@ -16,7 +16,7 @@ describe Tengine::Job::Killing do
         its(:killing_signals){ should == nil}
         its(:killing_signal_interval){ should == nil}
         its(:actual_killing_signals){ should == ['KILL']}
-        its(:actual_killing_signal_interval){ should == 10}
+        its(:actual_killing_signal_interval){ should == Tengine::Job::Killing::DEFAULT_KILLING_SIGNAL_INTERVAL}
       end
     end
 
@@ -38,7 +38,7 @@ describe Tengine::Job::Killing do
           its(:killing_signals){ should == nil}
           its(:killing_signal_interval){ should == nil}
           its(:actual_killing_signals){ should == ['KILL']}
-          its(:actual_killing_signal_interval){ should == 10}
+          its(:actual_killing_signal_interval){ should == Tengine::Job::Killing::DEFAULT_KILLING_SIGNAL_INTERVAL}
         end
       end
 
