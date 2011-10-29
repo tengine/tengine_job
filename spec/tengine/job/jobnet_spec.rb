@@ -55,7 +55,7 @@ describe Tengine::Job::Jobnet do
     describe 'find_descendant系' do
       all_node_names = %w[j1000 j1100 j1110 j1120 j1200 j1210 j1211 j1212 j1220 j1221 j1222]
 
-      context "ルートはルート自身を見つけることができない" do
+      context "find_descendant*メソッドではルートはルート自身を見つけることができない" do
         it :find_desendant do
           root = @j1000
           root.find_descendant(root.id).should be_nil
@@ -67,70 +67,104 @@ describe Tengine::Job::Jobnet do
         end
       end
 
-      (all_node_names -%w[j1000]).each do |node_name|
-        context "ルートから#{node_name}を見つけることができる" do
-          context :find_descendant do
-            it "BSON::ObjectId" do
+      context "vertex*メソッドではルートはルート自身を見つけることができる" do
+        it :vertex do
+          root = @j1000
+          root.vertex(root.id).should == root
+        end
+
+        it :vertex_by_name_path do
+          root = @j1000
+          root.vertex_by_name_path('/j1000').should == root
+        end
+      end
+
+      [:find_descendant, :vertex].each do |method_name|
+        by_name_path_method_name = :"#{method_name}_by_name_path"
+
+        (all_node_names -%w[j1000]).each do |node_name|
+          context "ルートから#{node_name}を見つけることができる" do
+            context method_name do
+              it "BSON::ObjectId" do
+                root = @j1000
+                node = instance_variable_get(:"@#{node_name}")
+                actual = root.send(method_name, node.id)
+                actual.id.should == node.id
+                actual.name.should == node.name
+              end
+
+              it "String" do
+                root = @j1000
+                node = instance_variable_get(:"@#{node_name}")
+                actual = root.send(method_name, node.id.to_s)
+                actual.id.should == node.id
+                actual.name.should == node.name
+              end
+            end
+
+            it by_name_path_method_name do
               root = @j1000
               node = instance_variable_get(:"@#{node_name}")
-              actual = root.find_descendant(node.id)
+              actual = root.send(by_name_path_method_name, name_to_name_path[node_name])
+              actual.id.should == node.id
+              actual.name.should == node.name
+            end
+          end
+        end
+
+        (all_node_names -%w[j1000 j1100 j1110 j1120 j1200]).each do |node_name|
+          context "j1200から#{node_name}を見つけることができる" do
+            it :find_descendant do
+              base = @j1200
+              node = instance_variable_get(:"@#{node_name}")
+              actual = base.send(method_name, node.id)
               actual.id.should == node.id
               actual.name.should == node.name
             end
 
-            it "String" do
-              root = @j1000
+            it :find_descendant_by_name_path do
+              base = @j1200
               node = instance_variable_get(:"@#{node_name}")
-              actual = root.find_descendant(node.id.to_s)
+              actual = base.send(by_name_path_method_name, name_to_name_path[node_name])
               actual.id.should == node.id
               actual.name.should == node.name
             end
-          end
 
-          it :find_descendant_by_name_path do
-            root = @j1000
-            node = instance_variable_get(:"@#{node_name}")
-            actual = root.find_descendant_by_name_path(name_to_name_path[node_name])
-            actual.id.should == node.id
-            actual.name.should == node.name
+          end
+        end
+
+        %w[j1000 j1100 j1110 j1120].each do |node_name|
+          context "j1200から#{node_name}を見つけることはできない" do
+            it :find_descendant do
+              base = @j1200
+              node = instance_variable_get(:"@#{node_name}")
+              base.send(method_name, node.id).should == nil
+            end
+
+            it :find_descendant_by_name_path do
+              base = @j1200
+              node = instance_variable_get(:"@#{node_name}")
+              base.send(by_name_path_method_name, name_to_name_path[node_name]).should == nil
+            end
           end
         end
       end
 
-      (all_node_names -%w[j1000 j1100 j1110 j1120 j1200]).each do |node_name|
-        context "j1200から#{node_name}を見つけることができる" do
-          it :find_descendant do
-            base = @j1200
-            node = instance_variable_get(:"@#{node_name}")
-            actual = base.find_descendant(node.id)
-            actual.id.should == node.id
-            actual.name.should == node.name
-          end
-
-          it :find_descendant_by_name_path do
-            base = @j1200
-            node = instance_variable_get(:"@#{node_name}")
-            actual = base.find_descendant_by_name_path(name_to_name_path[node_name])
-            actual.id.should == node.id
-            actual.name.should == node.name
-          end
-
+      context "j1200からj1200を見つけることはできない" do
+        it :find_descendant do
+          @j1200.find_descendant(@j1200.id).should == nil
         end
-      end
 
-      %w[j1000 j1100 j1110 j1120 j1200].each do |node_name|
-        context "j1200から#{node_name}を見つけることはできない" do
-          it :find_descendant do
-            base = @j1200
-            node = instance_variable_get(:"@#{node_name}")
-            base.find_descendant(node.id).should == nil
-          end
+        it :find_descendant_by_name_path do
+          @j1200.find_descendant_by_name_path(@j1200.name_path).should == nil
+        end
 
-          it :find_descendant_by_name_path do
-            base = @j1200
-            node = instance_variable_get(:"@#{node_name}")
-            base.find_descendant_by_name_path(name_to_name_path[node_name]).should == nil
-          end
+        it :vertex do
+          @j1200.vertex(@j1200.id).should == @j1200
+        end
+
+        it :vertex_by_name_path do
+          @j1200.vertex_by_name_path(@j1200.name_path).should == @j1200
         end
       end
     end
