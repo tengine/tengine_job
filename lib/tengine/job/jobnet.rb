@@ -50,6 +50,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   def finally_vertex
     self.children.detect{|child| child.is_a?(Tengine::Job::Jobnet) && (child.jobnet_type_key == :finally)}
   end
+  alias_method :finally_jobnet, :finally_vertex
 
   def with_start
     self.children << Tengine::Job::Start.new
@@ -66,10 +67,6 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
       self.children << _end
     end
     _end
-  end
-
-  def finally_jobnet
-    self.children.detect{|c| c.is_a?(Tengine::Job::Jobnet) && (c.jobnet_type_key == :finally)}
   end
 
   def child_by_name(name)
