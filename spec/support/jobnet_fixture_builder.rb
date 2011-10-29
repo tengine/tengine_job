@@ -90,6 +90,13 @@ class JobnetFixtureBuilder
     result
   end
 
+  def new_expansion(name, attrs = {}, &block)
+    raise "expansion can be used only as template" unless @mode == :template
+    result = Tengine::Job::Expansion.new({:name => name}.update(attrs || {}))
+    @instances[name.to_sym] = result
+    result
+  end
+
 
   ABBREVIATES = {
     'start' => 'S',

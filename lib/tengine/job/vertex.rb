@@ -88,43 +88,38 @@ class Tengine::Job::Vertex
     end
   end
 
+  def ancestors_until_expansion
+    if (parent = self.parent) && !self.was_expansion?
+      parent.ancestors_until_expansion + [parent]
+    else
+      []
+    end
+  end
 
   IGNORED_FIELD_NAMES = ["_type", "_id"].freeze
 
   def actual_class; self.class; end
+  def generating_children; self.children; end
+  def generating_edges; respond_to?(:edges) ? self.edges : []; end
+
   def generate(klass = actual_class)
     field_names = self.class.fields.keys - IGNORED_FIELD_NAMES
     attrs = field_names.inject({}){|d, name| d[name] = send(name); d }
     result = klass.new(attrs)
     src_to_generated = {}
-    self.children.each do |child|
+    generating_children.each do |child|
       generated = child.generate
       src_to_generated[child.id] = generated.id
       result.children << generated
     end
-    if respond_to?(:edges)
-      edges.each do |edge|
-        generated = edge.class.new
-        generated.origin_id = src_to_generated[edge.origin_id]
-        generated.destination_id = src_to_generated[edge.destination_id]
-        result.edges << generated
-      end
+    generating_edges.each do |edge|
+      generated = edge.class.new
+      generated.origin_id = src_to_generated[edge.origin_id]
+      generated.destination_id = src_to_generated[edge.destination_id]
+      result.edges << generated
     end
     result
   end
-
-
-
-
-  # def ancestors_until_expansion
-  #   if (parent = self.parent) && !self.was_expansion?
-  #     parent.ancestors_until_expansion + [parent]
-  #   else
-  #     []
-  #   end
-  # end
-  # TODO expansionをちゃんと実装する際にコメントアウトを外します
-  alias_method :ancestors_until_expansion, :ancestors
 
   def accept_visitor(visitor)
     visitor.visit(self)
