@@ -15,10 +15,10 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
   STATE_TRANSITION_METHODS = [:transmit, :activate, :ack, :finish, :succeed, :fail, :fire_stop, :stop].freeze
   STATE_TRANSITION_METHODS.each do |method_name|
     class_eval(<<-END_OF_METHOD, __FILE__, __LINE__ + 1)
-      def #{method_name}(signal)
+      def #{method_name}(signal, &block)
         script_executable? ?
-          job_#{method_name}(signal) :
-          jobnet_#{method_name}(signal)
+          job_#{method_name}(signal, &block) :
+          jobnet_#{method_name}(signal, &block)
       end
     END_OF_METHOD
   end

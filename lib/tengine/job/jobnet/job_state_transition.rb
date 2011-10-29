@@ -88,7 +88,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       })
   end
 
-  def job_stop(signal)
+  def job_stop(signal, &block)
     case phase_key
     when :ready then
       self.phase_key = :initialized
@@ -96,6 +96,15 @@ module Tengine::Job::Jobnet::JobStateTransition
       self.stop_reason = signal.event[:stop_reason]
       next_edges.first.transmit(signal)
     when :starting then
+      job = nil
+      loop do
+        root = self.root.reload # class.find(self.root.id)
+        job = root.find_descendant(self.id)
+        break unless job.phase_key == :starting
+        yield if block_given? # テストの為にyieldしています
+        sleep(0.1)
+      end
+      job.stop(signal, &block)
     when :running then
       self.phase_key = :dying
       self.stopped_at = signal.event.occurred_at
