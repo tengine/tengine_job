@@ -58,13 +58,13 @@ describe 'stop.jobnet.job.tengine' do
             [:e1, :e5, :e6].each{|name| @ctx.edge(name).status_key.should == :transmitted }
             (2..4).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
             (7..9).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
-            (10..11).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :closed] }
+            (10..11).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :closing] }
             (12..15).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
           end
         end
 
         [
-          [:ready   , :transmitting, :closed],
+          [:ready   , :transmitting, :closing],
           [:starting, :transmitted , :transmitted],
           [:running , :transmitted , :transmitted],
         ].each do |(j1121_phase_key, e10_status_key, e10_new_status_key)|
@@ -95,7 +95,7 @@ describe 'stop.jobnet.job.tengine' do
               @ctx.vertex(:j1121).tap{|j| j.phase_key.should == j1121_phase_key}
               [:e1, :e5, :e6].each{|name| @ctx.edge(name).status_key.should == :transmitted }
               [:e10].each{|name| @ctx.edge(name).status_key.should == e10_new_status_key }
-              [:e11].each{|name| @ctx.edge(name).status_key.should == :closed }
+              [:e11].each{|name| @ctx.edge(name).status_key.should == :closing }
               (2..4).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
               (7..9).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
               (12..15).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }

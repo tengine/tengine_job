@@ -46,7 +46,7 @@ describe Tengine::Job::Stoppable do
           t = Time.now.utc
           @mock_event.should_receive(:occurred_at).and_return(t)
           @mock_event.should_receive(:[]).with(:stop_reason).and_return("test stopping")
-          [:e6, :e7, :e8, :e9].each{|name| @ctx[name].status_key = :closed}
+          [:e6, :e7, :e8, :e9].each{|name| @ctx[name].status_key = :closing}
           @ctx[:j1110].tap do |j|
             j.phase_key = :ready
             j.executing_pid = nil
@@ -56,6 +56,7 @@ describe Tengine::Job::Stoppable do
             j.stop_reason.should == "test stopping"
             j.stopped_at.to_time.iso8601.should == t.utc.iso8601
           end
+          [:e6, :e7, :e8, :e9].each{|name| @ctx[name].status_key.should == :closed}
         end
 
         it "(ジョブを単体で停止する)エッジはcloseしていない場合" do

@@ -28,7 +28,8 @@ class Tengine::Job::Edge
     entry 20, :transmitted , "transmitted" , :alive => false
     entry 30, :suspended   , "suspended"   , :alive => true
     entry 31, :keeping     , "keeping"     , :alive => true
-    entry 40, :closed      , "closed"      , :alive => false
+    entry 40, :closing     , "closing"     , :alive => false
+    entry 50, :closed      , "closed"      , :alive => false
   end
 
   def alive?; !!status_entry[:alive]; end
@@ -63,9 +64,16 @@ class Tengine::Job::Edge
       signal.leave(self)
     when :suspended then
       self.status_key = :keeping
-    when :closed
+    when :closing then
+      self.status_key = :closed
       signal.paths << self
-      owner.end_vertex.transmit(signal)
+      signal.with_paths_backup do
+        if destination.is_a?(Tengine::Job::Job)
+          destination.next_edges.first.transmit(signal)
+        else
+          signal.leave(self)
+        end
+      end
     end
   end
 
@@ -74,14 +82,14 @@ class Tengine::Job::Edge
     when :transmitting then
       self.status_key = :transmitted
     when :active, :suspended, :keeping, :closed then
-      raise Tengine::Job::Edge::StatusError, "transmit not available on #{status_key.inspect} at #{self.inspect}"
+      raise Tengine::Job::Edge::StatusError, "complete not available on #{status_key.inspect} at #{self.inspect}"
     end
   end
 
   def close(signal)
     case status_key
     when :active, :suspended, :keeping, :transmitting then
-      self.status_key = :closed
+      self.status_key = :closing
     end
   end
 
@@ -98,7 +106,7 @@ class Tengine::Job::Edge
       if obj.is_a?(Tengine::Job::Vertex)
         obj.next_edges.each{|edge| edge.accept_visitor(self)}
       elsif obj.is_a?(Tengine::Job::Edge)
-        obj.status_key = :closed
+        obj.close(nil)
         obj.destination.accept_visitor(self)
       else
         raise "Unsupported class #{obj.inspect}"

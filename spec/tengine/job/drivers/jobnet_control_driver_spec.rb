@@ -261,7 +261,7 @@ describe 'job_control_driver' do
         @ctx.vertex(:j12).phase_key.should == :running
         @ctx.edge(:e4).status_key.should == :closed
         @ctx.edge(:e5).status_key.should == :active
-        @ctx.edge(:e6).status_key.should == :closed
+        @ctx.edge(:e6).status_key.should == :closing
       end
     end
 
@@ -319,7 +319,7 @@ describe 'job_control_driver' do
           @ctx[:e3].status_key = :transmitted
           @ctx[:e4].status_key = :closed
           @ctx[:e5].status_key = :active
-          @ctx[:e6].status_key = :closed
+          @ctx[:e6].status_key = :closing
           @ctx[:j11].phase_key = :error
           @ctx[:j12].phase_key = :running
           @root.save!
@@ -423,7 +423,7 @@ describe 'job_control_driver' do
           @ctx.edge(:e4).status_key.should == :closed
           @ctx.edge(:e5).status_key.should == :active
           @ctx.edge(:e6).status_key.should == :active
-          @ctx.edge(:e7).status_key.should == :closed
+          @ctx.edge(:e7).status_key.should == :closing
         end
       end
 

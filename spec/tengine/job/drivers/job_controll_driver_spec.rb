@@ -56,9 +56,9 @@ describe 'job_control_driver' do
 
           it "ルートが#{root_phase_key}" do
             @jobnet.phase_key = root_phase_key
-            @ctx[:e1].status_key = :closed
-            @ctx[:e2].status_key = :closed
-            @ctx[:e3].status_key = :closed
+            @ctx[:e1].status_key = :closing
+            @ctx[:e2].status_key = :closing
+            @ctx[:e3].status_key = :closing
             @ctx[:j11].phase_key = :initialized
             @jobnet.save!
             @jobnet.reload
@@ -77,8 +77,9 @@ describe 'job_control_driver' do
                 :target_job_id => @ctx.vertex(:j11).id.to_s,
               })
             @jobnet.reload
-            @ctx.edge(:e1).status_key.should == :closed
+            @ctx.edge(:e1).status_key.should == :closing
             @ctx.edge(:e2).status_key.should == :closed
+            @ctx.edge(:e3).status_key.should == :closed
             @ctx.vertex(:j11).phase_key.should == :initialized
             @jobnet.phase_key.should == :error
           end

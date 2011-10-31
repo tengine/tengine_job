@@ -37,6 +37,7 @@ driver :jobnet_control_driver do
       signal.with_paths_backup do
         edge = target_job.next_edges.first
         edge.close_followings
+        edge.transmit(signal)
       end
       target_jobnet = target_job.parent
       target_jobnet.jobnet_fail(signal)
@@ -78,6 +79,7 @@ driver :jobnet_control_driver do
         else
           if edge = (target_jobnet.next_edges || []).first
             edge.close_followings
+            edge.transmit(signal)
           else
             (target_jobnet.parent || signal.execution).fail(signal)
           end
