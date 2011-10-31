@@ -6,7 +6,7 @@ module Tengine::Job::DslBinder
   include Tengine::Job::DslEvaluator
 
   def jobnet(name, *args, &block)
-    # ジョブネットはロード時にDBに登録され、バインド時には特になにも必要はありません。
+    Tengine::Job::RootJobnetTemplate.by_name(name)
   end
 
 end
