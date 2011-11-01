@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.1.4"
+  s.version = "0.1.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["akima"]
-  s.date = "2011-10-26"
+  s.date = "2011-11-01"
   s.description = "tengine_job provides jobnet management"
   s.email = "akima@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -28,7 +28,9 @@ Gem::Specification.new do |s|
     "examples/0004_retry_one_layer.rb",
     "examples/0005_retry_two_layer.rb",
     "examples/0006_retry_three_layer.rb",
+    "examples/0007_simple_jobnet.rb",
     "examples/VERSION",
+    "examples/tengine_job_test.sh",
     "lib/tengine/job.rb",
     "lib/tengine/job/category.rb",
     "lib/tengine/job/connectable.rb",
@@ -49,6 +51,7 @@ Gem::Specification.new do |s|
     "lib/tengine/job/jobnet/builder.rb",
     "lib/tengine/job/jobnet/job_state_transition.rb",
     "lib/tengine/job/jobnet/jobnet_state_transition.rb",
+    "lib/tengine/job/jobnet/state_transition.rb",
     "lib/tengine/job/jobnet_actual.rb",
     "lib/tengine/job/jobnet_template.rb",
     "lib/tengine/job/join.rb",
@@ -73,7 +76,10 @@ Gem::Specification.new do |s|
     "spec/fixtures/rjn_0005_2jobs_and_1job_parallel_jobnet_builder.rb",
     "spec/fixtures/rjn_0006_nested_fork_jobnet_builder.rb",
     "spec/fixtures/rjn_0007_nested_and_finally_builder.rb",
+    "spec/fixtures/rjn_0008_expansion_fixture.rb",
     "spec/fixtures/rjn_means_root_jobnet",
+    "spec/fixtures/test_credential_fixture.rb",
+    "spec/fixtures/test_server_fixture.rb",
     "spec/mongoid.yml",
     "spec/spec_helper.rb",
     "spec/support/jobnet_fixture_builder.rb",
@@ -83,7 +89,9 @@ Gem::Specification.new do |s|
     "spec/tengine/job/drivers/job_execution_driver_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver/nested_and_finally_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver/nested_jobnet_spec.rb",
+    "spec/tengine/job/drivers/jobnet_control_driver/stop_jobnet_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver_spec.rb",
+    "spec/tengine/job/dsl_binder_spec.rb",
     "spec/tengine/job/dsl_loader_spec.rb",
     "spec/tengine/job/dsls/0001_hadoop_job_run.rb",
     "spec/tengine/job/dsls/0002_join_and_join.rb",
@@ -91,6 +99,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/dsls/0004_complex_fork_and_join.rb",
     "spec/tengine/job/dsls/0005_finally.rb",
     "spec/tengine/job/dsls/0006_expansion.rb",
+    "spec/tengine/job/dsls/0007_execute_job_on_event.rb",
     "spec/tengine/job/dsls/VERSION",
     "spec/tengine/job/edge_spec.rb",
     "spec/tengine/job/examples_spec.rb",
@@ -100,9 +109,11 @@ Gem::Specification.new do |s|
     "spec/tengine/job/jobnet_actual_spec.rb",
     "spec/tengine/job/jobnet_spec.rb",
     "spec/tengine/job/jobnet_template_spec.rb",
+    "spec/tengine/job/killing_spec.rb",
     "spec/tengine/job/root_jobnet_actual_spec.rb",
     "spec/tengine/job/root_jobnet_template_spec.rb",
     "spec/tengine/job/script_executable_spec.rb",
+    "spec/tengine/job/stoppable_spec.rb",
     "spec/tengine/job/vertex_spec.rb",
     "spec/tengine_job_spec.rb",
     "tengine_job.gemspec",
@@ -118,8 +129,8 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<tengine_core>, ["~> 0.1.14"])
-      s.add_runtime_dependency(%q<tengine_resource>, ["~> 0.0.4"])
+      s.add_runtime_dependency(%q<tengine_core>, ["~> 0.1.15"])
+      s.add_runtime_dependency(%q<tengine_resource>, ["~> 0.0.5"])
       s.add_development_dependency(%q<rspec>, ["~> 2.6.0"])
       s.add_development_dependency(%q<factory_girl>, ["~> 2.1.2"])
       s.add_development_dependency(%q<yard>, ["~> 0.7.2"])
@@ -128,8 +139,8 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<simplecov>, ["~> 0.5.3"])
       s.add_development_dependency(%q<ZenTest>, ["~> 4.6.2"])
     else
-      s.add_dependency(%q<tengine_core>, ["~> 0.1.14"])
-      s.add_dependency(%q<tengine_resource>, ["~> 0.0.4"])
+      s.add_dependency(%q<tengine_core>, ["~> 0.1.15"])
+      s.add_dependency(%q<tengine_resource>, ["~> 0.0.5"])
       s.add_dependency(%q<rspec>, ["~> 2.6.0"])
       s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
       s.add_dependency(%q<yard>, ["~> 0.7.2"])
@@ -139,8 +150,8 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<ZenTest>, ["~> 4.6.2"])
     end
   else
-    s.add_dependency(%q<tengine_core>, ["~> 0.1.14"])
-    s.add_dependency(%q<tengine_resource>, ["~> 0.0.4"])
+    s.add_dependency(%q<tengine_core>, ["~> 0.1.15"])
+    s.add_dependency(%q<tengine_resource>, ["~> 0.0.5"])
     s.add_dependency(%q<rspec>, ["~> 2.6.0"])
     s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
     s.add_dependency(%q<yard>, ["~> 0.7.2"])
