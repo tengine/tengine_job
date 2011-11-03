@@ -30,7 +30,7 @@ describe 'job_control_driver' do
         mock_ssh = mock(:ssh)
         mock_channel = mock(:channel)
         Net::SSH.should_receive(:start).
-          with("184.72.20.1", "goku", :password => "dragonball").and_yield(mock_ssh)
+          with("10.162.153.1", "goku", :password => "dragonball").and_yield(mock_ssh)
         mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
         mock_channel.should_receive(:exec) do |*args|
           args.length.should == 1
@@ -161,7 +161,7 @@ describe 'job_control_driver' do
       mock_ssh = mock(:ssh)
       mock_channel = mock(:channel)
       Net::SSH.should_receive(:start).
-        with("184.72.20.1", "goku", :password => "dragonball").and_yield(mock_ssh)
+        with("10.162.153.1", "goku", :password => "dragonball").and_yield(mock_ssh)
       mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
       mock_channel.should_receive(:exec) do |*args|
         interval = Tengine::Job::Killing::DEFAULT_KILLING_SIGNAL_INTERVAL

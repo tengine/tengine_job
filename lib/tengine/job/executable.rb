@@ -15,7 +15,7 @@ module Tengine::Job::Executable
     field :started_at , :type => Time     # 開始時刻。以前はDateTimeでしたが、実績ベースの予定終了時刻の計算のためにTimeにしました
     field :finished_at, :type => Time     # 終了時刻。強制終了時にも設定されます。
 
-    include SelectableAttr::Base
+    include Tengine::Core::SelectableAttr
     selectable_attr :phase_cd do
       entry 20, :initialized, 'initialized'
       entry 30, :ready      , "ready"

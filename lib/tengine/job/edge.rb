@@ -5,9 +5,9 @@ require 'selectable_attr'
 # Vertexとともにジョブネットを構成するグラフの「辺」を表すモデル
 # Tengine::Job::Jobnetにembeddedされます。
 class Tengine::Job::Edge
-  include SelectableAttr::Base
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Tengine::Core::SelectableAttr
   include Tengine::Job::Signal::Transmittable
 
   class StatusError < StandardError

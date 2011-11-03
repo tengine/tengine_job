@@ -6,7 +6,7 @@ require 'selectable_attr'
 # ジョブの始端から終端までを持ち、VertexとEdgeを組み合わせてジョブネットを構成することができるVertex。
 # 自身もジョブネットを構成するVertexの一部として扱われる。
 class Tengine::Job::Jobnet < Tengine::Job::Job
-  include SelectableAttr::Base
+  include Tengine::Core::SelectableAttr
 
   autoload :Builder, "tengine/job/jobnet/builder"
   autoload :StateTransition, 'tengine/job/jobnet/state_transition'
