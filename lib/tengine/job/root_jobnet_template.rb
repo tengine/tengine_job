@@ -23,7 +23,7 @@ class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
     actual = generate
     actual.save!
     result = Tengine::Job::Execution.create!(
-      (options || {}).update(:root_jobnet => actual)
+      (options || {}).update(:root_jobnet_id => actual.id)
       )
     event_sender.fire(:"start.execution.job.tengine", :properties => {
         :execution_id => result.id,
