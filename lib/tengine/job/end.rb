@@ -19,4 +19,8 @@ class Tengine::Job::End < Tengine::Job::Vertex
     end
   end
 
+  def reset(signal)
+    # TODO 親にfinallyの代替ジョブネットがある場合、そのfinallyをresetする。
+  end
+
 end

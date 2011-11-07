@@ -114,4 +114,12 @@ module Tengine::Job::Jobnet::JobStateTransition
   end
   available :job_stop, :on => [:ready, :starting, :running], :ignored => [:initialized, :dying, :success, :error, :stuck]
 
+  def job_reset(signal, &block)
+    self.phase_key = :initialized
+    unless signal.execution.spot
+      next_edges.first.reset(signal)
+    end
+  end
+  available :job_reset, :on => [:initialized, :success, :error, :stuck]
+
 end

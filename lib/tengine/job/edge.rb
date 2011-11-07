@@ -86,6 +86,14 @@ class Tengine::Job::Edge
     end
   end
 
+  def reset(signal)
+    # 全てのステータスから遷移する
+    self.status_key = :active
+    unless signal.execution.spot
+      destination.reset(signal)
+    end
+  end
+
   def close(signal)
     case status_key
     when :active, :suspended, :keeping, :transmitting then

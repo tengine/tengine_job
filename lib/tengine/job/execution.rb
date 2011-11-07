@@ -14,6 +14,11 @@ class Tengine::Job::Execution
   field :keeping_stdout, :type => Boolean
   field :keeping_stderr, :type => Boolean
 
+  # 1.0.0で想定している実行は 再実行でない実行時にスポット実行は想定していないが
+  # そういう利用も考えられるので、対応できるように属性はわけておきます
+  field :retry, :type => Boolean, :default => false # 再実行かどうか
+  field :spot , :type => Boolean, :default => false # スポット実行かどうか
+
   belongs_to :root_jobnet, :class_name => "Tengine::Job::RootJobnetActual", :index => true, :inverse_of => :executions
 
   attr_accessor :signal # runを実行して、ackを返す際に一時的にsignalを記録しておく属性です。それ以外には使用しないでください。

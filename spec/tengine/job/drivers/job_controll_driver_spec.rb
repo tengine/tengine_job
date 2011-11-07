@@ -219,4 +219,90 @@ describe 'job_control_driver' do
     end
   end
 
+  context "再実行" do
+    context "ジョブを再実行" do
+      {
+        false => "後続も実行",
+        true => "スポット再実行"
+      }.each do |spot, caption|
+        context(caption) do
+
+          before do
+            Tengine::Job::Vertex.delete_all
+            builder = Rjn0001SimpleJobnetBuilder.new
+            @root = builder.create_actual
+            @ctx = builder.context
+            @execution = Tengine::Job::Execution.create!({
+                :root_jobnet_id => @root.id,
+                :spot => spot,
+              })
+            @root.phase_key = :running
+            @ctx[:j11].phase_key = :success
+            @ctx[:j12].phase_key = :error
+            @ctx[:e1].status_key = :transmitted
+            @ctx[:e2].status_key = :transmitted
+            @ctx[:e3].status_key = :active
+          end
+
+          [:initialized, :success, :error, :stuck].each do |phase_key|
+            it "phase_keyが#{phase_key}ならば再実行できるので、startのイベントを発火する" do
+              @ctx[:j11].phase_key = phase_key
+              @root.save!
+              tengine.should_fire(:"start.job.job.tengine", {
+                  :source_name => @ctx[:j11].name_as_resource,
+                  :properties=>{
+                    :execution_id => @execution.id.to_s,
+                    :root_jobnet_id => @root.id.to_s,
+                    :target_jobnet_id => @root.id.to_s,
+                    :target_job_id => @ctx.vertex(:j11).id.to_s,
+                  }
+                })
+              tengine.receive("restart.job.job.tengine", :properties => {
+                  :execution_id => @execution.id.to_s,
+                  :root_jobnet_id => @root.id.to_s,
+                  :target_jobnet_id => @root.id.to_s,
+                  :target_job_id => @ctx.vertex(:j11).id.to_s,
+                })
+              @root.reload
+              @root.phase_key.should == :running
+              @ctx.edge(:e1).status_key.should == :transmitted
+              @ctx.vertex(:j11).phase_key.should == :ready
+              if spot
+                @ctx.vertex(:j12).phase_key.should == :error
+                @ctx.edge(:e2).status_key.should == :transmitted
+                @ctx.edge(:e3).status_key.should == :active
+              else
+                @ctx.vertex(:j12).phase_key.should == :initialized
+                @ctx.edge(:e2).status_key.should == :active
+                @ctx.edge(:e3).status_key.should == :active
+              end
+            end
+          end
+
+          [:ready, :starting, :running, :dying].each do |phase_key|
+            it "phase_keyが#{phase_key}ならば再実行できず、エラーのイベントを発火する" do
+              @ctx[:j11].phase_key = phase_key
+              @root.save!
+              tengine.should_fire("restart.job.job.tengine.error.tengined").with(any_args)
+              tengine.receive("restart.job.job.tengine", :properties => {
+                  :execution_id => @execution.id.to_s,
+                  :root_jobnet_id => @root.id.to_s,
+                  :target_jobnet_id => @root.id.to_s,
+                  :target_job_id => @ctx.vertex(:j11).id.to_s,
+                })
+              # 再実行に失敗したのでルートジョブネット以下何も状態は変更されません
+              @root.reload
+              @root.phase_key.should == :running
+              @ctx.edge(:e1).status_key.should == :transmitted
+              @ctx.vertex(:j11).phase_key.should == phase_key
+            end
+
+          end
+        end
+      end
+
+    end
+
+  end
+
 end

@@ -12,6 +12,8 @@ module Tengine::Job::Jobnet::StateTransition
       original_method = :"__#{method_name}_without_ignore_and_na"
       available_phase_keys = Array(options[:on])
       ignored_phase_keys = Array(options[:ignored])
+      ignore_case = ignored_phase_keys.empty? ? "" :
+        "when #{ignored_phase_keys.map(&:inspect).join(', ')} then return"
       class_eval(<<-EOS, __FILE__, __LINE__ + 1)
         if method_defined?(:#{original_method})
           raise "Already available_on #{method_name}"
@@ -22,8 +24,7 @@ module Tengine::Job::Jobnet::StateTransition
           case self.phase_key
           when #{available_phase_keys.map(&:inspect).join(', ')} then
             #{original_method}(*args, &block)
-          when #{ignored_phase_keys.map(&:inspect).join(', ')} then
-            return
+          #{ignore_case}
           else
             raise Tengine::Job::Executable::PhaseError, "#{method_name} not available on \#{self.phase_key.inspect}"
           end
