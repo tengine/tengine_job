@@ -308,14 +308,17 @@ describe Tengine::Job::DslLoader do
         root_jobnet.children[1].tap{|j| j.name.should == "job1"; j.description.should == "ジョブ1"; j.script.should == "job1.sh"}
         root_jobnet.children[2].tap{|j| j.name.should == "job2"; j.description.should == "ジョブ2"; j.script.should == "job2.sh"}
         root_jobnet.children[3].tap{|j| j.name.should == "job3"; j.description.should == "ジョブ3"; j.script.should == "job3.sh"}
-        root_jobnet.children[4].tap{|j| j.name.should == "finally"; j.description.should == "finally"}
+        root_jobnet.children[4].tap{|j|
+          j.name.should == "finally"
+          j.description.should == "finally"
+          j.jobnet_type_key.should == :finally
+        }
 
         root_jobnet.edges.map{|edge| [edge.origin, edge.destination]}.should == [
           [root_jobnet.children[0], root_jobnet.children[1]],
           [root_jobnet.children[1], root_jobnet.children[2]],
           [root_jobnet.children[2], root_jobnet.children[3]],
-          [root_jobnet.children[3], root_jobnet.children[4]],
-          [root_jobnet.children[4], root_jobnet.children[5]],
+          [root_jobnet.children[3], root_jobnet.children[5]],
         ]
 
         finally_jobnet = root_jobnet.children[4]

@@ -89,7 +89,7 @@ module Tengine::Job::DslLoader
   end
 
   def finally(&block)
-    jobnet("finally", :job_type_key => :finally, &block)
+    jobnet("finally", :jobnet_type_key => :finally, &block)
   end
 
   def expansion(root_jobnet_name, options = {})
