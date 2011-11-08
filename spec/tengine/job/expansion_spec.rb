@@ -16,10 +16,21 @@ describe Tengine::Job::Expansion do
     it "生成されたActualはrjn0001とrjn0002を含む" do
       actual = @template.generate
       actual.should be_a(Tengine::Job::RootJobnetActual)
+      actual.name_path.should == "/rjn0008"
+      actual.name_path_until_expansion.should == "/rjn0008"
+      actual.actual_server_name.should == nil
+      actual.actual_server.should == nil
       actual.children.length.should == 4
       actual.children[0].tap{|j| j.should be_a(Tengine::Job::Start)}
       actual.children[1].tap do |rjn0001|
         rjn0001.should be_a(Tengine::Job::JobnetActual)
+        rjn0001.name.should == "rjn0001"
+        rjn0001.name_path.should == "/rjn0008/rjn0001"
+        rjn0001.name_path_until_expansion.should == "/rjn0001"
+        rjn0001.actual_server_name.should == "test_server1"
+        rjn0001.actual_server.should_not == nil
+        rjn0001.actual_credential_name.should == "test_credential1"
+        rjn0001.actual_credential.should_not == nil
         rjn0001.was_expansion.should == true
         rjn0001.ancestors.should == [actual]
         rjn0001.ancestors_until_expansion.should == []
@@ -27,12 +38,20 @@ describe Tengine::Job::Expansion do
         rjn0001.children[0].tap{|j| j.should be_a(Tengine::Job::Start)}
         rjn0001.children[1].tap do |j11|
           j11.name.should == "j11"
+          j11.name_path.should == "/rjn0008/rjn0001/j11"
+          j11.name_path_until_expansion.should == "/rjn0001/j11"
           j11.should be_a(Tengine::Job::JobnetActual)
           j11.ancestors.should == [actual, rjn0001]
           j11.ancestors_until_expansion.should == [rjn0001]
+          j11.actual_server_name.should == "test_server1"
+          j11.actual_server.should_not == nil
+          j11.actual_credential_name.should == "test_credential1"
+          j11.actual_credential.should_not == nil
         end
         rjn0001.children[2].tap do |j12|
           j12.name.should == "j12"
+          j12.name_path.should == "/rjn0008/rjn0001/j12"
+          j12.name_path_until_expansion.should == "/rjn0001/j12"
           j12.should be_a(Tengine::Job::JobnetActual)
           j12.ancestors.should == [actual, rjn0001]
           j12.ancestors_until_expansion.should == [rjn0001]
@@ -42,6 +61,9 @@ describe Tengine::Job::Expansion do
       end
       actual.children[2].tap do |rjn0002|
         rjn0002.should be_a(Tengine::Job::JobnetActual)
+        rjn0002.name.should == "rjn0002"
+        rjn0002.name_path.should == "/rjn0008/rjn0002"
+        rjn0002.name_path_until_expansion.should == "/rjn0002"
         rjn0002.was_expansion.should == true
         rjn0002.ancestors.should == [actual]
         rjn0002.ancestors_until_expansion.should == []
@@ -50,12 +72,16 @@ describe Tengine::Job::Expansion do
         rjn0002.children[1].tap{|j| j.should be_a(Tengine::Job::Fork)}
         rjn0002.children[2].tap do |j11|
           j11.name.should == "j11"
+          j11.name_path.should == "/rjn0008/rjn0002/j11"
+          j11.name_path_until_expansion.should == "/rjn0002/j11"
           j11.should be_a(Tengine::Job::JobnetActual)
           j11.ancestors.should == [actual, rjn0002]
           j11.ancestors_until_expansion.should == [rjn0002]
         end
         rjn0002.children[3].tap do |j12|
           j12.name.should == "j12"
+          j12.name_path.should == "/rjn0008/rjn0002/j12"
+          j12.name_path_until_expansion.should == "/rjn0002/j12"
           j12.should be_a(Tengine::Job::JobnetActual)
           j12.ancestors.should == [actual, rjn0002]
           j12.ancestors_until_expansion.should == [rjn0002]

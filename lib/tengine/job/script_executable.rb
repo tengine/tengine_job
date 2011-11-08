@@ -24,6 +24,7 @@ module Tengine::Job::ScriptExecutable
   end
 
   def execute(cmd)
+    raise "actual_server not found for #{self.name_path.inspect}" unless actual_server
     Tengine.logger.info("connecting to #{actual_server.hostname_or_ipv4}")
     actual_credential.connect(actual_server.hostname_or_ipv4) do |ssh|
       # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
@@ -151,6 +152,16 @@ module Tengine::Job::ScriptExecutable
     end
     if rjt = root.template
       t = rjt.find_descendant_by_name_path(self.name_path)
+      unless t
+        template_name_parts = self.name_path_until_expansion.split(Tengine::Job::NamePath::SEPARATOR).select{|s| !s.empty?}
+        root_jobnet_name = template_name_parts.first
+        if rjt = Tengine::Job::RootJobnetTemplate.by_name(root_jobnet_name)
+          t = rjt.find_descendant_by_name_path(self.name_path_until_expansion)
+          raise "template job #{path.inspect} not found in #{rjt.inspect}" unless t
+        else
+          raise "Tengine::Job::RootJobnetTemplate not found #{self.name_path_until_expansion.inspect}"
+        end
+      end
       result.update({
           "MM_TEMPLATE_JOB_ID" => t.id.to_s,
           "MM_TEMPLATE_JOB_ANCESTOR_IDS" => '"%s"' % t.ancestors.map(&:id).map(&:to_s).join(';'),

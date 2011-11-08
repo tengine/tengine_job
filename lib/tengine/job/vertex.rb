@@ -99,13 +99,15 @@ class Tengine::Job::Vertex
   IGNORED_FIELD_NAMES = ["_type", "_id"].freeze
 
   def actual_class; self.class; end
+  def generating_attrs
+    field_names = self.class.fields.keys - IGNORED_FIELD_NAMES
+    field_names.inject({}){|d, name| d[name] = send(name); d }
+  end
   def generating_children; self.children; end
   def generating_edges; respond_to?(:edges) ? self.edges : []; end
 
   def generate(klass = actual_class)
-    field_names = self.class.fields.keys - IGNORED_FIELD_NAMES
-    attrs = field_names.inject({}){|d, name| d[name] = send(name); d }
-    result = klass.new(attrs)
+    result = klass.new(generating_attrs)
     src_to_generated = {}
     generating_children.each do |child|
       generated = child.generate
