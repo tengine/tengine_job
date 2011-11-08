@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.3.1"
+  s.version = "0.3.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["akima"]
-  s.date = "2011-11-07"
+  s.date = "2011-11-08"
   s.description = "tengine_job provides jobnet management"
   s.email = "akima@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -85,6 +85,7 @@ Gem::Specification.new do |s|
     "spec/support/jobnet_fixture_builder.rb",
     "spec/tengine/job/category_spec.rb",
     "spec/tengine/job/connectable_spec.rb",
+    "spec/tengine/job/drivers/job_controll_driver/expansion_spec.rb",
     "spec/tengine/job/drivers/job_controll_driver_spec.rb",
     "spec/tengine/job/drivers/job_execution_driver_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver/nested_and_finally_spec.rb",
@@ -122,7 +123,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/akm/tengine_job"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.11"
+  s.rubygems_version = "1.8.10"
   s.summary = "tengine_job provides jobnet management"
 
   if s.respond_to? :specification_version then
