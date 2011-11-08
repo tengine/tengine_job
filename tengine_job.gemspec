@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.3.2"
+  s.version = "0.3.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["akima"]
@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
     "lib/tengine/job/drivers/job_control_driver.rb",
     "lib/tengine/job/drivers/job_execution_driver.rb",
     "lib/tengine/job/drivers/jobnet_control_driver.rb",
+    "lib/tengine/job/drivers/schedule_driver.rb",
     "lib/tengine/job/dsl_binder.rb",
     "lib/tengine/job/dsl_evaluator.rb",
     "lib/tengine/job/dsl_loader.rb",
@@ -92,6 +93,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/drivers/jobnet_control_driver/nested_jobnet_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver/stop_jobnet_spec.rb",
     "spec/tengine/job/drivers/jobnet_control_driver_spec.rb",
+    "spec/tengine/job/drivers/schedule_driver_spec.rb",
     "spec/tengine/job/dsl_binder_spec.rb",
     "spec/tengine/job/dsl_loader_spec.rb",
     "spec/tengine/job/dsls/0001_hadoop_job_run.rb",
@@ -123,7 +125,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/akm/tengine_job"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.11"
   s.summary = "tengine_job provides jobnet management"
 
   if s.respond_to? :specification_version then
