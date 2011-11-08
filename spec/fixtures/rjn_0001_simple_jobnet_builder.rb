@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+require File.expand_path('test_credential_fixture', File.dirname(__FILE__))
+require File.expand_path('test_server_fixture', File.dirname(__FILE__))
+
 # 以下のジョブネットについてテンプレートジョブネットや
 # 実行用ジョブネットを扱うフィクスチャ生成のためのクラスです。
 #
@@ -6,8 +10,11 @@
 # (S1) --e1-->(j11)--e2-->(j12)--e3-->(E1)
 
 class Rjn0001SimpleJobnetBuilder < JobnetFixtureBuilder
+  include TestCredentialFixture
+  include TestServerFixture
+
   DSL = <<-EOS
-    jobnet("rjn0001", :server_name => "hadoop_master_node", :credential_name => "goku_ssh_pw") do
+    jobnet("rjn0001", :server_name => "test_server1", :credential_name => "test_credential1") do
       auto_sequence
       job("j11", "job_test j11")
       job("j12", "job_test j12")
@@ -15,12 +22,8 @@ class Rjn0001SimpleJobnetBuilder < JobnetFixtureBuilder
   EOS
 
   def create(options = {})
-    resource_fixture = GokuAtEc2ApNortheast.new
-    resource_fixture.goku_ssh_pw
-    resource_fixture.hadoop_master_node
-
     root = new_root_jobnet("rjn0001",
-      {:server_name => "hadoop_master_node", :credential_name => "goku_ssh_pw"}.update(options || { }))
+      {:server_name => test_server1.name, :credential_name => test_credential1.name}.update(options || { }))
     root.children << Tengine::Job::Start.new
     root.children << new_script("j11", :script => "job_test j11")
     root.children << new_script("j12", :script => "job_test j12")

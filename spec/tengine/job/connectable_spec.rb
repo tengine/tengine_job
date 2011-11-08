@@ -15,26 +15,26 @@ describe Tengine::Job::Connectable do
 
         {
           "rjn0004" => [nil, nil],
-          "j1100" => ["goku_ssh_pw" , "hadoop_master_node"],
-          "j1110" => ["goku_ssh_pw" , "hadoop_master_node"],
-          "j1120" => ["goku_ssh_pw" , "hadoop_master_node"],
-          "j1200" => ["goku_ssh_pw" , nil                 ],
-          "j1210" => ["goku_ssh_pw" , "mysql_master"      ],
-          "j1300" => [nil           , "mysql_master"      ],
-          "j1310" => ["goku_ssh_pw" , "mysql_master"      ],
-          "j1400" => [nil           , nil                 ],
-          "j1410" => ["goku_ssh_pw" , "mysql_master"      ],
-          "j1500" => ["goku_ssh_pw" , "mysql_master"      ],
-          "j1510" => ["goku_ssh_pw" , "mysql_master"      ],
-          "j1511" => ["goku_ssh_pw" , "mysql_master"      ],
-          "j1600" => ["goku_ssh_pw" , "mysql_master"      ],
-          "j1610" => ["goku_ssh_pw" , "mysql_master"      ],
-          "j1611" => ["goku_ssh_pw" , "hadoop_master_node"],
-          "j1612" => ["gohan_ssh_pk", "mysql_master"      ],
-          "j1620" => ["goku_ssh_pw" , "hadoop_master_node"],
-          "j1621" => ["goku_ssh_pw" , "hadoop_master_node"],
-          "j1630" => ["gohan_ssh_pk", "mysql_master"      ],
-          "j1631" => ["gohan_ssh_pk", "mysql_master"      ],
+          "j1100" => ["test_credential1" , "test_server1"],
+          "j1110" => ["test_credential1" , "test_server1"],
+          "j1120" => ["test_credential1" , "test_server1"],
+          "j1200" => ["test_credential1" , nil           ],
+          "j1210" => ["test_credential1" , "mysql_master"],
+          "j1300" => [nil                , "mysql_master"],
+          "j1310" => ["test_credential1" , "mysql_master"],
+          "j1400" => [nil                , nil           ],
+          "j1410" => ["test_credential1" , "mysql_master"],
+          "j1500" => ["test_credential1" , "mysql_master"],
+          "j1510" => ["test_credential1" , "mysql_master"],
+          "j1511" => ["test_credential1" , "mysql_master"],
+          "j1600" => ["test_credential1" , "mysql_master"],
+          "j1610" => ["test_credential1" , "mysql_master"],
+          "j1611" => ["test_credential1" , "test_server1"],
+          "j1612" => ["gohan_ssh_pk"     , "mysql_master"],
+          "j1620" => ["test_credential1" , "test_server1"],
+          "j1621" => ["test_credential1" , "test_server1"],
+          "j1630" => ["gohan_ssh_pk", "mysql_master"     ],
+          "j1631" => ["gohan_ssh_pk", "mysql_master"     ],
         }.each do |job_name, (credential_name, server_name)|
           context job_name do
             subject{ @ctx[job_name.to_sym] }
@@ -55,10 +55,10 @@ describe Tengine::Job::Connectable do
     end
 
     it "存在するCredentialの場合" do
-      jobnet = Tengine::Job::JobnetTemplate.new(:credential_name => "goku_ssh_pw")
+      jobnet = Tengine::Job::JobnetTemplate.new(:credential_name => "test_credential1")
       credential = jobnet.actual_credential
       credential.should be_a(Tengine::Resource::Credential)
-      credential.name.should == "goku_ssh_pw"
+      credential.name.should == "test_credential1"
     end
 
     it "存在しないCredentialの場合" do
@@ -77,10 +77,10 @@ describe Tengine::Job::Connectable do
     end
 
     it "存在するServerの場合" do
-      jobnet = Tengine::Job::JobnetTemplate.new(:server_name => "hadoop_master_node")
+      jobnet = Tengine::Job::JobnetTemplate.new(:server_name => "test_server1")
       server = jobnet.actual_server
       server.should be_a(Tengine::Resource::Server)
-      server.name.should == "hadoop_master_node"
+      server.name.should == "test_server1"
     end
 
     it "存在しないServerの場合" do

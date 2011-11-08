@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+require File.expand_path('test_credential_fixture', File.dirname(__FILE__))
+require File.expand_path('test_server_fixture', File.dirname(__FILE__))
+
 # 以下のジョブネットについてテンプレートジョブネットや
 # 実行用ジョブネットを扱うフィクスチャ生成のためのクラスです。
 #
@@ -35,33 +39,35 @@
 # [j1630]
 # [S11]--e30-->(j1631)--e31-->[E11]
 class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
+  include TestCredentialFixture
+  include TestServerFixture
 
   DSL = <<-EOS
     jobnet("rjn0004") do
-      jobnet("j1100", :credential_name => "goku_ssh_pw", :server_name => "hadoop_master_node") do
+      jobnet("j1100", :credential_name => "test_credential1", :server_name => "test_server1") do
         job("j1110", "job_test j1110")
         job("j1120", "job_test j1120")
       end
-      jobnet("j1200", :credential_name => "goku_ssh_pw") do
+      jobnet("j1200", :credential_name => "test_credential1") do
         job("j1210", "job_test j1210", :server_name => "mysql_master")
       end
       jobnet("j1300", :server_name => "mysql_master") do
-        job("j1310", "job_test j1310", :credential_name => "goku_ssh_pw")
+        job("j1310", "job_test j1310", :credential_name => "test_credential1")
       end
       jobnet("j1400") do
-        job("j1410", "job_test j1410", :credential_name => "goku_ssh_pw", :server_name => "mysql_master")
+        job("j1410", "job_test j1410", :credential_name => "test_credential1", :server_name => "mysql_master")
       end
-      jobnet("j1500", :credential_name => "goku_ssh_pw", :server_name => "mysql_master") do
+      jobnet("j1500", :credential_name => "test_credential1", :server_name => "mysql_master") do
         jobnet("j1510") do
           job("j1511", "job_test j1511")
         end
       end
-      jobnet("j1600", :credential_name => "goku_ssh_pw", :server_name => "mysql_master") do
+      jobnet("j1600", :credential_name => "test_credential1", :server_name => "mysql_master") do
         jobnet("j1610") do
-          job("j1611", "job_test j1611", :server_name => "hadoop_master_node") # server_nameを上書き
+          job("j1611", "job_test j1611", :server_name => "test_server1") # server_nameを上書き
           job("j1612", "job_test j1612", :credential_name => "gohan_ssh_pk") # credential_nameを上書き
         end
-        jobnet("j1620", :server_name => "hadoop_master_node") do # server_nameを上書き
+        jobnet("j1620", :server_name => "test_server1") do # server_nameを上書き
           job("j1621", "job_test j1621")
         end
         jobnet("j1630", :credential_name => "gohan_ssh_pk") do # credential_nameを上書き
@@ -73,17 +79,15 @@ class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
 
   def create(options = {})
     resource_fixture = GokuAtEc2ApNortheast.new
-    resource_fixture.goku_ssh_pw
-    resource_fixture.hadoop_master_node
     resource_fixture.mysql_master
 
     root = new_root_jobnet("rjn0004", options)
-    root.children << new_jobnet("j1100", :credential_name => "goku_ssh_pw", :server_name => "hadoop_master_node")
-    root.children << new_jobnet("j1200", :credential_name => "goku_ssh_pw")
+    root.children << new_jobnet("j1100", :credential_name => test_credential1.name, :server_name => test_server1.name)
+    root.children << new_jobnet("j1200", :credential_name => test_credential1.name)
     root.children << new_jobnet("j1300", :server_name => "mysql_master")
     root.children << new_jobnet("j1400")
-    root.children << new_jobnet("j1500", :credential_name => "goku_ssh_pw", :server_name => "mysql_master")
-    root.children << new_jobnet("j1600", :credential_name => "goku_ssh_pw", :server_name => "mysql_master")
+    root.children << new_jobnet("j1500", :credential_name => test_credential1.name, :server_name => "mysql_master")
+    root.children << new_jobnet("j1600", :credential_name => test_credential1.name, :server_name => "mysql_master")
     root.prepare_end
     root.build_sequencial_edges
 
@@ -99,12 +103,12 @@ class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
     j1200.build_sequencial_edges
 
     j1300 = self[:j1300]
-    j1300.children << new_script("j1310", :script => "job_test j1310", :credential_name => "goku_ssh_pw")
+    j1300.children << new_script("j1310", :script => "job_test j1310", :credential_name => test_credential1.name)
     j1300.prepare_end
     j1300.build_sequencial_edges
 
     j1400 = self[:j1400]
-    j1400.children << new_script("j1410", :script => "job_test j1410", :server_name => "mysql_master", :credential_name => "goku_ssh_pw")
+    j1400.children << new_script("j1410", :script => "job_test j1410", :server_name => "mysql_master", :credential_name => test_credential1.name)
     j1400.prepare_end
     j1400.build_sequencial_edges
 
@@ -120,13 +124,13 @@ class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
 
     j1600 = self[:j1600]
     j1600.children << new_jobnet("j1610")
-    j1600.children << new_jobnet("j1620", :server_name => "hadoop_master_node")
+    j1600.children << new_jobnet("j1620", :server_name => test_server1.name)
     j1600.children << new_jobnet("j1630", :credential_name => "gohan_ssh_pk")
     j1600.prepare_end
     j1600.build_sequencial_edges
 
     j1610 = self[:j1610]
-    j1610.children << new_script("j1611", :script => "job_test j1611", :server_name => "hadoop_master_node")
+    j1610.children << new_script("j1611", :script => "job_test j1611", :server_name => test_server1.name)
     j1610.children << new_script("j1612", :script => "job_test j1612", :credential_name => "gohan_ssh_pk")
     j1610.prepare_end
     j1610.build_sequencial_edges
