@@ -20,6 +20,17 @@ describe 'schedule_driver' do
     end
 
     context "start" do
+      before do
+        # start.execution.job.tengineをreceiveすると
+        # job_execution_driverも受け取ってしまって、それが
+        # start.jobnet.job.tengineをfireしようとして、
+        # MQに接続しようとするので、適当にstubする必要がある
+        kern = ObjectSpace.each_object(Tengine::Core::Kernel) {|i| break i }
+        send = mock(:sender)
+        kern.stub(:sender).and_return(send)
+        send.stub(:fire)
+      end
+
       it "タイムアウトが設定されていない場合はなにもしない" do
         @execution.phase_key = :initialized
         @execution.unset :actual_base_timeout_alert
