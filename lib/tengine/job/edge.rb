@@ -15,14 +15,14 @@ class Tengine::Job::Edge
 
   embedded_in :owner, :class_name => "Tengine::Job::Jobnet", :inverse_of => :edges
 
-  field :status_cd     , :type => Integer, :default => 0 # ステータス。とりうる値は後述を参照してください。詳しくはtengine_jobパッケージ設計書の「edge状態遷移」を参照してください。
+  field :phase_cd     , :type => Integer, :default => 0 # ステータス。とりうる値は後述を参照してください。詳しくはtengine_jobパッケージ設計書の「edge状態遷移」を参照してください。
   field :origin_id     , :type => BSON::ObjectId # 辺の遷移元となるvertexのid
   field :destination_id, :type => BSON::ObjectId # 辺の遷移先となるvertexのid
 
   validates :origin_id, :presence => true
   validates :destination_id, :presence => true
 
-  selectable_attr :status_cd do
+  selectable_attr :phase_cd do
     entry  0, :active      , "active"      , :alive => true
     entry 10, :transmitting, "transmitting", :alive => true
     entry 20, :transmitted , "transmitted" , :alive => false
@@ -32,11 +32,11 @@ class Tengine::Job::Edge
     entry 50, :closed      , "closed"      , :alive => false
   end
 
-  def alive?; !!status_entry[:alive]; end
+  def alive?; !!phase_entry[:alive]; end
 
-  status_keys.each do |status_key|
+  phase_keys.each do |phase_key|
     class_eval(<<-END_OF_METHOD)
-      def #{status_key}?; status_key == #{status_key.inspect}; end
+      def #{phase_key}?; phase_key == #{phase_key.inspect}; end
     END_OF_METHOD
   end
 
@@ -58,14 +58,14 @@ class Tengine::Job::Edge
 
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#3E9EA
   def transmit(signal)
-    case status_key
+    case phase_key
     when :active then
-      self.status_key = :transmitting
+      self.phase_key = :transmitting
       signal.leave(self)
     when :suspended then
-      self.status_key = :keeping
+      self.phase_key = :keeping
     when :closing then
-      self.status_key = :closed
+      self.phase_key = :closed
       signal.paths << self
       signal.with_paths_backup do
         if destination.is_a?(Tengine::Job::Job)
@@ -78,26 +78,26 @@ class Tengine::Job::Edge
   end
 
   def complete(signal)
-    case status_key
+    case phase_key
     when :transmitting then
-      self.status_key = :transmitted
+      self.phase_key = :transmitted
     when :active, :suspended, :keeping, :closed then
-      raise Tengine::Job::Edge::StatusError, "complete not available on #{status_key.inspect} at #{self.inspect}"
+      raise Tengine::Job::Edge::StatusError, "complete not available on #{phase_key.inspect} at #{self.inspect}"
     end
   end
 
   def reset(signal)
     # 全てのステータスから遷移する
-    self.status_key = :active
+    self.phase_key = :active
     unless signal.execution.spot
       destination.reset(signal)
     end
   end
 
   def close(signal)
-    case status_key
+    case phase_key
     when :active, :suspended, :keeping, :transmitting then
-      self.status_key = :closing
+      self.phase_key = :closing
     end
   end
 

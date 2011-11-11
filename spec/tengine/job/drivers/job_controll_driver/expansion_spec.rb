@@ -44,7 +44,7 @@ describe 'job_control_driver' do
         @root.phase_key = :running
         @rjn0001.phase_key = :running
         @j11.phase_key = :ready
-        @j11.prev_edges.each{|edge| edge.status_key = :transmitting}
+        @j11.prev_edges.each{|edge| edge.phase_key = :transmitting}
         @root.save!
         @root.reload
         tengine.should_not_fire

@@ -49,8 +49,8 @@ describe 'jobnet_control_driver' do
         }))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
       @root.reload
-      @ctx.edge(:e1).status_key.should == :transmitting
-      (2..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
+      @ctx.edge(:e1).phase_key.should == :transmitting
+      (2..15).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
       @root.phase_key.should == :starting
       @ctx.vertex(:j1100).phase_key.should == :ready
     end
@@ -59,8 +59,8 @@ describe 'jobnet_control_driver' do
       it do
         @root.phase_key = :starting
         @ctx.vertex(:j1100).phase_key = :ready
-        @ctx[:e1].status_key = :transmitting
-        (2..15).each{|idx| @ctx[:"e#{idx}"].status_key = :active }
+        @ctx[:e1].phase_key = :transmitting
+        (2..15).each{|idx| @ctx[:"e#{idx}"].phase_key = :active }
         @root.save!
         tengine.should_fire(:"start.job.job.tengine",
           :source_name => @ctx[:j1110].name_as_resource,
@@ -73,10 +73,10 @@ describe 'jobnet_control_driver' do
           }))
         @root.reload
         @root.phase_key = :running
-        @ctx.edge(:e1).status_key.should == :transmitted
-        @ctx.edge(:e5).status_key.should == :transmitting
-        (2..4).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-        (6..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
+        @ctx.edge(:e1).phase_key.should == :transmitted
+        @ctx.edge(:e5).phase_key.should == :transmitting
+        (2..4).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
+        (6..15).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
         @ctx.vertex(:j1100).phase_key.should == :starting
       end
     end
@@ -86,8 +86,8 @@ describe 'jobnet_control_driver' do
         @root.phase_key = :starting
         @ctx.vertex(:j1100).phase_key = :running
         @ctx.vertex(:j1110).phase_key = :success
-        @ctx[:e1].status_key = :transmitted
-        @ctx[:e5].status_key = :transmitted
+        @ctx[:e1].phase_key = :transmitted
+        @ctx[:e5].phase_key = :transmitted
         @root.save!
         tengine.should_not_fire(:"start.job.job.tengine",
           :source_name => @ctx[:j1110].name_as_resource,
@@ -106,11 +106,11 @@ describe 'jobnet_control_driver' do
           }))
         @root.reload
         @root.phase_key = :running
-        @ctx.edge(:e1).status_key.should == :transmitted
-        @ctx.edge(:e5).status_key.should == :transmitted
-        @ctx.edge(:e6).status_key.should == :transmitting
+        @ctx.edge(:e1).phase_key.should == :transmitted
+        @ctx.edge(:e5).phase_key.should == :transmitted
+        @ctx.edge(:e6).phase_key.should == :transmitting
         ((2..15).to_a - [5, 6]).each do |idx|
-          [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active]
+          [:"e#{idx}", @ctx.edge(:"e#{idx}").phase_key].should == [:"e#{idx}", :active]
         end
         @ctx.vertex(:j1100).phase_key.should == :running
         @ctx.vertex(:j1110).phase_key.should == :success
@@ -121,8 +121,8 @@ describe 'jobnet_control_driver' do
         @root.phase_key = :running
         @ctx.vertex(:j1100).phase_key = :running
         @ctx.vertex(:j1110).phase_key = :error
-        @ctx[:e1].status_key = :transmitted
-        @ctx[:e5].status_key = :transmitted
+        @ctx[:e1].phase_key = :transmitted
+        @ctx[:e5].phase_key = :transmitted
         @root.save!
         tengine.should_fire(:"error.jobnet.job.tengine",
           :source_name => @ctx[:j1100].name_as_resource,
@@ -134,11 +134,11 @@ describe 'jobnet_control_driver' do
             :target_job_id => @ctx[:j1110].id.to_s,
           }))
         @root.reload
-        @ctx.edge(:e1).status_key.should == :transmitted
-        @ctx.edge(:e5).status_key.should == :transmitted
-        (2..4).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-        (6..9).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :closed }
-        (10..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
+        @ctx.edge(:e1).phase_key.should == :transmitted
+        @ctx.edge(:e5).phase_key.should == :transmitted
+        (2..4).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
+        (6..9).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :closed }
+        (10..15).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
         @ctx.vertex(:j1100).phase_key.should == :error
         @ctx.vertex(:j1110).phase_key.should == :error
       end
@@ -151,8 +151,8 @@ describe 'jobnet_control_driver' do
         [:j1100, :j1110, :j1120, :j1130, :j1140].each do |jobnet_name|
           @root.vertex(@ctx[jobnet_name].id).phase_key = :success
         end
-        @ctx[:e1].status_key = :transmitted
-        (5..9).each{|idx|@ctx[:"e#{idx}"].status_key = :transmitted}
+        @ctx[:e1].phase_key = :transmitted
+        (5..9).each{|idx|@ctx[:"e#{idx}"].phase_key = :transmitted}
         @root.save!
         tengine.should_fire(:"start.job.job.tengine",
           :source_name => @ctx[:j1200].name_as_resource,
@@ -164,11 +164,11 @@ describe 'jobnet_control_driver' do
             :target_jobnet_id => @ctx[:j1100].id.to_s,
           }))
         @root.reload
-        @root.edge(@ctx[:e1].id).status_key.should == :transmitted
-        @root.edge(@ctx[:e2].id).status_key.should == :transmitting
-        (3..4).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
-        (5..9).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :transmitted }
-        (10..15).each{|idx| @ctx.edge(:"e#{idx}").status_key.should == :active }
+        @root.edge(@ctx[:e1].id).phase_key.should == :transmitted
+        @root.edge(@ctx[:e2].id).phase_key.should == :transmitting
+        (3..4).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
+        (5..9).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :transmitted }
+        (10..15).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
         @root.vertex(@ctx[:j1100].id).phase_key.should == :success
         @root.vertex(@ctx[:j1110].id).phase_key.should == :success
       end
@@ -181,9 +181,9 @@ describe 'jobnet_control_driver' do
         [:j1120, :j1130, :j1140].each do |jobnet_name|
           @root.vertex(@ctx[jobnet_name].id).phase_key = :ready
         end
-        @ctx[:e1].status_key = :transmitted
-        @ctx[:e5].status_key = :transmitted
-        (6..9).each{|idx|@ctx[:"e#{idx}"].status_key = :closed}
+        @ctx[:e1].phase_key = :transmitted
+        @ctx[:e5].phase_key = :transmitted
+        (6..9).each{|idx|@ctx[:"e#{idx}"].phase_key = :closed}
         @root.save!
 
         tengine.should_fire(:"error.jobnet.job.tengine",
@@ -195,13 +195,13 @@ describe 'jobnet_control_driver' do
             :target_jobnet_id => @ctx[:j1100].id.to_s,
           }))
         @root.reload
-        @root.edge(@ctx[:e1].id).status_key.should == :transmitted
+        @root.edge(@ctx[:e1].id).phase_key.should == :transmitted
         (2..4).each do |idx|
-          [:"e#{idx}", @root.edge(@ctx[:"e#{idx}"].id).status_key].should == [:"e#{idx}", :closed]
+          [:"e#{idx}", @root.edge(@ctx[:"e#{idx}"].id).phase_key].should == [:"e#{idx}", :closed]
         end
-        @root.edge(@ctx[:e5].id).status_key.should == :transmitted
+        @root.edge(@ctx[:e5].id).phase_key.should == :transmitted
         (6..9).each do |idx|
-          [:"e#{idx}", @root.edge(@ctx[:"e#{idx}"].id).status_key].should == [:"e#{idx}", :closed]
+          [:"e#{idx}", @root.edge(@ctx[:"e#{idx}"].id).phase_key].should == [:"e#{idx}", :closed]
         end
         @root.vertex(@ctx[:j1100].id).phase_key.should == :error
         @root.vertex(@ctx[:j1110].id).phase_key.should == :error

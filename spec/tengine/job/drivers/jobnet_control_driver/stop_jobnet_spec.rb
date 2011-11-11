@@ -24,7 +24,7 @@ describe 'stop.jobnet.job.tengine' do
         @ctx[:root].tap{|j| j.phase_key = :running}
         @ctx[:j1100].tap{|j| j.phase_key = :running}
         @ctx[:j1110].tap{|j| j.phase_key = :success; j.executing_pid = "1110"}
-        [:e1, :e5, :e6].each{|name| @ctx[name].status_key = :transmitted}
+        [:e1, :e5, :e6].each{|name| @ctx[name].phase_key = :transmitted}
         @base_props = {
           :execution_id => @execution.id.to_s,
           :root_jobnet_id => @root.id.to_s,
@@ -40,7 +40,7 @@ describe 'stop.jobnet.job.tengine' do
         context "j1121がinitialized" do
           before do
             @ctx[:j1121].tap{|j| j.phase_key = :initialized}
-            [:e10].each{|name| @ctx[name].status_key = :active}
+            [:e10].each{|name| @ctx[name].phase_key = :active}
             @root.save!
           end
 
@@ -55,11 +55,11 @@ describe 'stop.jobnet.job.tengine' do
             @ctx.vertex(:j1110).tap{|j| j.phase_key.should == :success}
             @ctx.vertex(:j1120).tap{|j| j.phase_key.should == :dying}
             @ctx.vertex(:j1121).tap{|j| j.phase_key.should == :initialized}
-            [:e1, :e5, :e6].each{|name| @ctx.edge(name).status_key.should == :transmitted }
-            (2..4).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
-            (7..9).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
-            (10..11).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :closing] }
-            (12..15).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
+            [:e1, :e5, :e6].each{|name| @ctx.edge(name).phase_key.should == :transmitted }
+            (2..4).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").phase_key].should == [:"e#{idx}", :active] }
+            (7..9).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").phase_key].should == [:"e#{idx}", :active] }
+            (10..11).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").phase_key].should == [:"e#{idx}", :closing] }
+            (12..15).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").phase_key].should == [:"e#{idx}", :active] }
           end
         end
 
@@ -67,12 +67,12 @@ describe 'stop.jobnet.job.tengine' do
           [:ready   , :transmitting, :closing],
           [:starting, :transmitted , :transmitted],
           [:running , :transmitted , :transmitted],
-        ].each do |(j1121_phase_key, e10_status_key, e10_new_status_key)|
+        ].each do |(j1121_phase_key, e10_phase_key, e10_new_phase_key)|
 
           context "j1121が#{j1121_phase_key}" do
             before do
               @ctx[:j1121].tap{|j| j.phase_key = j1121_phase_key}
-              [:e10].each{|name| @ctx[name].status_key = e10_status_key}
+              [:e10].each{|name| @ctx[name].phase_key = e10_phase_key}
               @root.save!
             end
 
@@ -93,12 +93,12 @@ describe 'stop.jobnet.job.tengine' do
               @ctx.vertex(:j1110).tap{|j| j.phase_key.should == :success}
               @ctx.vertex(:j1120).tap{|j| j.phase_key.should == :dying}
               @ctx.vertex(:j1121).tap{|j| j.phase_key.should == j1121_phase_key}
-              [:e1, :e5, :e6].each{|name| @ctx.edge(name).status_key.should == :transmitted }
-              [:e10].each{|name| @ctx.edge(name).status_key.should == e10_new_status_key }
-              [:e11].each{|name| @ctx.edge(name).status_key.should == :closing }
-              (2..4).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
-              (7..9).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
-              (12..15).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").status_key].should == [:"e#{idx}", :active] }
+              [:e1, :e5, :e6].each{|name| @ctx.edge(name).phase_key.should == :transmitted }
+              [:e10].each{|name| @ctx.edge(name).phase_key.should == e10_new_phase_key }
+              [:e11].each{|name| @ctx.edge(name).phase_key.should == :closing }
+              (2..4).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").phase_key].should == [:"e#{idx}", :active] }
+              (7..9).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").phase_key].should == [:"e#{idx}", :active] }
+              (12..15).each{|idx| [:"e#{idx}", @ctx.edge(:"e#{idx}").phase_key].should == [:"e#{idx}", :active] }
             end
           end
         end

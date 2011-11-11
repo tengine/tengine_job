@@ -24,7 +24,7 @@ describe 'job_control_driver' do
     context "ジョブの起動イベントを受け取ったら" do
       it "通常の場合" do
         @jobnet.phase_key = :starting
-        @ctx.edge(:e1).status_key = :transmitting
+        @ctx.edge(:e1).phase_key = :transmitting
         @ctx.vertex(:j11).phase_key = :ready
         @jobnet.save!
         @jobnet.reload
@@ -48,8 +48,8 @@ describe 'job_control_driver' do
             :target_job_id => @ctx.vertex(:j11).id.to_s,
           })
         @jobnet.reload
-        @ctx.edge(:e1).status_key.should == :transmitted
-        @ctx.edge(:e2).status_key.should == :active
+        @ctx.edge(:e1).phase_key.should == :transmitted
+        @ctx.edge(:e2).phase_key.should == :active
         @ctx.vertex(:j11).phase_key.should == :starting
       end
 
@@ -58,9 +58,9 @@ describe 'job_control_driver' do
 
           it "ルートが#{root_phase_key}" do
             @jobnet.phase_key = root_phase_key
-            @ctx[:e1].status_key = :closing
-            @ctx[:e2].status_key = :closing
-            @ctx[:e3].status_key = :closing
+            @ctx[:e1].phase_key = :closing
+            @ctx[:e2].phase_key = :closing
+            @ctx[:e3].phase_key = :closing
             @ctx[:j11].phase_key = :initialized
             @jobnet.save!
             @jobnet.reload
@@ -79,9 +79,9 @@ describe 'job_control_driver' do
                 :target_job_id => @ctx.vertex(:j11).id.to_s,
               })
             @jobnet.reload
-            @ctx.edge(:e1).status_key.should == :closing
-            @ctx.edge(:e2).status_key.should == :closed
-            @ctx.edge(:e3).status_key.should == :closed
+            @ctx.edge(:e1).phase_key.should == :closing
+            @ctx.edge(:e2).phase_key.should == :closed
+            @ctx.edge(:e3).phase_key.should == :closed
             @ctx.vertex(:j11).phase_key.should == :initialized
             @jobnet.phase_key.should == :error
           end
@@ -92,8 +92,8 @@ describe 'job_control_driver' do
 
 
     it "PIDを取得できたら" do
-      @ctx.edge(:e1).status_key = :transmitted
-      @ctx.edge(:e2).status_key = :active
+      @ctx.edge(:e1).phase_key = :transmitted
+      @ctx.edge(:e2).phase_key = :active
       @ctx.vertex(:j11).phase_key = :starting
       @jobnet.save!
       @jobnet.reload
@@ -104,8 +104,8 @@ describe 'job_control_driver' do
       signal.data = {:executing_pid => @pid}
       @ctx.vertex(:j11).ack(signal) # このメソッド内ではsaveされないので、ここでreloadもしません。
       @ctx.vertex(:j11).executing_pid.should == @pid
-      @ctx.edge(:e1).status_key.should == :transmitted
-      @ctx.edge(:e2).status_key.should == :active
+      @ctx.edge(:e1).phase_key.should == :transmitted
+      @ctx.edge(:e2).phase_key.should == :active
       @ctx.vertex(:j11).phase_key.should == :running
     end
 
@@ -119,7 +119,7 @@ describe 'job_control_driver' do
         j11.executing_pid = "123"
         j11.phase_key = :running
         j11.previous_edges.length.should == 1
-        j11.previous_edges.first.status_key = :transmitted
+        j11.previous_edges.first.phase_key = :transmitted
         @ctx[:root].save!
         tengine.should_fire(:"#{phase_key}.job.job.tengine",
           :source_name => @ctx[:j11].name_as_resource,
@@ -140,8 +140,8 @@ describe 'job_control_driver' do
             :exit_status => exit_status
           })
         @jobnet.reload
-        @ctx.edge(:e1).status_key.should == :transmitted
-        @ctx.edge(:e2).status_key.should == :active
+        @ctx.edge(:e1).phase_key.should == :transmitted
+        @ctx.edge(:e2).phase_key.should == :active
         @ctx.vertex(:j11).tap do |j|
           j.phase_key.should == phase_key
           j.exit_status.should == exit_status
@@ -156,7 +156,7 @@ describe 'job_control_driver' do
       j11.executing_pid = @pid
       j11.phase_key = :running
       j11.previous_edges.length.should == 1
-      j11.previous_edges.first.status_key = :transmitted
+      j11.previous_edges.first.phase_key = :transmitted
       @ctx[:root].save!
 
       tengine.should_not_fire
@@ -180,8 +180,8 @@ describe 'job_control_driver' do
           :target_job_id => @ctx[:j11].id.to_s,
         })
       @jobnet.reload
-      @ctx.edge(:e1).status_key.should == :transmitted
-      @ctx.edge(:e2).status_key.should == :active
+      @ctx.edge(:e1).phase_key.should == :transmitted
+      @ctx.edge(:e2).phase_key.should == :active
       @ctx.vertex(:j11).tap do |j|
         j.phase_key.should == :dying
         j.exit_status.should == nil
@@ -214,7 +214,7 @@ describe 'job_control_driver' do
         j11.exit_status.should == nil
         j11.phase_key.should == :running
         j11.previous_edges.length.should == 1
-        j11.previous_edges.first.status_key.should == :transmitted
+        j11.previous_edges.first.phase_key.should == :transmitted
       end
 
     end
@@ -241,9 +241,9 @@ describe 'job_control_driver' do
             @root.phase_key = :running
             @ctx[:j11].phase_key = :success
             @ctx[:j12].phase_key = :error
-            @ctx[:e1].status_key = :transmitted
-            @ctx[:e2].status_key = :transmitted
-            @ctx[:e3].status_key = :active
+            @ctx[:e1].phase_key = :transmitted
+            @ctx[:e2].phase_key = :transmitted
+            @ctx[:e3].phase_key = :active
           end
 
           [:initialized, :success, :error, :stuck].each do |phase_key|
@@ -267,16 +267,16 @@ describe 'job_control_driver' do
                 })
               @root.reload
               @root.phase_key.should == :running
-              @ctx.edge(:e1).status_key.should == :transmitted
+              @ctx.edge(:e1).phase_key.should == :transmitted
               @ctx.vertex(:j11).phase_key.should == :ready
               if spot
                 @ctx.vertex(:j12).phase_key.should == :error
-                @ctx.edge(:e2).status_key.should == :transmitted
-                @ctx.edge(:e3).status_key.should == :active
+                @ctx.edge(:e2).phase_key.should == :transmitted
+                @ctx.edge(:e3).phase_key.should == :active
               else
                 @ctx.vertex(:j12).phase_key.should == :initialized
-                @ctx.edge(:e2).status_key.should == :active
-                @ctx.edge(:e3).status_key.should == :active
+                @ctx.edge(:e2).phase_key.should == :active
+                @ctx.edge(:e3).phase_key.should == :active
               end
             end
           end
@@ -295,7 +295,7 @@ describe 'job_control_driver' do
               # 再実行に失敗したのでルートジョブネット以下何も状態は変更されません
               @root.reload
               @root.phase_key.should == :running
-              @ctx.edge(:e1).status_key.should == :transmitted
+              @ctx.edge(:e1).phase_key.should == :transmitted
               @ctx.vertex(:j11).phase_key.should == phase_key
             end
 

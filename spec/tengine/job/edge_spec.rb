@@ -25,11 +25,11 @@ describe Tengine::Job::Edge do
       end
 
       it "e1をtransmitするとtransmitting、j11はactivateされてreadyになり、イベントが通知されるのを待つ" do
-        @ctx[:e1].status_key = :active
+        @ctx[:e1].phase_key = :active
         @ctx[:j11].phase_key = :initialized
         @ctx[:root].save!
         @ctx[:e1].transmit(@signal)
-        @ctx[:e1].status_key.should == :transmitting
+        @ctx[:e1].phase_key.should == :transmitting
         @ctx[:j11].phase_key.should == :ready
         @signal.reservations.length.should == 1
         reservation = @signal.reservations.first
@@ -41,13 +41,13 @@ describe Tengine::Job::Edge do
 
       it "j11がactivateされると、e1はcompleteされてtransmittedになり、j11はstartingになる" do
         @ctx[:root].phase_key = :starting
-        @ctx[:e1].status_key = :transmitting
+        @ctx[:e1].phase_key = :transmitting
         @ctx[:j11].phase_key = :ready
         @ctx[:root].save!
         @ctx[:j11].should_receive(:execute)
         @execution.should_receive(:signal=).with(@signal)
         @ctx[:j11].activate(@signal)
-        @ctx[:e1].status_key.should == :transmitted
+        @ctx[:e1].phase_key.should == :transmitted
         @ctx[:j11].phase_key.should == :starting
         @signal.reservations.length.should == 0
       end
@@ -65,16 +65,16 @@ describe Tengine::Job::Edge do
       end
 
       it "e1をtransmitするとe1はtransmitted,e2とe3はtransmittingでj11とj12はreadyになる" do
-        [:e1, :e2, :e3].each{|name| @ctx[name].status_key = :active}
+        [:e1, :e2, :e3].each{|name| @ctx[name].phase_key = :active}
         @ctx[:j11].phase_key = :initialized
         @ctx[:j12].phase_key = :initialized
         @ctx[:root].save!
         @ctx[:e1].transmit(@signal)
         @ctx[:root].save!
         @ctx[:root].reload
-        @ctx.edge(:e1).status_key.should == :transmitted
-        @ctx.edge(:e2).status_key.should == :transmitting
-        @ctx.edge(:e3).status_key.should == :transmitting
+        @ctx.edge(:e1).phase_key.should == :transmitted
+        @ctx.edge(:e2).phase_key.should == :transmitting
+        @ctx.edge(:e3).phase_key.should == :transmitting
         @ctx.vertex(:j11).phase_key.should == :ready
         @ctx.vertex(:j12).phase_key.should == :ready
         @signal.reservations.length.should == 2
@@ -93,29 +93,29 @@ describe Tengine::Job::Edge do
       end
 
       it "e4をtransmitするとtransmittedになるけどe6は変わらず" do
-        [:e4, :e5, :e6].each{|name| @ctx[name].status_key = :active}
+        [:e4, :e5, :e6].each{|name| @ctx[name].phase_key = :active}
         @ctx[:root].save!
         @ctx[:e4].transmit(@signal)
         @ctx[:root].save!
         @ctx[:root].reload
-        @ctx[:e4].status_key.should == :transmitted
-        @ctx[:e5].status_key.should == :active
-        @ctx[:e6].status_key.should == :active
+        @ctx[:e4].phase_key.should == :transmitted
+        @ctx[:e5].phase_key.should == :active
+        @ctx[:e6].phase_key.should == :active
         @signal.reservations.should be_empty
       end
 
       it "e4をtransmitした後、e5をtransmitするとe6もtransmittedになる" do
         @ctx[:root].phase_key = :running
-        @ctx[:e4].status_key = :transmitted
-        @ctx[:e5].status_key = :active
-        @ctx[:e6].status_key = :active
+        @ctx[:e4].phase_key = :transmitted
+        @ctx[:e5].phase_key = :active
+        @ctx[:e6].phase_key = :active
         @ctx[:root].save!
         @ctx[:e5].transmit(@signal)
         @ctx[:root].save!
         @ctx[:root].reload
-        @ctx.edge(:e4).status_key.should == :transmitted
-        @ctx.edge(:e5).status_key.should == :transmitted
-        @ctx.edge(:e6).status_key.should == :transmitted
+        @ctx.edge(:e4).phase_key.should == :transmitted
+        @ctx.edge(:e5).phase_key.should == :transmitted
+        @ctx.edge(:e6).phase_key.should == :transmitted
         @ctx.vertex(:J1).activatable?.should == true
         @signal.reservations.first.tap do |r|
           r.event_type_name.should == :"success.jobnet.job.tengine"
@@ -139,14 +139,14 @@ describe Tengine::Job::Edge do
       end
 
       it "e6.transmitしてもe12には伝搬しない" do
-        [:e5, :e6, :e7, :e8, :e9, :e10, :e12].each{|name| @ctx[name].status_key = :active}
+        [:e5, :e6, :e7, :e8, :e9, :e10, :e12].each{|name| @ctx[name].phase_key = :active}
         [:j14, :j15, :j17].each{|name| @ctx[name].phase_key = :initialized}
         @ctx[:root].save!
         @ctx[:e6].transmit(@signal)
-        @ctx[:e6].status_key.should == :transmitted
-        @ctx[:e7].status_key.should == :transmitting
-        @ctx[:e8].status_key.should == :transmitted
-        @ctx[:e12].status_key.should == :active
+        @ctx[:e6].phase_key.should == :transmitted
+        @ctx[:e7].phase_key.should == :transmitting
+        @ctx[:e8].phase_key.should == :transmitted
+        @ctx[:e12].phase_key.should == :active
         @ctx[:j14].phase_key.should == :ready
         @signal.reservations.length.should == 1
         @signal.reservations.first.tap do |r|
@@ -158,21 +158,21 @@ describe Tengine::Job::Edge do
       end
 
       it "e5とe6の両方をtransmitするとe12に伝搬する" do
-        [:e5, :e9, :e10, :e12].each{|name| @ctx[name].status_key = :active}
-        @ctx[:e6].status_key = :transmitted
-        @ctx[:e7].status_key = :transmitting
-        @ctx[:e8].status_key = :transmitted
+        [:e5, :e9, :e10, :e12].each{|name| @ctx[name].phase_key = :active}
+        @ctx[:e6].phase_key = :transmitted
+        @ctx[:e7].phase_key = :transmitting
+        @ctx[:e8].phase_key = :transmitted
         [:j14].each{|name| @ctx[name].phase_key = :ready}
         [:j15, :j17].each{|name| @ctx[name].phase_key = :initialized}
         @ctx[:root].save!
         @signal.reservations.clear
         @ctx[:e5].transmit(@signal)
-        @ctx[:e6].status_key.should == :transmitted
-        @ctx[:e7].status_key.should == :transmitting
-        @ctx[:e8].status_key.should == :transmitted
-        @ctx[:e9].status_key.should == :transmitted
-        @ctx[:e10].status_key.should == :transmitting
-        @ctx[:e12].status_key.should == :transmitting
+        @ctx[:e6].phase_key.should == :transmitted
+        @ctx[:e7].phase_key.should == :transmitting
+        @ctx[:e8].phase_key.should == :transmitted
+        @ctx[:e9].phase_key.should == :transmitted
+        @ctx[:e10].phase_key.should == :transmitting
+        @ctx[:e12].phase_key.should == :transmitting
         @signal.reservations.length.should == 2
         @signal.reservations.first.tap do |r|
           r.event_type_name.should == :"start.job.job.tengine"
