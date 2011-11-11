@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+require 'tengine/core'
+
 class Tengine::Job::Execution
   include Mongoid::Document
   include Mongoid::Timestamps
   include Tengine::Job::Executable
+  include Tengine::Core::CollectionAccessible
 
   field :target_actual_ids, :type => Array
   array_text_accessor :target_actual_ids

@@ -6,6 +6,9 @@ module Tengine::Job::Killing
   extend ActiveSupport::Concern
 
   included do
+    require 'tengine/core'
+    include Tengine::Core::CollectionAccessible
+
     field :killing_signals, :type => Array # 強制停止時にプロセスに送るシグナルの配列
     array_text_accessor :killing_signals
 
