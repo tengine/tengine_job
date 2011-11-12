@@ -97,7 +97,8 @@ class Rjn0007NestedAndFinallyBuilder < JobnetFixtureBuilder
         j1200.edges << new_edge(:j1210, :E4   )
       end
 
-      j1000.finally_vertex.tap do |j1f00|
+      self[:j1f00] = j1000.finally_vertex
+      self[:j1f00].tap do |j1f00|
         j1f00.children << new_start
         j1f00.children << new_jobnet("j1f10")
         j1f00.children << new_finally
@@ -111,7 +112,8 @@ class Rjn0007NestedAndFinallyBuilder < JobnetFixtureBuilder
           j1f10.edges << new_edge(:S6   , :j1f11)
           j1f10.edges << new_edge(:j1f11, :E6   )
         end
-        j1f00.finally_vertex.tap do |j1ff0|
+        self[:j1ff0] = j1f00.finally_vertex
+        self[:j1ff0].tap do |j1ff0|
           j1ff0.children << new_start
           j1ff0.children << new_jobnet("j1ff1")
           j1ff0.children << new_end
@@ -129,12 +131,13 @@ class Rjn0007NestedAndFinallyBuilder < JobnetFixtureBuilder
       j2000.edges << new_edge(:j2100, :E8   )
     end
 
-    root.finally_vertex.tap do |root_finally|
-      root_finally.children << new_start
-      root_finally.children << new_script("jf100")
-      root_finally.children << new_end
-      root_finally.edges << new_edge(:S9   , :jf100)
-      root_finally.edges << new_edge(:jf100, :E9   )
+    self[:jf000] = root.finally_vertex
+    self[:jf000].tap do |jf000|
+      jf000.children << new_start
+      jf000.children << new_script("jf100")
+      jf000.children << new_end
+      jf000.edges << new_edge(:S9   , :jf100)
+      jf000.edges << new_edge(:jf100, :E9   )
     end
 
     unless root.valid?
