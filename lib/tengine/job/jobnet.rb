@@ -7,6 +7,7 @@ require 'selectable_attr'
 # 自身もジョブネットを構成するVertexの一部として扱われる。
 class Tengine::Job::Jobnet < Tengine::Job::Job
   include Tengine::Core::SelectableAttr
+  include Tengine::Job::ElementSelectorNotation
 
   autoload :Builder, "tengine/job/jobnet/builder"
   autoload :StateTransition, 'tengine/job/jobnet/state_transition'
@@ -70,6 +71,11 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   end
 
   def child_by_name(name)
+    case name
+    when 'start'   then return start_vertex
+    when 'end'     then return end_vertex
+    when 'finally' then return finally_vertex
+    end
     self.children.detect{|c| c.is_a?(Tengine::Job::Job) && (c.name == name)}
   end
 

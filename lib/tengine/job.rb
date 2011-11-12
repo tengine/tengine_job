@@ -39,7 +39,7 @@ module Tengine::Job
   autoload :ScriptExecutable    , "tengine/job/script_executable"
 
   autoload :MmCompatibility     , "tengine/job/mm_compatibility"
-
+  autoload :ElementSelectorNotation, "tengine/job/element_selector_notation"
 
   class << self
     # tengine_coreからそのプラグインへ通知を受けるための
