@@ -103,10 +103,10 @@ describe Tengine::Job::ElementSelectorNotation do
       ],
 
       :J1 => [
-        "fork!j11~end@/rjn0002",
-        "fork!j11~end",
-        "fork!j12~end@/rjn0002",
-        "fork!j12~end",
+        "join!j11~end@/rjn0002",
+        "join!j11~end",
+        "join!j12~end@/rjn0002",
+        "join!j12~end",
       ],
       :e6 => [
         "prev!end@/rjn0002",

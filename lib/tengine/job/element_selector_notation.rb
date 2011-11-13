@@ -62,6 +62,7 @@ require 'tengine/job'
 
 module Tengine::Job::ElementSelectorNotation
 
+  NAME_PART = /[A-Za-z_][\w\-]*/.freeze
   NAME_PATH_PART = /[A-Za-z_\/][\w\-\/]*/.freeze
 
   def element(notation)
@@ -76,6 +77,22 @@ module Tengine::Job::ElementSelectorNotation
     when /^(start|end)!(#{NAME_PATH_PART})/ then
       job = $2 ? current.vertex_by_name_path($2) : self
       job.child_by_name($1)
+    when /^(#{NAME_PART})~(#{NAME_PART})/ then
+      job1 = current.child_by_name($1)
+      job2 = current.child_by_name($2)
+      job1.next_edges.detect{|edge| edge.destination_id == job2.id}
+    when /^(fork|join)!(#{NAME_PART})~(#{NAME_PART})/ then
+      klass = Tengine::Job.const_get($1.capitalize)
+      job1 = current.child_by_name($2)
+      job2 = current.child_by_name($3)
+      job1.next_edges.each do |origin_edge|
+        if (dest = origin_edge.destination) && dest.is_a?(klass)
+          if dest.next_edges.any?{|dest_edge| dest_edge.destination_id == job2.id}
+            return dest
+          end
+        end
+      end
+      return nil
     else
       current.child_by_name(direction)
     end
