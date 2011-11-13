@@ -72,6 +72,8 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
 
   def child_by_name(name)
     case name
+    when '..'      then return parent
+    when '.'       then return self
     when 'start'   then return start_vertex
     when 'end'     then return end_vertex
     when 'finally' then return finally_vertex
@@ -142,6 +144,12 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   end
 
   def vertex_by_name_path(name_path)
+    Tengine::Job::NamePath.absolute?(name_path) ?
+      root.vertex_by_absolute_name_path(name_path) :
+      vertex_by_relative_name_path(name_path)
+  end
+
+  def vertex_by_absolute_name_path(name_path)
     return self if name_path.to_s == self.name_path
     visitor = Tengine::Job::Vertex::AnyVisitor.new do |vertex|
       if name_path == (vertex.respond_to?(:name_path) ? vertex.name_path : nil)
@@ -151,6 +159,12 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
       end
     end
     visitor.visit(self)
+  end
+
+  def vertex_by_relative_name_path(name_path)
+    head, tail = *name_path.split(Tengine::Job::NamePath::SEPARATOR, 2)
+    child = child_by_name(head)
+    tail ? child.vertex_by_relative_name_path(tail) : child
   end
 
 end

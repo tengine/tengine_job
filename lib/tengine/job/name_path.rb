@@ -3,6 +3,13 @@ require 'tengine/job'
 module Tengine::Job::NamePath
 
   SEPARATOR = '/'.freeze
+  ABSOLUTE_PATH_REGEXP = /^\//.freeze
+
+  class << self
+    def absolute?(name_path)
+      ABSOLUTE_PATH_REGEXP =~ name_path
+    end
+  end
 
   def name_path
     name = respond_to?(:name) ? self.name : self.class.name.split('::').last.underscore

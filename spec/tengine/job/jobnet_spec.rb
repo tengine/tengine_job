@@ -134,17 +134,19 @@ describe Tengine::Job::Jobnet do
         end
 
         %w[j1000 j1100 j1110 j1120].each do |node_name|
-          context "j1200から#{node_name}を見つけることはできない" do
+          context "j1200から#{node_name}をidで見つけることはできない" do
             it :find_descendant do
               base = @j1200
               node = instance_variable_get(:"@#{node_name}")
               base.send(method_name, node.id).should == nil
             end
+          end
 
+          context "j1200から#{node_name}を#{name_to_name_path[node_name].inspect}で見つけることができる" do
             it :find_descendant_by_name_path do
               base = @j1200
               node = instance_variable_get(:"@#{node_name}")
-              base.send(by_name_path_method_name, name_to_name_path[node_name]).should == nil
+              base.send(by_name_path_method_name, name_to_name_path[node_name]).id.should == node.id
             end
           end
         end
@@ -236,6 +238,40 @@ describe Tengine::Job::Jobnet do
         end
       end
 
+    end
+
+    describe "vertex_by_name_path" do
+      {
+        :@j1000 => {
+          :@j1000 => ['/j1000', '.'],
+          :@j1100 => ['/j1000', '..'],
+          :@j1110 => ['/j1000', '../..'],
+          :@j1200 => ['/j1000', '..'],
+        },
+        :@j1100 => {
+          :@j1000 => ['/j1000/j1100', 'j1100'],
+          :@j1100 => ['/j1000/j1100', '.'],
+          :@j1110 => ['/j1000/j1100', '..'],
+          :@j1200 => ['/j1000/j1100', '../j1100'],
+          :@j1210 => ['/j1000/j1100', '../../j1100'],
+        },
+        :@j1110 => {
+          :@j1000 => ['/j1000/j1100/j1110', 'j1100/j1110'],
+          :@j1100 => ['/j1000/j1100/j1110', 'j1110'],
+          :@j1110 => ['/j1000/j1100/j1110', '.'],
+          :@j1200 => ['/j1000/j1100/j1110', '../j1100/j1110'],
+          :@j1210 => ['/j1000/j1100/j1110', '../../j1100/j1110'],
+        },
+      }.each do |target, hash|
+        hash.each do |origin, name_paths|
+          name_paths.each do |name_path|
+            it "#{target.inspect}を#{origin.inspect}から#{name_path}として参照する" do
+              job = instance_variable_get(origin)
+              job.vertex_by_name_path(name_path).should == instance_variable_get(target)
+            end
+          end
+        end
+      end
     end
 
   end
