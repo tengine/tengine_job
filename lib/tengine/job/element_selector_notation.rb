@@ -74,7 +74,7 @@ module Tengine::Job::ElementSelectorNotation
     when /^(prev|next)!(#{NAME_PATH_PART})/ then
       job = $2 ? current.vertex_by_name_path($2) : self
       job.send("#{$1}_edges").first
-    when /^(start|end)!(#{NAME_PATH_PART})/ then
+    when /^(start|end|finally)!(#{NAME_PATH_PART})/ then
       job = $2 ? current.vertex_by_name_path($2) : self
       job.child_by_name($1)
     when /^(#{NAME_PART})~(#{NAME_PART})/ then
