@@ -303,6 +303,13 @@ describe Tengine::Job::Jobnet do
           @root.vertex_by_name_path(name_path).name_path.should == name_path
         end
       end
+
+      it "endをchild_by_nameで参照できる" do
+        @root.child_by_name('end').tap do |_end1|
+          _end1.should_not == nil
+          _end1.should == @root.end_vertex
+        end
+      end
     end
 
   end
