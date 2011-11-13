@@ -94,6 +94,20 @@ module Tengine::Job::ElementSelectorNotation
           return element if element.is_a?(klass)
         end
       end
+    when /^fork~join!(#{NAME_PART})~(#{NAME_PART})$/ then
+      job1 = current.child_by_name($1)
+      job2 = current.child_by_name($2)
+      paths = PathFinder.new(job1, job2).process
+      paths.each do |path|
+        path.each do |element|
+          if element.is_a?(Tengine::Job::Edge)
+            if element.origin.is_a?(Tengine::Job::Fork) &&
+                element.destination.is_a?(Tengine::Job::Join)
+              return element
+            end
+          end
+        end
+      end
     else
       current.child_by_name(direction)
     end

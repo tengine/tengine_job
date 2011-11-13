@@ -152,10 +152,10 @@ describe Tengine::Job::ElementSelectorNotation do
         "fork~join!j12~j17",
       ],
       :J1 => [
-        "fork!j13~j17@/rjn0003",
-        "fork!j13~j17",
-        "fork!j12~j17@/rjn0003",
-        "fork!j12~j17",
+        "join!j13~j17@/rjn0003",
+        "join!j13~j17",
+        "join!j12~j17@/rjn0003",
+        "join!j12~j17",
       ],
       :e12 => [
         "prev!/rjn0003/j17",
