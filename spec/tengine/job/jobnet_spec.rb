@@ -283,14 +283,26 @@ describe Tengine::Job::Jobnet do
       end
 
       it "finallyも検索可能" do
-        @root.vertex_by_name_path("/rjn0007/finally").should == @ctx[:jf000]
         @root.vertex_by_name_path("/rjn0007/j1000/finally").should == @ctx[:j1f00]
         @root.vertex_by_name_path("/rjn0007/j1000/finally/finally").should == @ctx[:j1ff0]
-        @root.vertex_by_name_path("/rjn0007/finally/start").should == @ctx[:S9]
+        @root.vertex_by_name_path("/rjn0007/finally").should == @ctx[:jf000]
         @root.vertex_by_name_path("/rjn0007/j1000/finally/start").should == @ctx[:S5]
         @root.vertex_by_name_path("/rjn0007/j1000/finally/finally/start").should == @ctx[:S7]
+        @root.vertex_by_name_path("/rjn0007/finally/start").should == @ctx[:S9]
       end
 
+      [
+        "/rjn0007/j1000/finally",
+        "/rjn0007/j1000/finally/finally",
+        "/rjn0007/finally",
+        "/rjn0007/j1000/finally/start",
+        "/rjn0007/j1000/finally/finally/start",
+        "/rjn0007/finally/start",
+      ].each do |name_path|
+        it name_path do
+          @root.vertex_by_name_path(name_path).name_path.should == name_path
+        end
+      end
     end
 
   end
