@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.3.5"
+  s.version = "0.3.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["akima"]
-  s.date = "2011-11-11"
+  s.date = "2011-11-13"
   s.description = "tengine_job provides jobnet management"
   s.email = "akima@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -42,6 +42,7 @@ Gem::Specification.new do |s|
     "lib/tengine/job/dsl_evaluator.rb",
     "lib/tengine/job/dsl_loader.rb",
     "lib/tengine/job/edge.rb",
+    "lib/tengine/job/element_selector_notation.rb",
     "lib/tengine/job/end.rb",
     "lib/tengine/job/executable.rb",
     "lib/tengine/job/execution.rb",
@@ -105,6 +106,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/dsls/0007_execute_job_on_event.rb",
     "spec/tengine/job/dsls/VERSION",
     "spec/tengine/job/edge_spec.rb",
+    "spec/tengine/job/element_selector_notation_spec.rb",
     "spec/tengine/job/examples_spec.rb",
     "spec/tengine/job/execution_spec.rb",
     "spec/tengine/job/expansion_spec.rb",
@@ -125,7 +127,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/akm/tengine_job"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.11"
+  s.rubygems_version = "1.8.10"
   s.summary = "tengine_job provides jobnet management"
 
   if s.respond_to? :specification_version then
