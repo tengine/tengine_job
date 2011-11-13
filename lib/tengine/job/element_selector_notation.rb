@@ -69,6 +69,7 @@ module Tengine::Job::ElementSelectorNotation
     direction, current_path = *notation.split(/@/, 2)
     return vertex_by_name_path(direction) if current_path.nil? && Tengine::Job::NamePath.absolute?(direction)
     current = current_path ? vertex_by_name_path(current_path) : self
+    raise "#{current_path.inspect} not found" unless current
     case direction
     # when /^prev!(?:#{Tengine::Core::Validation::BASE_NAME.format})/
     when /^(prev|next)!(#{NAME_PATH_PART})/ then

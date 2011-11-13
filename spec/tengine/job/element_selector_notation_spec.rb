@@ -274,7 +274,6 @@ describe Tengine::Job::ElementSelectorNotation do
 
     context builder_class.name do
       %w[actual template].each do |type|
-        context "actual"
         before do
           Tengine::Job::Vertex.delete_all
           builder = builder_class.new
@@ -284,7 +283,7 @@ describe Tengine::Job::ElementSelectorNotation do
 
         patterns.each do |element_key, notations|
           notations.each do |notation|
-            it "#{notation.inspect} select #{element_key.inspect}" do
+            it "#{notation.inspect} selects #{type} #{element_key.inspect}" do
               @root.element(notation).should == @ctx[element_key]
             end
           end
