@@ -72,17 +72,24 @@ module Tengine::Job::ElementSelectorNotation
     raise "#{current_path.inspect} not found" unless current
     case direction
     # when /^prev!(?:#{Tengine::Core::Validation::BASE_NAME.format})/
-    when /^(prev|next)!(#{NAME_PATH_PART})/ then
+    when /^(prev|next)!(#{NAME_PATH_PART})$/ then
       job = $2 ? current.vertex_by_name_path($2) : self
       job.send("#{$1}_edges").first
-    when /^(start|end|finally)!(#{NAME_PATH_PART})/ then
+    when /^(start|end|finally)!(#{NAME_PATH_PART})$/ then
+      puts "$1 => #{$1.inspect}"
+      puts "$2 => #{$2.inspect}"
       job = $2 ? current.vertex_by_name_path($2) : self
+      puts "job => #{job.inspect}"
       job.child_by_name($1)
-    when /^(#{NAME_PART})~(#{NAME_PART})/ then
+    when /^(start|end|finally)$/ then
+      puts "$1 => #{$1.inspect}"
+      puts "current: #{current.inspect}"
+      current.child_by_name($1)
+    when /^(#{NAME_PART})~(#{NAME_PART})$/ then
       job1 = current.child_by_name($1)
       job2 = current.child_by_name($2)
       job1.next_edges.detect{|edge| edge.destination_id == job2.id}
-    when /^(fork|join)!(#{NAME_PART})~(#{NAME_PART})/ then
+    when /^(fork|join)!(#{NAME_PART})~(#{NAME_PART})$/ then
       klass = Tengine::Job.const_get($1.capitalize)
       job1 = current.child_by_name($2)
       job2 = current.child_by_name($3)
