@@ -88,16 +88,46 @@ module Tengine::Job::ElementSelectorNotation
       klass = Tengine::Job.const_get($1.capitalize)
       job1 = current.child_by_name($2)
       job2 = current.child_by_name($3)
-      job1.next_edges.each do |origin_edge|
-        if (dest = origin_edge.destination) && dest.is_a?(klass)
-          if dest.next_edges.any?{|dest_edge| dest_edge.destination_id == job2.id}
-            return dest
-          end
+      paths = PathFinder.new(job1, job2).process
+      paths.each do |path|
+        path.each do |element|
+          return element if element.is_a?(klass)
         end
       end
-      return nil
     else
       current.child_by_name(direction)
     end
   end
+
+  class PathFinder
+    def initialize(origin, dest)
+      @origin, @dest = origin, dest
+    end
+
+    def process
+      @routes = []
+      @current_route = []
+      @origin.accept_visitor(self)
+      @routes.select{|route| route.last == @dest}
+    end
+
+    def visit(element)
+      @current_route << element
+      if element.is_a?(Tengine::Job::Edge)
+        element.destination.accept_visitor(self)
+      else
+        @routes << @current_route.dup
+        return if element == @dest
+        element.next_edges.each do |edge|
+          bak = @current_route.dup
+          begin
+            edge.accept_visitor(self)
+          ensure
+            @current_route = bak
+          end
+        end
+      end
+    end
+  end
+
 end
