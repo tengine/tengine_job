@@ -292,7 +292,9 @@ describe Tengine::Job::ElementSelectorNotation do
             it "#{notation.inspect} selects #{type} #{element_key.inspect}" do
               expected = @ctx[element_key]
               if expected.is_a?(Tengine::Job::Vertex)
-                @root.element(notation).name_path.should == expected.name_path
+                expected_name_path = expected.name_path
+                actual_name_path = @root.element(notation).name_path
+                actual_name_path.should == expected_name_path
               else
                 @root.element(notation).should == expected
               end

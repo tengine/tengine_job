@@ -42,8 +42,8 @@ class Rjn0003ForkJoinJobnetBuilder < JobnetFixtureBuilder
     root.edges << new_edge(:S1 , :F1 ) # e1
     root.edges << new_edge(:F1 , :j11) # e2
     root.edges << new_edge(:F1 , :j12) # e3
-    root.edges << new_edge(:F1 , :j13) # e4
-    root.edges << new_edge(:j11, :F3 ) # e5
+    root.edges << new_edge(:j11, :j13) # e4
+    root.edges << new_edge(:j12, :F3 ) # e5
     root.edges << new_edge(:j13, :F2 ) # e6
     root.edges << new_edge(:F2 , :j14) # e7
     root.edges << new_edge(:F2 , :J1 ) # e8
