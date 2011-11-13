@@ -123,11 +123,19 @@ class JobnetFixtureBuilder
     dest_vertex   = dest  .is_a?(Symbol) ? self[dest  ] : dest
     raise "no origin vertex found: #{origin.inspect}" unless origin_vertex
     raise "no dest   vertex found: #{dest.inspect  }" unless dest_vertex
+    result = Tengine::Job::Edge.new(:origin_id => origin_vertex.id, :destination_id => dest_vertex.id)
+    remember_edge(result)
+  end
+
+  def remember_edge(edge)
     @edge_count += 1
     name = "e#{@edge_count}"
-    result = Tengine::Job::Edge.new(:origin_id => origin_vertex.id, :destination_id => dest_vertex.id)
-    @instances[name.to_sym] = result
-    result
+    @instances[name.to_sym] = edge
+    edge
+  end
+
+  def check_edge_count(expected)
+    raise "edge count error: expected #{expected} but #{@edge_count}" unless @edge_count == expected
   end
 
 end

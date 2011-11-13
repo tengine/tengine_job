@@ -100,7 +100,8 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     self.children.each do |child|
       next if child.is_a?(Tengine::Job::Jobnet) && !!child.jobnet_type_entry[:alternative]
       if current
-        self.new_edge(current, child)
+        edge = self.new_edge(current, child)
+        yield(edge) if block_given?
       end
       current = child
     end
