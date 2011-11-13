@@ -224,10 +224,16 @@ describe Tengine::Job::ElementSelectorNotation do
         "j1110~j1120@j1100",
       ],
       :E2 => [
+        "end@/rjn0004/j1100",
+        "end@j1100",
+        "end!/rjn0004/j1100",
+        "end!j1100",
+      ],
+      :E1 => [
         "end",
         "end@/rjn0004",
         "end!/rjn0004",
-      ]
+      ],
     },
 
     # in [rjn0007]
@@ -262,9 +268,9 @@ describe Tengine::Job::ElementSelectorNotation do
         "/rjn0007/j1000/finally",
         "finally@/rjn0007/j1000",
       ],
-      :S6 => [
+      :S5 => [
         "start@/rjn0007/j1000/finally",
-        "start@/j1000/finally",
+        "start@j1000/finally",
         "start!finally@/rjn0007/j1000",
         "start!finally@j1000",
       ],
@@ -284,7 +290,12 @@ describe Tengine::Job::ElementSelectorNotation do
         patterns.each do |element_key, notations|
           notations.each do |notation|
             it "#{notation.inspect} selects #{type} #{element_key.inspect}" do
-              @root.element(notation).should == @ctx[element_key]
+              expected = @ctx[element_key]
+              if expected.is_a?(Tengine::Job::Vertex)
+                @root.element(notation).name_path.should == expected.name_path
+              else
+                @root.element(notation).should == expected
+              end
             end
           end
         end
