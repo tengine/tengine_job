@@ -88,7 +88,7 @@ class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
     root.children << new_jobnet("j1400")
     root.children << new_jobnet("j1500", :credential_name => test_credential1.name, :server_name => "mysql_master")
     root.children << new_jobnet("j1600", :credential_name => test_credential1.name, :server_name => "mysql_master")
-    root.prepare_end
+    root.children << new_end
     root.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(7)
     raise "edge count error: expected 7 but #{@edge_count}\n" << root.edges.map(&:inspect).join("\n  ") unless @edge_count == 7
@@ -96,37 +96,37 @@ class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
     j1100 = self[:j1100].with_start
     j1100.children << new_script("j1110", :script => "job_test j1110")
     j1100.children << new_script("j1120", :script => "job_test j1120")
-    j1100.prepare_end
+    j1100.children << new_end
     j1100.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(10)
 
     j1200 = self[:j1200].with_start
     j1200.children << new_script("j1210", :script => "job_test j1210", :server_name => "mysql_master")
-    j1200.prepare_end
+    j1200.children << new_end
     j1200.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(12)
 
     j1300 = self[:j1300].with_start
     j1300.children << new_script("j1310", :script => "job_test j1310", :credential_name => test_credential1.name)
-    j1300.prepare_end
+    j1300.children << new_end
     j1300.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(14)
 
     j1400 = self[:j1400].with_start
     j1400.children << new_script("j1410", :script => "job_test j1410", :server_name => "mysql_master", :credential_name => test_credential1.name)
-    j1400.prepare_end
+    j1400.children << new_end
     j1400.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(16)
 
     j1500 = self[:j1500].with_start
     j1500.children << new_jobnet("j1510")
-    j1500.prepare_end
+    j1500.children << new_end
     j1500.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(18)
 
     j1510 = self[:j1510].with_start
     j1510.children << new_script("j1511", :script => "job_test j1511")
-    j1510.prepare_end
+    j1510.children << new_end
     j1510.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(20)
 
@@ -134,26 +134,26 @@ class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
     j1600.children << new_jobnet("j1610")
     j1600.children << new_jobnet("j1620", :server_name => test_server1.name)
     j1600.children << new_jobnet("j1630", :credential_name => "gohan_ssh_pk")
-    j1600.prepare_end
+    j1600.children << new_end
     j1600.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(24)
 
     j1610 = self[:j1610].with_start
     j1610.children << new_script("j1611", :script => "job_test j1611", :server_name => test_server1.name)
     j1610.children << new_script("j1612", :script => "job_test j1612", :credential_name => "gohan_ssh_pk")
-    j1610.prepare_end
+    j1610.children << new_end
     j1610.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(27)
 
     j1620 = self[:j1620].with_start
     j1620.children << new_script("j1621", :script => "job_test j1621")
-    j1620.prepare_end
+    j1620.children << new_end
     j1620.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(29)
 
     j1630 = self[:j1630].with_start
     j1630.children << new_script("j1631", :script => "job_test j1631")
-    j1630.prepare_end
+    j1630.children << new_end
     j1630.build_sequencial_edges{|edge| remember_edge(edge)}
     check_edge_count(31)
 

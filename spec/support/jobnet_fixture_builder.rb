@@ -108,10 +108,14 @@ class JobnetFixtureBuilder
   %w[start end fork join].each do |method_name|
     class_eval(<<-EOS)
       def new_#{method_name}(attrs = {}, &block)
-        @#{method_name}_count += 1
-        name = ABBREVIATES["#{method_name}"] + @#{method_name}_count.to_s
         klass = Tengine::Job::#{method_name.camelcase}
         result = klass.new(attrs, &block)
+        register_#{method_name}(result)
+      end
+
+      def register_#{method_name}(result)
+        @#{method_name}_count += 1
+        name = ABBREVIATES["#{method_name}"] + @#{method_name}_count.to_s
         @instances[name.to_sym] = result
         result
       end

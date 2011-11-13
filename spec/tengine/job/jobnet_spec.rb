@@ -312,6 +312,21 @@ describe Tengine::Job::Jobnet do
       end
     end
 
+
+    context "child_by_name" do
+      before do
+        Tengine::Job::Vertex.delete_all
+        builder = Rjn0004TreeSequentialJobnetBuilder.new
+        @root = builder.create_template
+        @ctx = builder.context
+      end
+
+      it "endを検索できる" do
+        @root.child_by_name("end").should == @ctx[:E1]
+        @root.vertex_by_name_path("end").should == @ctx[:E1]
+        @root.vertex_by_name_path("/rjn0004/end").should == @ctx[:E1]
+      end
+    end
   end
 
 
