@@ -274,6 +274,25 @@ describe Tengine::Job::Jobnet do
       end
     end
 
+    context "vertex_by_name_path for finally" do
+      before do
+        Tengine::Job::Vertex.delete_all
+        builder = Rjn0007NestedAndFinallyBuilder.new
+        @root = builder.create_template
+        @ctx = builder.context
+      end
+
+      it "finallyも検索可能" do
+        @root.vertex_by_name_path("/rjn0007/finally").should == @ctx[:jf000]
+        @root.vertex_by_name_path("/rjn0007/j1000/finally").should == @ctx[:j1f00]
+        @root.vertex_by_name_path("/rjn0007/j1000/finally/finally").should == @ctx[:j1ff0]
+        @root.vertex_by_name_path("/rjn0007/finally/start").should == @ctx[:S9]
+        @root.vertex_by_name_path("/rjn0007/j1000/finally/start").should == @ctx[:S5]
+        @root.vertex_by_name_path("/rjn0007/j1000/finally/finally/start").should == @ctx[:S7]
+      end
+
+    end
+
   end
 
 

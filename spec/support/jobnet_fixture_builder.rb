@@ -86,7 +86,7 @@ class JobnetFixtureBuilder
 
   def new_finally
     klass = MODE_AND_METHOD_TO_CLASS[ [@mode, :finally] ]
-    result = klass.new(:name => "_finally", :jobnet_type_key => :finally)
+    result = klass.new(:name => "finally", :jobnet_type_key => :finally)
     result
   end
 
