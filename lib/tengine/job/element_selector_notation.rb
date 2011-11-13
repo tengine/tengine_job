@@ -64,14 +64,18 @@ module Tengine::Job::ElementSelectorNotation
 
   def element(notation)
     direction, current_path = *notation.split(/@/, 2)
+    return vertex_by_name_path(direction) if current_path.nil? && Tengine::Job::NamePath.absolute?(direction)
     current = current_path ? vertex_by_name_path(current_path) : self
     case direction
     # when /^prev!(?:#{Tengine::Core::Validation::BASE_NAME.format})/
-    when /^(prev|next)!([A-Za-z_][\w\-]*)/ then
-      job = $2 ? child_by_name($2) : self
+    when /^(prev|next)!([A-Za-z_\/][\w\-\/]*)/ then
+      job = $2 ? current.vertex_by_name_path($2) : self
       job.send("#{$1}_edges").first
+    when /^(start|end)!([A-Za-z_\/][\w\-\/]*)/ then
+      job = $2 ? current.vertex_by_name_path($2) : self
+      job.child_by_name($1)
     else
-      child_by_name(direction)
+      current.child_by_name(direction)
     end
   end
 end
