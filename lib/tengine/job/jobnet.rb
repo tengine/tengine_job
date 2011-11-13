@@ -70,15 +70,16 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     _end
   end
 
-  def child_by_name(name)
-    case name
-    when '..'      then return parent
-    when '.'       then return self
-    when 'start'   then return start_vertex
-    when 'end'     then return end_vertex
-    when 'finally' then return finally_vertex
+  def child_by_name(str)
+    case str
+    when '..'      then parent
+    when '.'       then self
+    when 'start'   then start_vertex
+    when 'end'     then end_vertex
+    when 'finally' then finally_vertex
+    else
+      self.children.detect{|c| c.is_a?(Tengine::Job::Job) && (c.name == str)}
     end
-    self.children.detect{|c| c.is_a?(Tengine::Job::Job) && (c.name == name)}
   end
 
   def build_edges(auto_sequence, boot_job_names, redirections)

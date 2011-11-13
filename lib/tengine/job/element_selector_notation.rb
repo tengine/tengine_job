@@ -76,14 +76,9 @@ module Tengine::Job::ElementSelectorNotation
       job = $2 ? current.vertex_by_name_path($2) : self
       job.send("#{$1}_edges").first
     when /^(start|end|finally)!(#{NAME_PATH_PART})$/ then
-      puts "$1 => #{$1.inspect}"
-      puts "$2 => #{$2.inspect}"
       job = $2 ? current.vertex_by_name_path($2) : self
-      puts "job => #{job.inspect}"
       job.child_by_name($1)
     when /^(start|end|finally)$/ then
-      puts "$1 => #{$1.inspect}"
-      puts "current: #{current.inspect}"
       current.child_by_name($1)
     when /^(#{NAME_PART})~(#{NAME_PART})$/ then
       job1 = current.child_by_name($1)
