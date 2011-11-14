@@ -185,4 +185,64 @@ describe Tengine::Job::RootJobnetTemplate do
 
   end
 
+
+  describe "名前で検索" do
+    before do
+      Tengine::Core::Setting.delete_all
+      Tengine::Core::Setting.create!(:name => "dsl_version", :value => "2")
+      Tengine::Job::RootJobnetTemplate.delete_all
+      Rjn0001SimpleJobnetBuilder.new.create_template(:dsl_version => "1")
+      Rjn0002SimpleParallelJobnetBuilder.new.create_template(:dsl_version => "2")
+    end
+
+    [:find_by_name, :find_by_name!].each do |method_name|
+      context "#{method_name}は見つかった場合はそれを返す" do
+        it "バージョン指定なし" do
+          template = Tengine::Job::RootJobnetTemplate.send(method_name, "rjn0002")
+          template.should be_a(Tengine::Job::RootJobnetTemplate)
+          template.name.should == "rjn0002"
+          template.dsl_version.should == "2"
+        end
+
+        it "バージョン指定あり" do
+          template = Tengine::Job::RootJobnetTemplate.send(method_name, "rjn0001", :version => "1")
+          template.should be_a(Tengine::Job::RootJobnetTemplate)
+          template.name.should == "rjn0001"
+          template.dsl_version.should == "1"
+        end
+      end
+    end
+
+    context ":find_by_nameは見つからなかった場合はnilを返す" do
+      it "バージョン指定なし" do
+        Tengine::Job::RootJobnetTemplate.find_by_name("rjn0001").should == nil
+      end
+
+      it "バージョン指定あり" do
+        Tengine::Job::RootJobnetTemplate.find_by_name("rjn0002", :version => "1").should == nil
+      end
+    end
+
+    context ":find_by_name!は見つからなかった場合はTengine::Errors::NotFoundをraiseする" do
+      it "バージョン指定なし" do
+        begin
+          Tengine::Job::RootJobnetTemplate.find_by_name!("rjn0001")
+          fail
+        rescue Tengine::Errors::NotFound => e
+          e.message.should == "Tengine::Job::RootJobnetTemplate named \"rjn0001\" not found"
+        end
+      end
+
+      it "バージョン指定あり" do
+        begin
+          Tengine::Job::RootJobnetTemplate.find_by_name!("rjn0002", :version => "1")
+          fail
+        rescue Tengine::Errors::NotFound => e
+          e.message.should == "Tengine::Job::RootJobnetTemplate named \"rjn0002\" with {:version=>\"1\"} not found"
+        end
+      end
+    end
+
+  end
+
 end

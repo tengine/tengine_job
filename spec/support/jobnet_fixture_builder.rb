@@ -74,7 +74,7 @@ class JobnetFixtureBuilder
         attrs[:name] = name.to_s
         klass = MODE_AND_METHOD_TO_CLASS[ [@mode, :#{method_name}] ]
         if klass == Tengine::Job::RootJobnetTemplate
-          attrs[:dsl_version] = Tengine::Core::Setting.dsl_version
+          attrs[:dsl_version] ||= Tengine::Core::Setting.dsl_version
         end
         result = klass.new(attrs, &block)
         @instances[name.to_sym] = result

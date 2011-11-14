@@ -8,8 +8,11 @@
 #              |--e3-->(j12)--e5-->|
 
 class Rjn0002SimpleParallelJobnetBuilder < JobnetFixtureBuilder
+  include TestCredentialFixture
+  include TestServerFixture
+
   DSL = <<-EOS
-    jobnet("rjn0002") do
+    jobnet("rjn0002", :server_name => "test_server1", :credential_name => "test_credential1") do
       boot_jobs("j11", "j12")
       job("j11", "job_test j11")
       job("j12", "job_test j12")
@@ -17,7 +20,10 @@ class Rjn0002SimpleParallelJobnetBuilder < JobnetFixtureBuilder
   EOS
 
   def create(options = {})
-    root = new_root_jobnet("rjn0002")
+    root = new_root_jobnet("rjn0002", {
+        :server_name => test_server1.name,
+        :credential_name => test_credential1.name
+      }.update(options || { }))
     root.children << new_start
     root.children << new_fork
     root.children << new_script("j11", :script => "job_test j11")

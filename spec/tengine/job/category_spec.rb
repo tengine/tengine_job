@@ -141,4 +141,37 @@ describe Tengine::Job::Category do
 
   end
 
+
+  describe "名前で検索" do
+    before do
+      Tengine::Job::Category.delete_all
+      Tengine::Job::Category.create!(:name => "category1", :caption => "ONE")
+      Tengine::Job::Category.create!(:name => "category2", :caption => "TWO")
+    end
+
+    [:find_by_name, :find_by_name!].each do |method_name|
+      it "存在する場合はそれを返す" do
+        driver = Tengine::Job::Category.send(method_name, "category1")
+        driver.should be_a(Tengine::Job::Category)
+        driver.name.should == "category1"
+        driver.caption.should == "ONE"
+      end
+    end
+
+    it ":find_by_nameは見つからなかった場合はnilを返す" do
+      Tengine::Job::Category.find_by_name("unexist_category").should == nil
+    end
+
+    it ":find_by_name!は見つからなかった場合はTengine::Core::FindByName::Errorをraiseする" do
+      begin
+          Tengine::Job::Category.find_by_name!("unexist_category")
+      rescue Tengine::Errors::NotFound => e
+        e.message.should == "Tengine::Job::Category named \"unexist_category\" not found"
+      end
+    end
+
+  end
+
+
+
 end

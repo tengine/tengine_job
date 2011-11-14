@@ -3,6 +3,11 @@ require 'spec_helper'
 
 describe Tengine::Job::ElementSelectorNotation do
 
+  # Tengine::Job::ElementSelectorNotation は、#element, #element! を提供します。
+  # Tengine::Job::Jobnetにincludeされます。
+  # #element は指定されたnotationで対象となる要素が見つからなかった場合はnilを返しますが、
+  # #element! は指定されたnotationで対象となる要素が見つからなかった場合は例外をraiseします
+
   {
     # in [rjn0001]
     # (S1) --e1-->(j11)--e2-->(j12)--e3-->(E1)

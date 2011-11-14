@@ -4,6 +4,7 @@ require 'tengine/job'
 # DSLを評価して登録されるルートジョブネットを表すVertex
 class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
   include Tengine::Job::Root
+  include Tengine::Core::FindByName
 
   field :dsl_filepath, :type => String  # ルートジョブネットを定義した際にロードされたDSLのファイル名(Tengine::Core::Config#dsl_dir_pathからの相対パス)
   field :dsl_lineno  , :type => Integer # ルートジョブネットを定義するjobnetメソッドの呼び出しの、ロードされたDSLのファイルでの行番号
@@ -33,4 +34,11 @@ class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
     result
   end
 
+  class << self
+    # Tengine::Core::FindByName で定義しているクラスメソッドfind_by_nameを上書きしています
+    def find_by_name(name, options = {})
+      version = options[:version] || Tengine::Core::Setting.dsl_version
+      first(:conditions => {:name => name, :dsl_version => version})
+    end
+  end
 end
