@@ -62,9 +62,23 @@ require 'tengine/job'
 
 module Tengine::Job::ElementSelectorNotation
 
+  class NotFound < Tengine::Errors::NotFound
+    attr_reader :jobnet, :notation
+    def initialize(jobnet, notation)
+      @jobnet, @notation = jobnet, notation
+    end
+
+    def message
+      "Tengine Jobnet Element not found by selector #{notation.inspect} in #{@jobnet.name_path}"
+    end
+  end
+
+
   NAME_PART = /[A-Za-z_][\w\-]*/.freeze
   NAME_PATH_PART = /[A-Za-z_\/][\w\-\/]*/.freeze
 
+  # elementメソッドは指定されたnotationによって対象となる要素が見つからなかった場合はnilを返します。
+  # 例外をraiseさせたい場合は element!メソッドを使ってください。
   def element(notation)
     direction, current_path = *notation.split(/@/, 2)
     return vertex_by_name_path(direction) if current_path.nil? && Tengine::Job::NamePath.absolute?(direction)
@@ -111,6 +125,14 @@ module Tengine::Job::ElementSelectorNotation
     else
       current.child_by_name(direction)
     end
+  end
+
+  # element!メソッドは指定されたnotationによって対象となる要素が見つからなかった場合はnilを返します。
+  # 例外をraiseさせたい場合は element!メソッドを使ってください。
+  def element!(notation, *args)
+    result = element(notation, *args)
+    raise NotFound.new(self, notation) unless result
+    result
   end
 
   class PathFinder

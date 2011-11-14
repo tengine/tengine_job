@@ -8,51 +8,53 @@ describe Tengine::Job::ElementSelectorNotation do
   # #element は指定されたnotationで対象となる要素が見つからなかった場合はnilを返しますが、
   # #element! は指定されたnotationで対象となる要素が見つからなかった場合は例外をraiseします
 
+  rjn0001_notations = {
+    :S1 => [
+      "start",
+      "start@/rjn0001",
+      "start!/rjn0001",
+    ],
+    :e1 => [
+      "prev!/rjn0001/j11",
+      "prev!j11@/rjn0001",
+      "prev!j11",
+    ],
+    :j11 => [
+      "/rjn0001/j11",
+      "j11@/rjn0001",
+      "j11",
+    ],
+    :e2 => [
+      "next!/rjn0001/j11",
+      "next!j11@/rjn0001",
+      "next!j11",
+      "prev!/rjn0001/j12",
+      "prev!j12@/rjn0001",
+      "prev!j12",
+      "j11~j12@/rjn0001",
+      "j11~j12",
+    ],
+    :j12 => [
+      "/rjn0001/j12",
+      "j12@/rjn0001",
+      "j12",
+    ],
+    :e3 => [
+      "next!/rjn0001/j12",
+      "next!j12@/rjn0001",
+      "next!j12",
+    ],
+    :E1 => [
+      "end",
+      "end@/rjn0001",
+      "end!/rjn0001",
+    ]
+  }
+
   {
     # in [rjn0001]
     # (S1) --e1-->(j11)--e2-->(j12)--e3-->(E1)
-    Rjn0001SimpleJobnetBuilder => {
-      :S1 => [
-        "start",
-        "start@/rjn0001",
-        "start!/rjn0001",
-      ],
-      :e1 => [
-        "prev!/rjn0001/j11",
-        "prev!j11@/rjn0001",
-        "prev!j11",
-      ],
-      :j11 => [
-        "/rjn0001/j11",
-        "j11@/rjn0001",
-        "j11",
-      ],
-      :e2 => [
-        "next!/rjn0001/j11",
-        "next!j11@/rjn0001",
-        "next!j11",
-        "prev!/rjn0001/j12",
-        "prev!j12@/rjn0001",
-        "prev!j12",
-        "j11~j12@/rjn0001",
-        "j11~j12",
-      ],
-      :j12 => [
-        "/rjn0001/j12",
-        "j12@/rjn0001",
-        "j12",
-      ],
-      :e3 => [
-        "next!/rjn0001/j12",
-        "next!j12@/rjn0001",
-        "next!j12",
-      ],
-      :E1 => [
-        "end",
-        "end@/rjn0001",
-        "end!/rjn0001",
-      ]
-    },
+    Rjn0001SimpleJobnetBuilder => rjn0001_notations,
 
     # in [rjn0002]
     #              |--e2-->(j11)--e4-->|
@@ -309,6 +311,44 @@ describe Tengine::Job::ElementSelectorNotation do
 
       end
     end
+  end
+
+
+  # in [rjn0001]
+  # (S1) --e1-->(j11)--e2-->(j12)--e3-->(E1)
+  context "rjn0001" do
+    before do
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @root = builder.create_template
+      @ctx = builder.context
+    end
+
+    [:element, :element!].each do |method_name|
+      rjn0001_notations.each do |element_name, notations|
+        notations.each do |notation|
+          it "#{method_name}(#{notation}) selects #{element_name}" do
+            @root.send(method_name, notation).should == @ctx[element_name]
+          end
+        end
+      end
+    end
+
+    context "存在しないデータを検索" do
+      it "elementはnilを返す" do
+        @root.element("unexist_element").should == nil
+      end
+
+      it "element!は例外をraiseする" do
+        begin
+          @root.element!("unexist_element")
+          fail
+        rescue Tengine::Errors::NotFound => e
+          e.message.should == "Tengine Jobnet Element not found by selector \"unexist_element\" in /rjn0001"
+        end
+      end
+    end
+
   end
 
 end
