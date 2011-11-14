@@ -8,12 +8,11 @@ Gem::Specification.new do |s|
   s.version = "0.3.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["akima"]
+  s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
   s.date = "2011-11-14"
   s.description = "tengine_job provides jobnet management"
-  s.email = "akima@nautilus-technologies.com"
+  s.email = "tengine@nautilus-technologies.com"
   s.extra_rdoc_files = [
-    "LICENSE.txt",
     "README.rdoc"
   ]
   s.files = [
@@ -21,7 +20,6 @@ Gem::Specification.new do |s|
     ".rspec",
     "Gemfile",
     "Gemfile.lock",
-    "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
     "VERSION",
@@ -124,8 +122,8 @@ Gem::Specification.new do |s|
     "tengine_job.gemspec",
     "tmp/log/.gitignore"
   ]
-  s.homepage = "http://github.com/akm/tengine_job"
-  s.licenses = ["MIT"]
+  s.homepage = "http://github.com/tengine/tengine_job"
+  s.licenses = ["MPL/LGPL"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.11"
   s.summary = "tengine_job provides jobnet management"
