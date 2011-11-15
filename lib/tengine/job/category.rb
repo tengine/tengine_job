@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 require 'tengine/job'
 
+require 'yaml'
+require 'tengine/support/yaml_with_erb'
+
 class Tengine::Job::Category
   include Mongoid::Document
   include Mongoid::Timestamps

@@ -78,6 +78,7 @@ GEM
       net-ssh (~> 2.2.1)
       right_aws (~> 2.1.0)
       tengine_core (~> 0.3.3)
+    tengine_support (0.3.0)
     tzinfo (0.3.31)
     uuid (2.3.4)
       macaddr (~> 1.0)
@@ -95,4 +96,5 @@ DEPENDENCIES
   simplecov (~> 0.5.3)
   tengine_core (~> 0.3.3)
   tengine_resource (~> 0.3.1)
+  tengine_support (~> 0.3.0)
   yard (~> 0.7.2)
