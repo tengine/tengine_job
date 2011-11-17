@@ -28,7 +28,8 @@ module Tengine::Job::ScriptExecutable
     raise "actual_server not found for #{self.name_path.inspect}" unless actual_server
     Tengine.logger.info("connecting to #{actual_server.hostname_or_ipv4}")
     port = actual_server.properties["ssh_port"] || 22
-    Net::SSH.start(actual_server.hostname_or_ipv4, actual_credential, :port => port, :logger => Tengine.logger, :keys_only => true) do |ssh|
+    keys_only = actual_credential.auth_type_cd == :ssh_public_key
+    Net::SSH.start(actual_server.hostname_or_ipv4, actual_credential, :port => port, :logger => Tengine.logger, :keys_only => keys_only) do |ssh|
       # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
       ssh.open_channel do |channel|
         Tengine.logger.info("now exec on ssh: " << cmd)
