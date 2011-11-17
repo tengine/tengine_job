@@ -9,7 +9,7 @@ source "http://rubygems.org"
 
 gem "tengine_support", "~> 0.3.0"
 gem "tengine_core", "~> 0.3.3"
-gem "tengine_resource", "~> 0.3.1"
+gem "tengine_resource", "~> 0.3.9"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
