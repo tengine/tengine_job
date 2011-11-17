@@ -66,7 +66,12 @@ describe Tengine::Job::ScriptExecutable do
 
     before do
       uid = Etc.getlogin
-      raise "who am i?" unless uid
+      case uid
+      when "root"
+        pending "rootは危険なのでこのテストを実行できません"
+      when NilClass
+        raise "who am i?"
+      end
       @credential = Tengine::Resource::Credential.find_or_create_by_name!(
         :name => uid,
         :description => "myself",
