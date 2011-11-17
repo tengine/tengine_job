@@ -92,8 +92,8 @@ describe Tengine::Job::Stoppable do
             mock_channel = mock(:channel)
             Net::SSH.should_receive(:start).
               with(test_server1.hostname_or_ipv4,
-              test_credential1.auth_values['username'],
-              :password => test_credential1.auth_values['password']).and_yield(mock_ssh)
+              an_instance_of(Tengine::Resource::Credential),
+              an_instance_of(Hash)).and_yield(mock_ssh)
             mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
             mock_channel.should_receive(:exec) do |*args|
               args.length.should == 1
@@ -131,8 +131,8 @@ describe Tengine::Job::Stoppable do
           mock_channel = mock(:channel)
           Net::SSH.should_receive(:start).
             with(test_server1.hostname_or_ipv4,
-            test_credential1.auth_values['username'],
-            :password => test_credential1.auth_values['password']).and_yield(mock_ssh)
+            an_instance_of(Tengine::Resource::Credential),
+            an_instance_of(Hash)).and_yield(mock_ssh)
           mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
           mock_channel.should_receive(:exec) do |*args|
             args.length.should == 1
