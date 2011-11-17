@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'tengine/job'
+require 'tengine/resource/net_ssh'
 
 # ジョブとして実際にスクリプトを実行する処理をまとめるモジュール。
 # Tengine::Job::JobnetActualと、Tengine::Job::ScriptActualがincludeします
@@ -26,7 +27,9 @@ module Tengine::Job::ScriptExecutable
   def execute(cmd)
     raise "actual_server not found for #{self.name_path.inspect}" unless actual_server
     Tengine.logger.info("connecting to #{actual_server.hostname_or_ipv4}")
-    actual_credential.connect(actual_server.hostname_or_ipv4) do |ssh|
+    port = actual_server.properties["ssh_port"] || 22
+    keys_only = actual_credential.auth_type_cd == :ssh_public_key
+    Net::SSH.start(actual_server.hostname_or_ipv4, actual_credential, :port => port, :logger => Tengine.logger, :keys_only => keys_only) do |ssh|
       # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
       ssh.open_channel do |channel|
         Tengine.logger.info("now exec on ssh: " << cmd)
