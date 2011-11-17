@@ -109,6 +109,11 @@ class Tengine::Job::Edge
     visitor.visit(self)
   end
 
+  def phase_key=(phase_key)
+    Tengine.logger.debug("edge phase changed. <#{self.id.to_s}> #{self.phase_name} -> #{Tengine::Job::Edge.phase_name_by_key(phase_key)}")
+    self.write_attribute(:phase_cd, Tengine::Job::Edge.phase_id_by_key(phase_key))
+  end
+
   class Closer
     def visit(obj)
       if obj.is_a?(Tengine::Job::Vertex)
