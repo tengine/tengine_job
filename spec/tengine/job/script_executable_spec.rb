@@ -27,6 +27,9 @@ describe Tengine::Job::ScriptExecutable do
       # 2. sshd_configの生成
       template = File.expand_path("sshd_config.erb", ssh_dir)
       hostkey = File.expand_path("ssh_host_rsa_key", ssh_dir)
+      clientkey = File.expand_path("id_rsa", ssh_dir)
+      File.chmod(0400, hostkey, clientkey)
+      File.chmod(0700, ssh_dir)
       @port = nil
 
       # 指定したポートはもう使われているかもしれないので、その際は
