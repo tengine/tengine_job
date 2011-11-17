@@ -26,26 +26,26 @@ jobnet("jn0006", :instance_name => "test_server1", :credential_name => "test_cre
    boot_jobs("j11")
    jobnet("j11", :to => "j12") do
      boot_jobs("j111")
-     job("j111", "0006_retry_three_layer.sh",:to => "j112")
-     job("j112", "0006_retry_three_layer.sh" )
+     job("j111", "$HOME/0006_retry_three_layer.sh",:to => "j112")
+     job("j112", "$HOME/0006_retry_three_layer.sh" )
      finally do
-       job("jn11_f","0006_retry_three_layer.sh")
+       job("jn11_f","$HOME/0006_retry_three_layer.sh")
      end
    end
-   job("j12", "0006_retry_three_layer.sh")    
+   job("j12", "$HOME/0006_retry_three_layer.sh")    
    finally do
-     job("jn1_f","0006_retry_three_layer.sh")
+     job("jn1_f","$HOME/0006_retry_three_layer.sh")
    end
   end
   jobnet("jn2") do
    boot_jobs("j21")
-   job("j21", "0006_retry_three_layer.sh", :to => "j22")    
+   job("j21", "$HOME/0006_retry_three_layer.sh", :to => "j22")    
    jobnet("j22") do
      boot_jobs("j221")
-     job("j221", "0006_retry_three_layer.sh",:to => "j222")
-     job("j222", "0006_retry_three_layer.sh" )
+     job("j221", "$HOME/0006_retry_three_layer.sh",:to => "j222")
+     job("j222", "$HOME/0006_retry_three_layer.sh" )
      finally do
-       job("jn22_f","0006_retry_three_layer.sh")
+       job("jn22_f","$HOME/0006_retry_three_layer.sh")
      end
    end
    finally do
@@ -53,6 +53,6 @@ jobnet("jn0006", :instance_name => "test_server1", :credential_name => "test_cre
    end
   end
   finally do 
-    job("jn_f","0006_retry_three_layer.sh")
+    job("jn_f","$HOME/0006_retry_three_layer.sh")
   end
 end
