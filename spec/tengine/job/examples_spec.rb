@@ -35,7 +35,7 @@ describe "job DSL examples" do
         Tengine::Core::HandlerPath.delete_all
         Tengine::Job::Vertex.delete_all
 
-        config = Tengine::Core::Config.new({
+        config = Tengine::Core::Config::Core.new({
             :tengined => {
               :load_path => job_dsl_path,
             }
