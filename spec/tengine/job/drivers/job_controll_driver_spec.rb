@@ -286,12 +286,14 @@ describe 'job_control_driver' do
               @ctx[:j11].phase_key = phase_key
               @root.save!
               tengine.should_fire("restart.job.job.tengine.error.tengined").with(any_args)
-              tengine.receive("restart.job.job.tengine", :properties => {
-                  :execution_id => @execution.id.to_s,
-                  :root_jobnet_id => @root.id.to_s,
-                  :target_jobnet_id => @root.id.to_s,
-                  :target_job_id => @ctx.vertex(:j11).id.to_s,
-                })
+              Tengine::Core::Kernel.temp_exception_reporter(:except_test) do
+                tengine.receive("restart.job.job.tengine", :properties => {
+                    :execution_id => @execution.id.to_s,
+                    :root_jobnet_id => @root.id.to_s,
+                    :target_jobnet_id => @root.id.to_s,
+                    :target_job_id => @ctx.vertex(:j11).id.to_s,
+                  })
+              end
               # 再実行に失敗したのでルートジョブネット以下何も状態は変更されません
               @root.reload
               @root.phase_key.should == :running
