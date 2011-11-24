@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.4.1"
+  s.version = "0.4.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
@@ -88,6 +88,7 @@ Gem::Specification.new do |s|
     "spec/sshd/ssh_host_rsa_key",
     "spec/sshd/ssh_host_rsa_key.pub",
     "spec/sshd/sshd_config.erb",
+    "spec/sshd/tengine_job_test.sh",
     "spec/support/jobnet_fixture_builder.rb",
     "spec/tengine/job/category_spec.rb",
     "spec/tengine/job/connectable_spec.rb",
