@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.4.2"
+  s.version = "0.4.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
@@ -116,6 +116,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/execution_spec.rb",
     "spec/tengine/job/expansion_spec.rb",
     "spec/tengine/job/job_spec.rb",
+    "spec/tengine/job/jobnet/1015_complecated_jobnet_spec.rb",
     "spec/tengine/job/jobnet_actual_spec.rb",
     "spec/tengine/job/jobnet_spec.rb",
     "spec/tengine/job/jobnet_template_spec.rb",
