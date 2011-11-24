@@ -7,6 +7,9 @@ require 'tengine/resource/net_ssh'
 module Tengine::Job::ScriptExecutable
   extend ActiveSupport::Concern
 
+  class Error < StandardError
+  end
+
   included do
     field :executing_pid, :type => String # 実行しているプロセスのPID
     field :exit_status  , :type => String # 終了したプロセスが返した終了ステータス
@@ -34,7 +37,7 @@ module Tengine::Job::ScriptExecutable
       ssh.open_channel do |channel|
         Tengine.logger.info("now exec on ssh: " << cmd)
         channel.exec(cmd) do |ch, success|
-          abort "could not execute command" unless success
+          raise Error, "could not execute command" unless success
 
           channel.on_data do |ch, data|
             Tengine.logger.debug("got stdout: #{data}")
@@ -42,7 +45,7 @@ module Tengine::Job::ScriptExecutable
           end
 
           channel.on_extended_data do |ch, type, data|
-            Tengine.logger.warn("got stderr: #{data}")
+            raise Error, "Failure to execute #{self.name_path} via SSH: #{data}"
           end
 
           channel.on_close do |ch|
