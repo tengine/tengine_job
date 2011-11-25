@@ -26,7 +26,7 @@ module Tengine::Job::Jobnet::StateTransition
             #{original_method}(*args, &block)
           #{ignore_case}
           else
-            raise Tengine::Job::Executable::PhaseError, "#{method_name} not available on \#{self.phase_key.inspect}"
+            raise Tengine::Job::Executable::PhaseError, "#{method_name} not available when the phase_key of \#{self.name_path.inspect} is \#{self.phase_key.inspect}"
           end
         end
       EOS

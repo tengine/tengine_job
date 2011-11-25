@@ -114,6 +114,9 @@ describe 'job_control_driver' do
       :error => "1"
     }.each do |phase_key, exit_status|
       it "ジョブ実行#{phase_key}の通知" do
+        test_key = "test_key.finished.process.job.tengine"
+        Tengine::Core::Event.delete_all(:conditions => {:key => test_key})
+        Tengine::Core::Event.create!(:event_type_name => "job.heartbeat.tengine", :key => test_key)
         @jobnet.reload
         j11 = @jobnet.find_descendant_by_name_path("/rjn0001/j11")
         j11.executing_pid = "123"
@@ -131,6 +134,7 @@ describe 'job_control_driver' do
             :exit_status => exit_status
           })
         tengine.receive(:"finished.process.job.tengine",
+          :key => test_key,
           :source_name => @ctx[:j11].name_as_resource,
           :properties => {
             :execution_id => @execution.id.to_s,
@@ -286,12 +290,14 @@ describe 'job_control_driver' do
               @ctx[:j11].phase_key = phase_key
               @root.save!
               tengine.should_fire("restart.job.job.tengine.error.tengined").with(any_args)
-              tengine.receive("restart.job.job.tengine", :properties => {
-                  :execution_id => @execution.id.to_s,
-                  :root_jobnet_id => @root.id.to_s,
-                  :target_jobnet_id => @root.id.to_s,
-                  :target_job_id => @ctx.vertex(:j11).id.to_s,
-                })
+              Tengine::Core::Kernel.temp_exception_reporter(:except_test) do
+                tengine.receive("restart.job.job.tengine", :properties => {
+                    :execution_id => @execution.id.to_s,
+                    :root_jobnet_id => @root.id.to_s,
+                    :target_jobnet_id => @root.id.to_s,
+                    :target_job_id => @ctx.vertex(:j11).id.to_s,
+                  })
+              end
               # 再実行に失敗したのでルートジョブネット以下何も状態は変更されません
               @root.reload
               @root.phase_key.should == :running

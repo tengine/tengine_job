@@ -79,11 +79,12 @@ describe Tengine::Job::ScriptExecutable do
         :auth_values => {
           :username => uid,
           :private_keys => [
-             File.binread(Dir[File.expand_path("{id_rsa,id_dsa}", ssh_dir)].first),
+             File.binread(Dir[File.expand_path("id_rsa", ssh_dir)].first),
           ],
           :passphrase => "",
         }
       )
+      puts @port.inspect
       @server = Tengine::Resource::Server.find_or_create_by_name!(
         :name => "localhost",
         :description => "localhost",
@@ -104,7 +105,7 @@ describe Tengine::Job::ScriptExecutable do
       j = Tengine::Job::JobnetActual.new(
         :server_name => @server.name, 
         :credential_name => @credential.name,
-        :script => Dir[File.expand_path("{id_rsa,id_dsa}", ssh_dir)].first
+        :script => File.expand_path("tengine_job_test.sh", ssh_dir)
       )
       j.execute(j.script)
     end

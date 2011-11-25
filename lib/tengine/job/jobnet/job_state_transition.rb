@@ -33,7 +33,11 @@ module Tengine::Job::Jobnet::JobStateTransition
       # 実際にSSHでスクリプトを実行
       execution = signal.execution
       execution.signal = signal # ackを呼び返してもらうための苦肉の策
-      run(execution)
+      begin
+        run(execution)
+      rescue Tengine::Job::ScriptExecutable::Error
+        job_fail(signal)
+      end
     end
   end
   available(:job_activate, :on => [:initialized, :ready],
