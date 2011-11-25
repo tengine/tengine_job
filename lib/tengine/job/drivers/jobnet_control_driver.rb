@@ -39,8 +39,8 @@ driver :jobnet_control_driver do
         edge.close_followings
         edge.transmit(signal)
       end
-      target_jobnet = target_job.parent
-      target_jobnet.jobnet_fail(signal)
+      # target_jobnet = target_job.parent
+      # target_jobnet.jobnet_fail(signal)
     end
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
@@ -85,9 +85,9 @@ driver :jobnet_control_driver do
           end
         end
       end
-      if target_parent = target_jobnet.parent
-        target_parent.end_vertex.transmit(signal)
-      end
+      # if target_parent = target_jobnet.parent
+      #   target_parent.end_vertex.transmit(signal)
+      # end
     end
     signal.execution.save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
