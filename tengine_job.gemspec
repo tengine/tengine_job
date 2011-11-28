@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.4.3"
+  s.version = "0.4.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
-  s.date = "2011-11-24"
+  s.date = "2011-11-28"
   s.description = "tengine_job provides jobnet management"
   s.email = "tengine@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -24,8 +24,11 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "examples/0004_retry_one_layer.rb",
+    "examples/0004_retry_one_layer.sh",
     "examples/0005_retry_two_layer.rb",
+    "examples/0005_retry_two_layer.sh",
     "examples/0006_retry_three_layer.rb",
+    "examples/0006_retry_three_layer.sh",
     "examples/0007_simple_jobnet.rb",
     "examples/VERSION",
     "examples/tengine_job_test.sh",
