@@ -13,6 +13,7 @@ module Tengine::Job::ScriptExecutable
   included do
     field :executing_pid, :type => String # 実行しているプロセスのPID
     field :exit_status  , :type => String # 終了したプロセスが返した終了ステータス
+    field :error_messages, :type => Array # エラーになった場合のメッセージを保持する配列。再実行時に追加される場合は末尾に追加されます。
   end
 
   def run(execution)
@@ -45,6 +46,8 @@ module Tengine::Job::ScriptExecutable
           end
 
           channel.on_extended_data do |ch, type, data|
+            self.error_messages ||= []
+            self.error_messages += [data]
             raise Error, "Failure to execute #{self.name_path} via SSH: #{data}"
           end
 
