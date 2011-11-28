@@ -75,6 +75,10 @@ module Tengine::Job::Jobnet::JobStateTransition
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_fail(signal)
     self.phase_key = :error
+    if msg = signal.event[:message]
+      self.error_messages ||= []
+      self.error_messages += [msg]
+    end
     self.finished_at = signal.event.occurred_at
     signal.fire(self, :"error.job.job.tengine", {
         :exit_status => self.exit_status,
