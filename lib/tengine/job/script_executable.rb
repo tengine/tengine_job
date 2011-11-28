@@ -11,9 +11,12 @@ module Tengine::Job::ScriptExecutable
   end
 
   included do
+    include Tengine::Core::CollectionAccessible
+
     field :executing_pid, :type => String # 実行しているプロセスのPID
     field :exit_status  , :type => String # 終了したプロセスが返した終了ステータス
     field :error_messages, :type => Array # エラーになった場合のメッセージを保持する配列。再実行時に追加される場合は末尾に追加されます。
+    array_text_accessor :error_messages, :delimeter => "\n"
   end
 
   def run(execution)
