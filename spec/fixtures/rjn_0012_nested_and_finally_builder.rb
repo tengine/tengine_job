@@ -2,7 +2,7 @@
 # 以下のジョブネットについてテンプレートジョブネットや
 # 実行用ジョブネットを扱うフィクスチャ生成のためのクラスです。
 #
-# in [rjn0007]
+# in [rjn0012]
 # (S1)--e1-->[j1000]--e2-->[j2000]--e3-->(E1)
 #
 # in [j1000]
@@ -30,9 +30,9 @@
 # (S9)--e19-->(jf100)--e20-->(E9)
 #
 
-class Rjn0007NestedAndFinallyBuilder < JobnetFixtureBuilder
+class Rjn0012NestedAndFinallyBuilder < JobnetFixtureBuilder
   DSL = <<-EOS
-    jobnet("rjn0007") do
+    jobnet("rjn0012") do
       auto_sequence
       jobnet("j1000") do
         jobnet("j1100") do
@@ -62,7 +62,7 @@ class Rjn0007NestedAndFinallyBuilder < JobnetFixtureBuilder
   EOS
 
   def create(options = {})
-    root = new_root_jobnet("rjn0007")
+    root = new_root_jobnet("rjn0012")
     root.children << new_start
     root.children << new_jobnet("j1000")
     root.children << new_jobnet("j2000")

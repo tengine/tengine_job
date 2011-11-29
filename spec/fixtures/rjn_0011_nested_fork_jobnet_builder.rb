@@ -6,7 +6,7 @@ require File.expand_path('test_server_fixture', File.dirname(__FILE__))
 # 以下のジョブネットについてテンプレートジョブネットや
 # 実行用ジョブネットを扱うフィクスチャ生成のためのクラスです。
 #
-# in [rjn0006]
+# in [rjn0011]
 # (S1)--e1-->[j1100]--e2-->(j1200)--e3-->[j1300]--e4-->(E1)
 #
 # in [j1100]
@@ -21,12 +21,12 @@ require File.expand_path('test_server_fixture', File.dirname(__FILE__))
 # in [j1300]
 # (S5)--e14-->(j1310)--e15-->(E5)
 #
-class Rjn0006NestedForkJobnetBuilder < JobnetFixtureBuilder
+class Rjn0011NestedForkJobnetBuilder < JobnetFixtureBuilder
   include TestCredentialFixture
   include TestServerFixture
 
   DSL = <<-EOS
-    jobnet("rjn0006", :server_name => "test_server1", :credential_name => "test_credential1") do
+    jobnet("rjn0011", :server_name => "test_server1", :credential_name => "test_credential1") do
       auto_sequence
       jobnet("j1100") do
         job("j1110", "job_test j1110")
@@ -46,7 +46,7 @@ class Rjn0006NestedForkJobnetBuilder < JobnetFixtureBuilder
   EOS
 
   def create(options = {})
-    root = new_root_jobnet("rjn0006", :server_name => test_server1.name, :credential_name => test_credential1.name)
+    root = new_root_jobnet("rjn0011", :server_name => test_server1.name, :credential_name => test_credential1.name)
     root.children << new_start
     root.children << new_jobnet("j1100")
     root.children << new_script("j1200", :script => "job_test j1200")

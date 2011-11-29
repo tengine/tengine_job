@@ -8,7 +8,7 @@ describe 'jobnet_control_driver' do
   target_dsl File.expand_path("../../../../../lib/tengine/job/drivers/jobnet_control_driver.rb", File.dirname(__FILE__))
   driver :jobnet_control_driver
 
-  # in [rjn0006]
+  # in [rjn0011]
   # (S1)--e1-->[j1100]--e2-->(j1200)--e3-->[j1300]--e4-->(E1)
   #
   # in [j1100]
@@ -23,10 +23,10 @@ describe 'jobnet_control_driver' do
   # in [j1300]
   # (S5)--e14-->(j1310)--e15-->(E5)
   #
-  context "rjn0006" do
+  context "rjn0011" do
     before do
       Tengine::Job::Vertex.delete_all
-      builder = Rjn0006NestedForkJobnetBuilder.new
+      builder = Rjn0011NestedForkJobnetBuilder.new
       @root = builder.create_actual
       @ctx = builder.context
       @execution = Tengine::Job::Execution.create!({

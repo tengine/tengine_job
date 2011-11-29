@@ -362,14 +362,14 @@ describe 'job_control_driver' do
 
   end
 
-  # in [rjn0005]
+  # in [rjn0010]
   #              |-----e2----->(j11)-----e4----->|
   # [S1]--e1-->[F1]                            [J1]--e7-->[E1]
   #              |--e3-->(j12)--e5-->(j13)--e6-->|
-  context "rjn0005" do
+  context "rjn0010" do
     before do
       Tengine::Job::Vertex.delete_all
-      builder = Rjn00052jobsAnd1jobParallelJobnetBuilder.new
+      builder = Rjn00102jobsAnd1jobParallelJobnetBuilder.new
       @root = builder.create_actual
       @ctx = builder.context
       @execution = Tengine::Job::Execution.create!({

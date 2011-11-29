@@ -8,13 +8,13 @@ describe Tengine::Job::Connectable do
       context "#{jobnet_type}の場合" do
 
         before(:all) do
-          builder = Rjn0004TreeSequentialJobnetBuilder.new
+          builder = Rjn0009TreeSequentialJobnetBuilder.new
           builder.send(:"create_#{jobnet_type}")
           @ctx = builder.context
         end
 
         {
-          "rjn0004" => [nil, nil],
+          "rjn0009" => [nil, nil],
           "j1100" => ["test_credential1" , "test_server1"],
           "j1110" => ["test_credential1" , "test_server1"],
           "j1120" => ["test_credential1" , "test_server1"],

@@ -57,10 +57,10 @@ describe Tengine::Job::RootJobnetTemplate do
       end
     end
 
-    context "rjn0007" do
+    context "rjn0012" do
       before do
         Tengine::Job::Vertex.delete_all
-        builder = Rjn0007NestedAndFinallyBuilder.new
+        builder = Rjn0012NestedAndFinallyBuilder.new
         @jobnet = builder.create_template
         @ctx = builder.context
       end
