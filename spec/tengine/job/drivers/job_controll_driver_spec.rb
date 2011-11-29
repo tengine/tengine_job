@@ -44,8 +44,11 @@ describe 'job_control_driver' do
         tengine.receive("start.job.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx.vertex(:j11).id.to_s,
+            :target_job_name_path => @ctx.vertex(:j11).name_path,
           })
         @jobnet.reload
         @ctx.edge(:e1).phase_key.should == :transmitted
@@ -69,14 +72,19 @@ describe 'job_control_driver' do
                 :properties=>{
                   :execution_id => @execution.id.to_s,
                   :root_jobnet_id => @jobnet.id.to_s,
+                  :root_jobnet_name_path => @jobnet.name_path,
                   :target_jobnet_id => @jobnet.id.to_s,
+                  :target_jobnet_name_path => @jobnet.name_path,
                 }
               })
             tengine.receive("start.job.job.tengine", :properties => {
                 :execution_id => @execution.id.to_s,
                 :root_jobnet_id => @jobnet.id.to_s,
+                :root_jobnet_name_path => @jobnet.name_path,
                 :target_jobnet_id => @jobnet.id.to_s,
+                :target_jobnet_name_path => @jobnet.name_path,
                 :target_job_id => @ctx.vertex(:j11).id.to_s,
+                :target_job_name_path => @ctx.vertex(:j11).name_path,
               })
             @jobnet.reload
             @ctx.edge(:e1).phase_key.should == :closing
@@ -109,16 +117,22 @@ describe 'job_control_driver' do
             :properties=>{
               :execution_id => @execution.id.to_s,
               :root_jobnet_id => @jobnet.id.to_s,
+              :root_jobnet_name_path => @jobnet.name_path,
               :target_jobnet_id => @jobnet.id.to_s,
+              :target_jobnet_name_path => @jobnet.name_path,
               :target_job_id => @ctx.vertex(:j11).id.to_s,
+              :target_job_name_path => @ctx.vertex(:j11).name_path,
               :exit_status=>nil
             }
           })
         tengine.receive("start.job.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx.vertex(:j11).id.to_s,
+            :target_job_name_path => @ctx.vertex(:j11).name_path,
           })
         @jobnet.reload
         @ctx.edge(:e1).phase_key.should == :transmitted
@@ -178,8 +192,11 @@ describe 'job_control_driver' do
           :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
             :exit_status => exit_status
           })
         tengine.receive(:"finished.process.job.tengine",
@@ -188,8 +205,11 @@ describe 'job_control_driver' do
           :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
             :exit_status => exit_status
           }.merge(extra_props))
         @jobnet.reload
@@ -310,16 +330,22 @@ describe 'job_control_driver' do
                   :source_name => @ctx[:j11].name_as_resource,
                   :properties=>{
                     :execution_id => @execution.id.to_s,
+                    :root_jobnet_name_path => @root.name_path,
                     :root_jobnet_id => @root.id.to_s,
+                    :target_jobnet_name_path => @root.name_path,
                     :target_jobnet_id => @root.id.to_s,
+                    :target_job_name_path => @ctx.vertex(:j11).name_path,
                     :target_job_id => @ctx.vertex(:j11).id.to_s,
                   }
                 })
               tengine.receive("restart.job.job.tengine", :properties => {
                   :execution_id => @execution.id.to_s,
                   :root_jobnet_id => @root.id.to_s,
+                  :root_jobnet_name_path => @root.name_path,
                   :target_jobnet_id => @root.id.to_s,
+                  :target_jobnet_name_path => @root.name_path,
                   :target_job_id => @ctx.vertex(:j11).id.to_s,
+                  :target_job_name_path => @ctx.vertex(:j11).name_path,
                 })
               @root.reload
               @root.phase_key.should == :running

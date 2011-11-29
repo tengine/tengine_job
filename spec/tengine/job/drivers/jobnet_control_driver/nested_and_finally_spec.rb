@@ -47,7 +47,9 @@ describe 'jobnet_control_driver' do
       @base_props = {
         :execution_id => @execution.id.to_s,
         :root_jobnet_id => @root.id.to_s,
+        :root_jobnet_name_path => @root.name_path,
         :target_jobnet_id => @root.id.to_s,
+        :target_jobnet_name_path => @root.name_path,
       }
     end
 
@@ -65,10 +67,12 @@ describe 'jobnet_control_driver' do
           :source_name => @ctx[:j1200].name_as_resource,
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1200].id.to_s,
+            :target_jobnet_name_path => @ctx[:j1200].name_path,
           }))
         tengine.receive(:"success.jobnet.job.tengine",
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1100].id.to_s,
+            :target_jobnet_name_path => @ctx[:j1100].name_path,
           }))
         @root.reload
         [:e1, :e4, :e5, :e7, :e8].each{|name| @ctx.edge(name).phase_key = :transmitted}
@@ -93,10 +97,12 @@ describe 'jobnet_control_driver' do
           :source_name => @ctx[:j1000].finally_vertex.name_as_resource,
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].finally_vertex.id.to_s,
+            :target_jobnet_name_path => @ctx[:j1000].finally_vertex.name_path,
           }))
         tengine.receive(:"error.jobnet.job.tengine",
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1100].id.to_s,
+            :target_jobnet_name_path => @ctx[:j1100].name_path,
           }))
         @root.reload
         [:e1, :e4, :e7].each{ |name| [name, @ctx.edge(name).phase_key].should == [name, :transmitted]}
@@ -124,9 +130,11 @@ describe 'jobnet_control_driver' do
           :source_name => @ctx[:j1000].finally_vertex.name_as_resource,
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].finally_vertex.id.to_s,
+            :target_jobnet_name_path => @ctx[:j1000].finally_vertex.name_path,
           }))
         tengine.receive(:"success.jobnet.job.tengine", :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1200].id.to_s,
+            :target_jobnet_name_path => @ctx[:j1200].name_path,
           }))
         @root.reload
         [:e1, :e4, :e5, :e6, :e7, :e8, :e9, :e10].each{|name| @ctx.edge(name).phase_key = :transmitted}
@@ -153,10 +161,12 @@ describe 'jobnet_control_driver' do
           :source_name => @ctx[:j1000].finally_vertex.name_as_resource,
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].finally_vertex.id.to_s,
+            :target_jobnet_name_path => @ctx[:j1000].finally_vertex.name_path,
           }))
         tengine.receive(:"error.jobnet.job.tengine",
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1200].id.to_s,
+            :target_jobnet_name_path => @ctx[:j1200].name_path,
           }))
         @root.reload
         [:e1, :e4, :e5, :e7, :e8].each{|name| @ctx.edge(name).phase_key = :transmitted}
@@ -189,10 +199,12 @@ describe 'jobnet_control_driver' do
           :source_name => @ctx[:j1000].name_as_resource,
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].id.to_s,
+            :target_jobnet_name_path => @ctx[:j1000].name_path,
           }))
         tengine.receive(:"success.jobnet.job.tengine",
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx.vertex(:j1000).finally_vertex.id.to_s,
+            :target_jobnet_name_path => @ctx.vertex(:j1000).finally_vertex.name_path,
           }))
         @root.reload
         [:e2, :e3, :e17, :e18, :e19, :e20].each{|name| @ctx.edge(name).phase_key.should == :active     }
@@ -224,10 +236,12 @@ describe 'jobnet_control_driver' do
           :source_name => @ctx[:j2000].name_as_resource,
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx.vertex(:j2000).id.to_s,
+            :target_jobnet_name_path => @ctx.vertex(:j2000).name_path,
           }))
         tengine.receive(:"success.jobnet.job.tengine",
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx.vertex(:j1000).id.to_s,
+            :target_jobnet_name_path => @ctx.vertex(:j1000).name_path,
           }))
         @root.reload
         [:e3, :e17, :e18, :e19, :e20].each{|name| @ctx.edge(name).phase_key.should == :active     }
@@ -261,10 +275,12 @@ describe 'jobnet_control_driver' do
           :source_name => @ctx[:j1000].name_as_resource,
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:j1000].id.to_s,
+            :target_jobnet_name_path => @ctx[:j1000].name_path,
           }))
         tengine.receive(:"error.jobnet.job.tengine",
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx.vertex(:j1000).finally_vertex.id.to_s,
+            :target_jobnet_name_path => @ctx.vertex(:j1000).finally_vertex.name_path,
           }))
         @root.reload
         [:e2, :e3, :e17, :e18, :e19, :e20].each{|name| @ctx.edge(name).phase_key.should == :active     }
@@ -297,7 +313,9 @@ describe 'jobnet_control_driver' do
       @base_props = {
         :execution_id => @execution.id.to_s,
         :root_jobnet_id => @root.id.to_s,
+        :root_jobnet_name_path => @root.name_path,
         :target_jobnet_id => @root.id.to_s,
+        :target_jobnet_name_path => @root.name_path,
       }
     end
 
@@ -327,11 +345,14 @@ describe 'jobnet_control_driver' do
           :source_name => @ctx[:jn4f].name_as_resource,
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:jn4f].id.to_s,
+            :target_jobnet_name_path => @ctx[:jn4f].name_path,
           }))
         tengine.receive(:"error.job.job.tengine",
           :properties => @base_props.merge({
             :target_jobnet_id => @ctx[:jn4].id.to_s,
+            :target_jobnet_name_path => @ctx[:jn4].name_path,
             :target_job_id => @ctx[:j41].id.to_s,
+            :target_job_name_path => @ctx[:j41].name_path,
           }))
 
         @root.reload

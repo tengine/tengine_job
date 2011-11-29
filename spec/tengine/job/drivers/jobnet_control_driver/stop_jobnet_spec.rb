@@ -28,7 +28,9 @@ describe 'stop.jobnet.job.tengine' do
         @base_props = {
           :execution_id => @execution.id.to_s,
           :root_jobnet_id => @root.id.to_s,
+          :root_jobnet_name_path => @root.name_path.to_s,
           :target_jobnet_id => @ctx[:j1120].id.to_s,
+          :target_jobnet_name_path => @ctx[:j1120].name_path,
         }
       end
 
@@ -81,11 +83,13 @@ describe 'stop.jobnet.job.tengine' do
                 :source_name => @ctx[:j1121].name_as_resource,
                 :properties => @base_props.merge({
                   :target_job_id => @ctx[:j1121].id.to_s,
+                  :target_job_name_path => @ctx[:j1121].name_path,
                 }))
               tengine.receive(:"stop.jobnet.job.tengine",
                 :source_name => @ctx[:j1120].name_as_resource,
                 :properties => @base_props.merge({
                     :target_jobnet_id => @ctx[:j1120].id.to_s,
+                    :target_jobnet_name_path => @ctx[:j1120].name_path,
                   }))
               @root.reload
               @root.phase_key.should == :running

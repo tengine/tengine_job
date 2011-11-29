@@ -68,10 +68,13 @@ class Tengine::Job::Signal
     when Tengine::Job::Execution then
       properties[:execution_id] ||= source.id.to_s
       properties[:root_jobnet_id] ||= source.root_jobnet.id.to_s
+      properties[:root_jobnet_name_path] ||= source.root_jobnet.name_path
       properties[:target_jobnet_id] ||= source.root_jobnet.id.to_s
+      properties[:target_jobnet_name_path] ||= source.root_jobnet.name_path
     else
       properties[:execution_id] ||= self.execution.id.to_s
       properties[:root_jobnet_id] ||= source.root.id.to_s
+      properties[:root_jobnet_name_path] ||= source.root.name_path
     end
     # デバッグ用
     # properties[:target_jobnet_name] = source.root.vertex(properties[:target_jobnet_id]).name_path
