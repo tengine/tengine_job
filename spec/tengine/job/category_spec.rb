@@ -30,6 +30,12 @@ describe Tengine::Job::Category do
             :dsl_lineno => 4,
             :dsl_version => "2"
           })
+        @root4 = Tengine::Job::RootJobnetTemplate.create!({
+            :name => "root_jobnet_template04",
+            :dsl_filepath => "jobnet4.rb",
+            :dsl_lineno => 4,
+            :dsl_version => "2"
+          })
         @tmp_dir = Dir.tmpdir
         @base_dir = File.expand_path("root", @tmp_dir)
         FileUtils.mkdir_p(File.expand_path("foo/bar2", @base_dir))

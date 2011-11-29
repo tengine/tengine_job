@@ -23,7 +23,7 @@ class Tengine::Job::Category
       dic_dir_base = File.dirname(base_dir)
       root_jobnets = Tengine::Job::RootJobnetTemplate.all
       root_jobnets.each do |root_jobnet|
-        dirs = File.dirname(root_jobnet.dsl_filepath || "").split('/')
+        dirs = File.dirname(root_jobnet.dsl_filepath || "").split('/') - ['.', '..']
         dirs.unshift(root_dir)
         last_category = nil
         dic_dir = dic_dir_base
