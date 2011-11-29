@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.4.7"
+  s.version = "0.4.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
@@ -75,6 +75,7 @@ Gem::Specification.new do |s|
     "spec/fixtures/rjn_0001_simple_jobnet_builder.rb",
     "spec/fixtures/rjn_0002_simple_parallel_jobnet_builder.rb",
     "spec/fixtures/rjn_0003_fork_join_jobnet_builder.rb",
+    "spec/fixtures/rjn_0005_retry_two_layer_fixture.rb",
     "spec/fixtures/rjn_0008_expansion_fixture.rb",
     "spec/fixtures/rjn_0009_tree_sequential_jobnet_builder.rb",
     "spec/fixtures/rjn_0010_2jobs_and_1job_parallel_jobnet_builder.rb",
