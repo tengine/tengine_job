@@ -53,7 +53,11 @@ driver :jobnet_control_driver do
       signal.with_paths_backup do
         case target_jobnet.jobnet_type_key
         when :finally then
-          target_jobnet.parent.succeed(signal)
+          parent = target_jobnet.parent
+          edge = parent.end_vertex.prev_edges.first
+          (edge.closed? || edge.closing?) ?
+            parent.fail(signal) :
+            parent.succeed(signal)
         else
           if edge = (target_jobnet.next_edges || []).first
             edge.transmit(signal)
