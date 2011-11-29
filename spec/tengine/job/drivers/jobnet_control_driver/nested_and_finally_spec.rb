@@ -394,6 +394,79 @@ describe 'jobnet_control_driver' do
         actual_job_phases.should == expected_job_phases
       end
     end
+
+    context "j41がエラーになって、jn4_fを実行中に、j2が失敗した場合" do
+      it "jn4の終了を待ってからfinallyが実行される" do
+        @root.phase_key = :running
+        @ctx[:j1].phase_key = :success
+        @ctx[:j2].phase_key = :error
+        @ctx[:j4].phase_key = :initialized
+        @ctx[:jn4].phase_key = :running
+        @ctx[:jn4f].phase_key = :running
+        @ctx[:jn4_f].phase_key = :running
+        @ctx[:j41].phase_key = :error
+        [
+          :j42, :j43, :j44,
+          :finally, :jn0005_fjn, :jn0005_f, :jn0005_fjn,
+          :jn0005_f1, :jn0005_f2, :jn0005_fjn_f,  :jn0005_fif
+        ].each do |key|
+          @ctx[key].phase_key = :initialized
+        end
+        transmitted_edges = [:e1, :e2, :e3, :e4, :e9, :e17]
+        transmitted_edges.each{|name| @ctx[name].phase_key = :transmitted}
+        closed_edges = [:e10, :e11, :e12, :e13, :e14, :e15, :e16] # jn4のedge
+        closed_edges.each{|name| @ctx.edge(name).phase_key = :closed}
+        closing_edges = [:e6, :e7, :e8] # rootのedge
+        closing_edges.each{|name| @ctx.edge(name).phase_key = :closing}
+        (all_edge_names - transmitted_edges - closed_edges - closing_edges).
+          each{|name| @ctx[name].phase_key = :active}
+        @root.save!
+        tengine.should_not_fire
+        tengine.receive(:"error.job.job.tengine",
+          :properties => @base_props.merge({
+            :target_jobnet_id => @root.id.to_s,
+            :target_jobnet_name_path => @root.name_path,
+            :target_job_id => @ctx[:j2].id.to_s,
+            :target_job_name_path => @ctx[:j2].name_path,
+          }))
+
+        @root.reload
+        [
+          :j42, :j43, :j44,
+          :finally, :jn0005_fjn, :jn0005_f, :jn0005_fjn,
+          :jn0005_f1, :jn0005_f2, :jn0005_fjn_f,  :jn0005_fif
+        ].each do |key|
+          @ctx[key].phase_key.should == :initialized
+        end
+        transmitted_edges = [:e1, :e2, :e3, :e4, :e9, :e17]
+        transmitted_edges.each{|name| @ctx.edge(name).phase_key.should == :transmitted}
+        closed_edges = [:e10, :e11, :e12, :e13, :e14, :e15, :e16, :e5, ] # jn4のedge + j2の後
+        closed_edges.each{|name| [name, @ctx.edge(name).phase_key].should == [name, :closed]}
+        closing_edges = [:e6, :e7, :e8] # rootのedge
+        closing_edges.each{|name| [name, @ctx.edge(name).phase_key].should == [name, :closing]}
+        (all_edge_names - transmitted_edges - closed_edges - closing_edges).
+          each{|name| [name, @ctx.edge(name).phase_key].should == [name, :active]}
+        @root.phase_key.should == :running
+
+        expected_job_phases = {
+          :j1 => :success,
+          :j2 => :error,
+          :j4 => :initialized,
+          :jn4 => :running,
+          :jn4f => :running,
+          :jn4_f => :running,
+          :j41 => :error,
+        }
+
+        actual_job_phases = expected_job_phases.keys.inject({}) do |d, key|
+          d[key] = @ctx[key].phase_key
+          d
+        end
+
+        actual_job_phases.should == expected_job_phases
+      end
+
+    end
   end
 
 end
