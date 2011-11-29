@@ -7,7 +7,11 @@ class Tengine::Job::Expansion < Tengine::Job::Job
     Tengine::Job::JobnetActual
   end
   def root_jobnet_template
-    @root_jobnet_template ||= Tengine::Job::RootJobnetTemplate.by_name(name)
+    unless @root_jobnet_template
+      cond = {:dsl_version => root.dsl_version, :name => name}
+      @root_jobnet_template = Tengine::Job::RootJobnetTemplate.first(:conditions => cond)
+    end
+    @root_jobnet_template
   end
 
   IGNORED_FIELD_NAMES = (Tengine::Job::Vertex::IGNORED_FIELD_NAMES + %w[name dsl_version jobnet_type_cd lock_version updated_at created_at children edges]).freeze
