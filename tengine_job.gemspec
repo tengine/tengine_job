@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.4.6"
+  s.version = "0.4.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
-  s.date = "2011-11-28"
+  s.date = "2011-11-29"
   s.description = "tengine_job provides jobnet management"
   s.email = "tengine@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -75,11 +75,11 @@ Gem::Specification.new do |s|
     "spec/fixtures/rjn_0001_simple_jobnet_builder.rb",
     "spec/fixtures/rjn_0002_simple_parallel_jobnet_builder.rb",
     "spec/fixtures/rjn_0003_fork_join_jobnet_builder.rb",
-    "spec/fixtures/rjn_0004_tree_sequential_jobnet_builder.rb",
-    "spec/fixtures/rjn_0005_2jobs_and_1job_parallel_jobnet_builder.rb",
-    "spec/fixtures/rjn_0006_nested_fork_jobnet_builder.rb",
-    "spec/fixtures/rjn_0007_nested_and_finally_builder.rb",
     "spec/fixtures/rjn_0008_expansion_fixture.rb",
+    "spec/fixtures/rjn_0009_tree_sequential_jobnet_builder.rb",
+    "spec/fixtures/rjn_0010_2jobs_and_1job_parallel_jobnet_builder.rb",
+    "spec/fixtures/rjn_0011_nested_fork_jobnet_builder.rb",
+    "spec/fixtures/rjn_0012_nested_and_finally_builder.rb",
     "spec/fixtures/rjn_means_root_jobnet",
     "spec/fixtures/test_credential_fixture.rb",
     "spec/fixtures/test_server_fixture.rb",
@@ -105,13 +105,13 @@ Gem::Specification.new do |s|
     "spec/tengine/job/drivers/schedule_driver_spec.rb",
     "spec/tengine/job/dsl_binder_spec.rb",
     "spec/tengine/job/dsl_loader_spec.rb",
-    "spec/tengine/job/dsls/0001_hadoop_job_run.rb",
-    "spec/tengine/job/dsls/0002_join_and_join.rb",
-    "spec/tengine/job/dsls/0003_fork_and_fork.rb",
-    "spec/tengine/job/dsls/0004_complex_fork_and_join.rb",
-    "spec/tengine/job/dsls/0005_finally.rb",
-    "spec/tengine/job/dsls/0006_expansion.rb",
-    "spec/tengine/job/dsls/0007_execute_job_on_event.rb",
+    "spec/tengine/job/dsls/0013_hadoop_job_run.rb",
+    "spec/tengine/job/dsls/0014_join_and_join.rb",
+    "spec/tengine/job/dsls/0015_fork_and_fork.rb",
+    "spec/tengine/job/dsls/0016_complex_fork_and_join.rb",
+    "spec/tengine/job/dsls/0017_finally.rb",
+    "spec/tengine/job/dsls/0018_expansion.rb",
+    "spec/tengine/job/dsls/0019_execute_job_on_event.rb",
     "spec/tengine/job/dsls/VERSION",
     "spec/tengine/job/edge_spec.rb",
     "spec/tengine/job/element_selector_notation_spec.rb",
