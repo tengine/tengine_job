@@ -136,7 +136,7 @@ describe 'jobnet_control_driver' do
         @root.reload
         @ctx.edge(:e1).phase_key.should == :transmitted
         @ctx.edge(:e5).phase_key.should == :transmitted
-        (2..4).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
+        (2..4).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :closing }
         (6..9).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :closed }
         (10..15).each{|idx| @ctx.edge(:"e#{idx}").phase_key.should == :active }
         @ctx.vertex(:j1100).phase_key.should == :error

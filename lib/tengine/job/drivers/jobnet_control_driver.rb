@@ -33,7 +33,7 @@ driver :jobnet_control_driver do
     signal = Tengine::Job::Signal.new(event)
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
     root_jobnet.update_with_lock do
-      target_job = root_jobnet.find_descendant(event[:target_job_id])
+      target_job = root_jobnet.vertex(event[:target_job_id])
       signal.with_paths_backup do
         edge = target_job.next_edges.first
         edge.close_followings
@@ -49,7 +49,7 @@ driver :jobnet_control_driver do
     signal = Tengine::Job::Signal.new(event)
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
     root_jobnet.update_with_lock do
-      target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id]) || root_jobnet
+      target_jobnet = root_jobnet.vertex(event[:target_jobnet_id])
       signal.with_paths_backup do
         case target_jobnet.jobnet_type_key
         when :finally then

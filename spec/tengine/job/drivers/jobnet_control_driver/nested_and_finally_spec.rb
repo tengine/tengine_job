@@ -101,7 +101,7 @@ describe 'jobnet_control_driver' do
         @root.reload
         [:e1, :e4, :e7].each{ |name| [name, @ctx.edge(name).phase_key].should == [name, :transmitted]}
         [:e5, :e6, :e8].each{ |name| [name, @ctx.edge(name).phase_key].should == [name, :closed     ]}
-        [:e2, :e3     ].each{ |name| [name, @ctx.edge(name).phase_key].should == [name, :active     ]}
+        [:e2, :e3     ].each{ |name| [name, @ctx.edge(name).phase_key].should == [name, :closing    ]}
         @ctx.vertex(:j1100).phase_key.should == :error
         @ctx.vertex(:j1200).phase_key.should == :initialized
         @ctx.vertex(:j1000).finally_vertex.phase_key.should == :ready
@@ -282,32 +282,97 @@ describe 'jobnet_control_driver' do
       end
     end
 
-#     context "j1f00が終了して、上位のステータスが更新される" do
-#       it "j1f10が成功した場合、j1ff0が実行される" do
-#       end
-
-#       it "j1f10が失敗した場合、j1ff0が実行される" do
-#       end
-#     end
-
-#     context "j1f10が終了して、" do
-#       it "j1f10が成功した場合、j1ff0が実行される" do
-#       end
-
-#       it "j1f10が失敗した場合、j1ff0が実行される" do
-#       end
-#     end
-
-#     context "j1000が終了して、" do
-#       it "j1000が成功した場合、j2000を実行するイベントが発火される" do
-#       end
-
-#       it "j1f10が失敗した場合、jf000を実行するイベントが発火される" do
-#       end
-#     end
-
   end
 
 
+  context "rjn0005" do
+    before do
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0005RetryTwoLayerFixture.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+      @base_props = {
+        :execution_id => @execution.id.to_s,
+        :root_jobnet_id => @root.id.to_s,
+        :target_jobnet_id => @root.id.to_s,
+      }
+    end
+
+    all_edge_names = (1..26).map{|idx| :"e#{idx}"}
+
+    context "j41がエラーになったことをjn4で受けた場合" do
+      it "以降のvertexがclosedになる" do
+        @root.phase_key = :running
+        @ctx[:j1].phase_key = :success
+        @ctx[:j2].phase_key = :success
+        @ctx[:j4].phase_key = :initialized
+        @ctx[:jn4].phase_key = :running
+        @ctx[:j41].phase_key = :error
+        [
+          :j42, :j43, :j44,
+          :jn4f, :jn4_f,
+          :finally, :jn0005_fjn, :jn0005_f, :jn0005_fjn,
+          :jn0005_f1, :jn0005_f2, :jn0005_fjn_f,  :jn0005_fif
+        ].each do |key|
+          @ctx[key].phase_key = :initialized
+        end
+        transmitted_edges = [:e1, :e2, :e3, :e4, :e9]
+        transmitted_edges.each{|name| @ctx[name].phase_key = :transmitted}
+        (all_edge_names - transmitted_edges).each{|name| @ctx[name].phase_key = :active}
+        @root.save!
+        tengine.should_fire(:"start.jobnet.job.tengine",
+          :source_name => @ctx[:jn4f].name_as_resource,
+          :properties => @base_props.merge({
+            :target_jobnet_id => @ctx[:jn4f].id.to_s,
+          }))
+        tengine.receive(:"error.job.job.tengine",
+          :properties => @base_props.merge({
+            :target_jobnet_id => @ctx[:jn4].id.to_s,
+            :target_job_id => @ctx[:j41].id.to_s,
+          }))
+
+        @root.reload
+        [
+          :j42, :j43, :j44,
+          :jn4_f,
+          :finally, :jn0005_fjn, :jn0005_f, :jn0005_fjn,
+          :jn0005_f1, :jn0005_f2, :jn0005_fjn_f,  :jn0005_fif
+        ].each do |key|
+          @ctx[key].phase_key.should == :initialized
+        end
+        transmitted_edges = [:e1, :e2, :e3, :e4, :e9]
+        transmitted_edges.each{|name| @ctx.edge(name).phase_key.should == :transmitted}
+        closed_edges = [
+          :e10, :e11, :e12, :e13, :e14, :e15, :e16, # jn4のedge
+        ]
+        closing_edges = [
+          :e6, :e7, :e8, # rootのedge
+        ]
+        closed_edges.each{|name| [name, @ctx.edge(name).phase_key].should == [name, :closed]}
+        (all_edge_names - transmitted_edges - closed_edges - closing_edges).
+          each{|name| [name, @ctx.edge(name).phase_key].should == [name, :active]}
+        @root.phase_key.should == :running
+
+        expected_job_phases = {
+          :j1 => :success,
+          :j2 => :success,
+          :j4 => :initialized,
+          :jn4 => :running,
+          :j41 => :error,
+          :jn4f => :initialized,
+        }
+
+        actual_job_phases = expected_job_phases.keys.inject({}) do |d, key|
+          d[key] = @ctx[key].phase_key
+          d
+        end
+
+        actual_job_phases.should == expected_job_phases
+      end
+    end
+  end
 
 end
