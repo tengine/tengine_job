@@ -11,8 +11,6 @@ gem "tengine_support", "~> 0.3.12"
 gem "tengine_core", "~> 0.4.0"
 gem "tengine_resource", "~> 0.4.0"
 
-gem "mongoid", "2.3.3"
-
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do
