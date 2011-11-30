@@ -9,6 +9,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     self.phase_key = :ready
     signal.fire(self, :"start.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
+        :target_jobnet_name_path => self.name_path,
       })
   end
   available(:jobnet_transmit, :on => :initialized,
@@ -49,6 +50,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     self.finished_at = signal.event.occurred_at
     signal.fire(self, :"success.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
+        :target_jobnet_name_path => self.name_path,
       })
   end
   available :jobnet_succeed, :on => [:starting, :running, :dying, :stuck], :ignored => [:success]
@@ -60,6 +62,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     self.finished_at = signal.event.occurred_at
     signal.fire(self, :"error.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
+        :target_jobnet_name_path => self.name_path,
       })
   end
   available :jobnet_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
@@ -68,6 +71,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     return if self.phase_key == :initialized
     signal.fire(self, :"stop.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
+        :target_jobnet_name_path => self.name_path,
       })
   end
 

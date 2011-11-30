@@ -277,27 +277,27 @@ describe Tengine::Job::Jobnet do
     context "vertex_by_name_path for finally" do
       before do
         Tengine::Job::Vertex.delete_all
-        builder = Rjn0007NestedAndFinallyBuilder.new
+        builder = Rjn0012NestedAndFinallyBuilder.new
         @root = builder.create_template
         @ctx = builder.context
       end
 
       it "finallyも検索可能" do
-        @root.vertex_by_name_path("/rjn0007/j1000/finally").should == @ctx[:j1f00]
-        @root.vertex_by_name_path("/rjn0007/j1000/finally/finally").should == @ctx[:j1ff0]
-        @root.vertex_by_name_path("/rjn0007/finally").should == @ctx[:jf000]
-        @root.vertex_by_name_path("/rjn0007/j1000/finally/start").should == @ctx[:S5]
-        @root.vertex_by_name_path("/rjn0007/j1000/finally/finally/start").should == @ctx[:S7]
-        @root.vertex_by_name_path("/rjn0007/finally/start").should == @ctx[:S9]
+        @root.vertex_by_name_path("/rjn0012/j1000/finally").should == @ctx[:j1f00]
+        @root.vertex_by_name_path("/rjn0012/j1000/finally/finally").should == @ctx[:j1ff0]
+        @root.vertex_by_name_path("/rjn0012/finally").should == @ctx[:jf000]
+        @root.vertex_by_name_path("/rjn0012/j1000/finally/start").should == @ctx[:S5]
+        @root.vertex_by_name_path("/rjn0012/j1000/finally/finally/start").should == @ctx[:S7]
+        @root.vertex_by_name_path("/rjn0012/finally/start").should == @ctx[:S9]
       end
 
       [
-        "/rjn0007/j1000/finally",
-        "/rjn0007/j1000/finally/finally",
-        "/rjn0007/finally",
-        "/rjn0007/j1000/finally/start",
-        "/rjn0007/j1000/finally/finally/start",
-        "/rjn0007/finally/start",
+        "/rjn0012/j1000/finally",
+        "/rjn0012/j1000/finally/finally",
+        "/rjn0012/finally",
+        "/rjn0012/j1000/finally/start",
+        "/rjn0012/j1000/finally/finally/start",
+        "/rjn0012/finally/start",
       ].each do |name_path|
         it name_path do
           @root.vertex_by_name_path(name_path).name_path.should == name_path
@@ -316,7 +316,7 @@ describe Tengine::Job::Jobnet do
     context "child_by_name" do
       before do
         Tengine::Job::Vertex.delete_all
-        builder = Rjn0004TreeSequentialJobnetBuilder.new
+        builder = Rjn0009TreeSequentialJobnetBuilder.new
         @root = builder.create_template
         @ctx = builder.context
       end
@@ -324,7 +324,7 @@ describe Tengine::Job::Jobnet do
       it "endを検索できる" do
         @root.child_by_name("end").should == @ctx[:E1]
         @root.vertex_by_name_path("end").should == @ctx[:E1]
-        @root.vertex_by_name_path("/rjn0004/end").should == @ctx[:E1]
+        @root.vertex_by_name_path("/rjn0009/end").should == @ctx[:E1]
       end
     end
   end
@@ -380,6 +380,20 @@ describe Tengine::Job::Jobnet do
       end
     end
 
+  end
+
+  describe :error_messages do
+    context "デフォルト" do
+      subject{ Tengine::Job::JobnetActual.new }
+      its(:error_messages){ should == nil }
+      its(:error_messages_text){ should == "" }
+    end
+
+    context "複数音メッセージ" do
+      subject{ Tengine::Job::JobnetActual.new(:error_messages => ["foo", "bar"]) }
+      its(:error_messages){ should == ["foo", "bar"] }
+      its(:error_messages_text){ should == "foo\nbar" }
+    end
   end
 
 end

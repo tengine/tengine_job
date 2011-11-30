@@ -5,7 +5,7 @@ describe Tengine::Job::Vertex do
   describe :ancestors do
     context "templateの場合" do
       before do
-        builder = Rjn0004TreeSequentialJobnetBuilder.new
+        builder = Rjn0009TreeSequentialJobnetBuilder.new
         builder.create_template
         @ctx = builder.context
       end

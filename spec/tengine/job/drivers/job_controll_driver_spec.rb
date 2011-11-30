@@ -44,8 +44,11 @@ describe 'job_control_driver' do
         tengine.receive("start.job.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx.vertex(:j11).id.to_s,
+            :target_job_name_path => @ctx.vertex(:j11).name_path,
           })
         @jobnet.reload
         @ctx.edge(:e1).phase_key.should == :transmitted
@@ -69,14 +72,19 @@ describe 'job_control_driver' do
                 :properties=>{
                   :execution_id => @execution.id.to_s,
                   :root_jobnet_id => @jobnet.id.to_s,
+                  :root_jobnet_name_path => @jobnet.name_path,
                   :target_jobnet_id => @jobnet.id.to_s,
+                  :target_jobnet_name_path => @jobnet.name_path,
                 }
               })
             tengine.receive("start.job.job.tengine", :properties => {
                 :execution_id => @execution.id.to_s,
                 :root_jobnet_id => @jobnet.id.to_s,
+                :root_jobnet_name_path => @jobnet.name_path,
                 :target_jobnet_id => @jobnet.id.to_s,
+                :target_jobnet_name_path => @jobnet.name_path,
                 :target_job_id => @ctx.vertex(:j11).id.to_s,
+                :target_job_name_path => @ctx.vertex(:j11).name_path,
               })
             @jobnet.reload
             @ctx.edge(:e1).phase_key.should == :closing
@@ -88,6 +96,56 @@ describe 'job_control_driver' do
         end
 
       end
+
+      it "存在しないスクリプトを実行しようとした場合、標準エラー出力にエラーメッセージが返されるので、それを保持する" do
+        @jobnet.phase_key = :starting
+        @ctx.edge(:e1).phase_key = :transmitting
+        @ctx.vertex(:j11).phase_key = :ready
+        @jobnet.save!
+        @jobnet.reload
+        mock_ssh = mock(:ssh)
+        Net::SSH.stub(:start).with(any_args).and_yield(mock_ssh)
+        mock_channel = mock(:channel)
+        mock_ssh.stub(:open_channel).and_yield(mock_channel)
+        mock_channel.stub(:exec).with(any_args).and_yield(mock_channel, true)
+        mock_channel.stub(:on_data)
+        mock_channel.should_receive(:on_extended_data).and_yield(mock_channel,
+          "session", "[Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh")
+        mock_channel.stub(:on_close)
+        tengine.should_fire(:"error.job.job.tengine", {
+            :source_name => @ctx[:j11].name_as_resource,
+            :properties=>{
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @jobnet.id.to_s,
+              :root_jobnet_name_path => @jobnet.name_path,
+              :target_jobnet_id => @jobnet.id.to_s,
+              :target_jobnet_name_path => @jobnet.name_path,
+              :target_job_id => @ctx.vertex(:j11).id.to_s,
+              :target_job_name_path => @ctx.vertex(:j11).name_path,
+              :exit_status=>nil
+            }
+          })
+        tengine.receive("start.job.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
+            :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
+            :target_job_id => @ctx.vertex(:j11).id.to_s,
+            :target_job_name_path => @ctx.vertex(:j11).name_path,
+          })
+        @jobnet.reload
+        @ctx.edge(:e1).phase_key.should == :transmitted
+        @ctx.edge(:e2).phase_key.should == :active
+        @ctx.vertex(:j11).tap do |job|
+          job.phase_key.should == :error
+          job.error_messages.should == [
+            "[Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh"
+          ]
+        end
+        @jobnet.phase_key.should == :running
+      end
+
     end
 
 
@@ -109,10 +167,15 @@ describe 'job_control_driver' do
       @ctx.vertex(:j11).phase_key.should == :running
     end
 
+    test_error_message1 = "Job process failed. STDOUT and STDERR were redirected to files. You can see them at /home/goku/stdout-1234.log and /home/goku/stderr-1234.log on the server test_server1"
     {
-      :success => "0",
-      :error => "1"
-    }.each do |phase_key, exit_status|
+      :success => ["0", {}],
+      :error => ["1", {
+          :stdout_log => "/home/goku/stdout-1234.log",
+          :stderr_log => "/home/goku/stderr-1234.log",
+          :message => test_error_message1
+        }]
+    }.each do |phase_key, (exit_status, extra_props)|
       it "ジョブ実行#{phase_key}の通知" do
         test_key = "test_key.finished.process.job.tengine"
         Tengine::Core::Event.delete_all(:conditions => {:key => test_key})
@@ -129,8 +192,11 @@ describe 'job_control_driver' do
           :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
             :exit_status => exit_status
           })
         tengine.receive(:"finished.process.job.tengine",
@@ -139,16 +205,22 @@ describe 'job_control_driver' do
           :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
             :exit_status => exit_status
-          })
+          }.merge(extra_props))
         @jobnet.reload
         @ctx.edge(:e1).phase_key.should == :transmitted
         @ctx.edge(:e2).phase_key.should == :active
         @ctx.vertex(:j11).tap do |j|
           j.phase_key.should == phase_key
           j.exit_status.should == exit_status
+          if phase_key == :error
+            j.error_messages.should == [test_error_message1]
+          end
         end
       end
     end
@@ -258,16 +330,22 @@ describe 'job_control_driver' do
                   :source_name => @ctx[:j11].name_as_resource,
                   :properties=>{
                     :execution_id => @execution.id.to_s,
+                    :root_jobnet_name_path => @root.name_path,
                     :root_jobnet_id => @root.id.to_s,
+                    :target_jobnet_name_path => @root.name_path,
                     :target_jobnet_id => @root.id.to_s,
+                    :target_job_name_path => @ctx.vertex(:j11).name_path,
                     :target_job_id => @ctx.vertex(:j11).id.to_s,
                   }
                 })
               tengine.receive("restart.job.job.tengine", :properties => {
                   :execution_id => @execution.id.to_s,
                   :root_jobnet_id => @root.id.to_s,
+                  :root_jobnet_name_path => @root.name_path,
                   :target_jobnet_id => @root.id.to_s,
+                  :target_jobnet_name_path => @root.name_path,
                   :target_job_id => @ctx.vertex(:j11).id.to_s,
+                  :target_job_name_path => @ctx.vertex(:j11).name_path,
                 })
               @root.reload
               @root.phase_key.should == :running

@@ -10,7 +10,9 @@ module Tengine::Job::Jobnet::JobStateTransition
     self.started_at = signal.event.occurred_at
     signal.fire(self, :"start.job.job.tengine", {
         :target_jobnet_id => parent.id,
+        :target_jobnet_name_path => parent.name_path,
         :target_job_id => self.id,
+        :target_job_name_path => self.name_path,
       })
   end
   available(:job_transmit, :on => :initialized,
@@ -67,7 +69,9 @@ module Tengine::Job::Jobnet::JobStateTransition
     signal.fire(self, :"success.job.job.tengine", {
         :exit_status => self.exit_status,
         :target_jobnet_id => parent.id,
+        :target_jobnet_name_path => parent.name_path,
         :target_job_id => self.id,
+        :target_job_name_path => self.name_path,
       })
   end
   available :job_succeed, :on => [:starting, :running, :dying, :stuck], :ignored => [:success]
@@ -75,11 +79,17 @@ module Tengine::Job::Jobnet::JobStateTransition
   # ハンドリングするドライバ: ジョブ制御ドライバ
   def job_fail(signal)
     self.phase_key = :error
+    if msg = signal.event[:message]
+      self.error_messages ||= []
+      self.error_messages += [msg]
+    end
     self.finished_at = signal.event.occurred_at
     signal.fire(self, :"error.job.job.tengine", {
         :exit_status => self.exit_status,
         :target_jobnet_id => parent.id,
+        :target_jobnet_name_path => parent.name_path,
         :target_job_id => self.id,
+        :target_job_name_path => self.name_path,
       })
   end
   available :job_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
@@ -88,7 +98,9 @@ module Tengine::Job::Jobnet::JobStateTransition
     return if self.phase_key == :initialized
     signal.fire(self, :"stop.job.job.tengine", {
         :target_jobnet_id => parent.id,
+        :target_jobnet_name_path => parent.name_path,
         :target_job_id => self.id,
+        :target_job_name_path => self.name_path,
       })
   end
 

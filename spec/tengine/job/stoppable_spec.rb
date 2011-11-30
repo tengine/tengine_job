@@ -6,9 +6,9 @@ describe Tengine::Job::Stoppable do
   include TestServerFixture
 
   describe :stop do
-    context "rjn0006" do
+    context "rjn0011" do
       before do
-        builder = Rjn0006NestedForkJobnetBuilder.new
+        builder = Rjn0011NestedForkJobnetBuilder.new
         @ctx = builder.context
         @root = builder.create_actual
         @ctx[:j1100].tap do |j|

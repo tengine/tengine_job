@@ -20,7 +20,7 @@ class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
   end
 
   def execute(options = {})
-    event_sender = options.delete(:sender) || self
+    event_sender = options.delete(:sender) || Tengine::Event.default_sender
     actual = generate
     actual.save!
     result = Tengine::Job::Execution.create!(

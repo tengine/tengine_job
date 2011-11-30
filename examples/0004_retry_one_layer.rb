@@ -14,11 +14,11 @@ require 'tengine_job'
 #                     
 jobnet("jn0004", :instance_name => "test_server1", :credential_name => "test_credential1") do
   boot_jobs("j1")
-  job("j1", "echo 'j1'", :to => ["j2", "j3"])
-  job("j2", "echo 'j2'", :to => "j4")
-  job("j3", "echo 'j3'", :to => "j4")
-  job("j4", "echo 'j4'")
+  job("j1", "$HOME/0004_retry_one_layer.sh", :to => ["j2", "j3"])
+  job("j2", "$HOME/0004_retry_one_layer.sh", :to => "j4")
+  job("j3", "$HOME/0004_retry_one_layer.sh", :to => "j4")
+  job("j4", "$HOME/0004_retry_one_layer.sh")
   finally do
-    job("jn0004_f", "echo 'jn0004_f'")
+    job("jn0004_f", "$HOME/0004_retry_one_layer.sh")
   end
 end

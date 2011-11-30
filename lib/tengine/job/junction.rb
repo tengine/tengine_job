@@ -9,7 +9,7 @@ class Tengine::Job::Junction < Tengine::Job::Vertex
     complete_origin_edge(signal, :except_closed => true)
     # transmitted?で判断すると、closedなものに対する処理を考慮できないので、alive?を使って判断します
     # activate(signal) if prev_edges.all?(&:transmitted?)
-    activate(signal) unless prev_edges.any?(&:alive?)
+    activate(signal) unless prev_edges.any?(&:alive_or_closing?)
   end
 
   def activatable?

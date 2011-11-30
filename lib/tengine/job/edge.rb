@@ -33,6 +33,7 @@ class Tengine::Job::Edge
   end
 
   def alive?; !!phase_entry[:alive]; end
+  def alive_or_closing?; alive? || closing?; end
 
   phase_keys.each do |phase_key|
     class_eval(<<-END_OF_METHOD)
@@ -116,7 +117,11 @@ class Tengine::Job::Edge
 
   class Closer
     def visit(obj)
-      if obj.is_a?(Tengine::Job::Vertex)
+      if obj.is_a?(Tengine::Job::End)
+        if parent = obj.parent
+          (parent.next_edges || []).each{|edge| edge.accept_visitor(self)}
+        end
+      elsif obj.is_a?(Tengine::Job::Vertex)
         obj.next_edges.each{|edge| edge.accept_visitor(self)}
       elsif obj.is_a?(Tengine::Job::Edge)
         obj.close(nil)

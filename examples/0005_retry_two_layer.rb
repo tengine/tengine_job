@@ -26,29 +26,29 @@ require 'tengine_job'
 
 jobnet("jn0005", :instance_name => "test_server1", :credential_name => "test_credential1") do
   boot_jobs("j1")
-  job("j1", "echo 'job1'", :to => ["j2", "jn4"])
-  job("j2", "echo 'job2'", :to => "j4")
+  job("j1", "$HOME/0005_retry_two_layer.sh", :to => ["j2", "jn4"])
+  job("j2", "$HOME/0005_retry_two_layer.sh", :to => "j4")
   jobnet("jn4", :to => "j4") do
     boot_jobs("j41")
-    job("j41", "echo 'job41'", :to => ["j42", "j43"])
-    job("j42", "echo 'job42'", :to => "j44")
-    job("j43", "echo 'job43'", :to => "j44")
-    job("j44", "echo 'job44'")
+    job("j41", "$HOME/0005_retry_two_layer.sh", :to => ["j42", "j43"])
+    job("j42", "$HOME/0005_retry_two_layer.sh", :to => "j44")
+    job("j43", "$HOME/0005_retry_two_layer.sh", :to => "j44")
+    job("j44", "$HOME/0005_retry_two_layer.sh")
     finally do
-      job("jn4_f", "echo 'jn4_f'")
+      job("jn4_f", "$HOME/0005_retry_two_layer.sh")
     end
   end
-  job("j4", "echo 'j4'")
+  job("j4", "$HOME/0005_retry_two_layer.sh")
   finally do
     boot_jobs("jn0005_fjn")
     jobnet("jn0005_fjn", :to => "jn0005_f") do
       boot_jobs("jn0005_f1")
-      job("jn0005_f1", "echo jn0005_f1", :to => ["jn0005_f2"])
-      job("jn0005_f2", "echo jn0005_f2")
+      job("jn0005_f1", "$HOME/0005_retry_two_layer.sh", :to => ["jn0005_f2"])
+      job("jn0005_f2", "$HOME/0005_retry_two_layer.sh")
       finally do
-        job("jn0005_fif","echo 'jn0005_fif'")
+        job("jn0005_fif","$HOME/0005_retry_two_layer.sh")
       end 
     end
-    job("jn0005_f", "echo 'jobnet0005_finally'")
+    job("jn0005_f", "$HOME/0005_retry_two_layer.sh")
   end
 end
