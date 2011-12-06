@@ -12,7 +12,8 @@ class Tengine::Job::End < Tengine::Job::Vertex
   def activate(signal)
     complete_origin_edge(signal, :except_closed => true)
     parent = self.parent # Endのparentであるジョブネット
-    if parent_finally = parent.finally_vertex
+    parent_finally = parent.finally_vertex
+    if parent_finally && (parent.phase_key != :dying)
       parent_finally.transmit(signal)
     else
       parent.finish(signal)
