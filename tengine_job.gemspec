@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.4.14"
+  s.version = "0.4.15"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
-  s.date = "2011-11-29"
+  s.date = "2011-12-06"
   s.description = "tengine_job provides jobnet management"
   s.email = "tengine@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -75,6 +75,7 @@ Gem::Specification.new do |s|
     "spec/fixtures/rjn_0001_simple_jobnet_builder.rb",
     "spec/fixtures/rjn_0002_simple_parallel_jobnet_builder.rb",
     "spec/fixtures/rjn_0003_fork_join_jobnet_builder.rb",
+    "spec/fixtures/rjn_0004_parallel_jobnet_with_finally_fixture.rb",
     "spec/fixtures/rjn_0005_retry_two_layer_fixture.rb",
     "spec/fixtures/rjn_0008_expansion_fixture.rb",
     "spec/fixtures/rjn_0009_tree_sequential_jobnet_builder.rb",
