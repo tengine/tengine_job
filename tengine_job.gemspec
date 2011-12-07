@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.4.15"
+  s.version = "0.5.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
-  s.date = "2011-12-06"
+  s.date = "2011-12-07"
   s.description = "tengine_job provides jobnet management"
   s.email = "tengine@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -148,8 +148,8 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<tengine_support>, ["~> 0.3.12"])
-      s.add_runtime_dependency(%q<tengine_core>, ["~> 0.4.0"])
-      s.add_runtime_dependency(%q<tengine_resource>, ["~> 0.4.0"])
+      s.add_runtime_dependency(%q<tengine_core>, ["~> 0.5.0"])
+      s.add_runtime_dependency(%q<tengine_resource>, ["~> 0.5.0"])
       s.add_development_dependency(%q<rspec>, ["~> 2.6.0"])
       s.add_development_dependency(%q<factory_girl>, ["~> 2.1.2"])
       s.add_development_dependency(%q<yard>, ["~> 0.7.2"])
@@ -159,8 +159,8 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<ZenTest>, ["~> 4.6.2"])
     else
       s.add_dependency(%q<tengine_support>, ["~> 0.3.12"])
-      s.add_dependency(%q<tengine_core>, ["~> 0.4.0"])
-      s.add_dependency(%q<tengine_resource>, ["~> 0.4.0"])
+      s.add_dependency(%q<tengine_core>, ["~> 0.5.0"])
+      s.add_dependency(%q<tengine_resource>, ["~> 0.5.0"])
       s.add_dependency(%q<rspec>, ["~> 2.6.0"])
       s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
       s.add_dependency(%q<yard>, ["~> 0.7.2"])
@@ -171,8 +171,8 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<tengine_support>, ["~> 0.3.12"])
-    s.add_dependency(%q<tengine_core>, ["~> 0.4.0"])
-    s.add_dependency(%q<tengine_resource>, ["~> 0.4.0"])
+    s.add_dependency(%q<tengine_core>, ["~> 0.5.0"])
+    s.add_dependency(%q<tengine_resource>, ["~> 0.5.0"])
     s.add_dependency(%q<rspec>, ["~> 2.6.0"])
     s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
     s.add_dependency(%q<yard>, ["~> 0.7.2"])
