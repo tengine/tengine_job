@@ -34,8 +34,11 @@ module Tengine::Job::DslLoader
         end
       end
     end
-    result.save! if result.parent.nil?
-    result
+    if result.parent.nil?
+      result.find_duplication || (result.save!; result)
+    else
+      result
+    end
   end
 
   def auto_sequence
