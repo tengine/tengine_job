@@ -378,4 +378,13 @@ describe Tengine::Job::DslLoader do
 
   end
 
+  context "<バグ>同じDSLバージョンで同一のルートジョブネット名が定義できてしまう" do
+    it do
+      Tengine::Job::JobnetTemplate.delete_all
+      expect{
+        load_dsl("0020_duplicated_jobnet_name.rb")
+      }.to raise_error(Tengine::Job::DslError, "2 jobnet named \"jobnet0020\" found at 0020_duplicated_jobnet_name.rb:6 and 0020_duplicated_jobnet_name.rb:12")
+    end
+  end
+
 end
