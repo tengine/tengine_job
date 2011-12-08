@@ -61,6 +61,15 @@ module Tengine::Job::ScriptExecutable
       end
 
     end
+  rescue Tengine::Job::ScriptExecutable::Error
+    raise
+  rescue Mongoid::Errors::DocumentNotFound, SocketError, Net::SSH::AuthenticationFailed => src
+    error = Error.new("[#{src.class.name}] #{src.message}")
+    error.set_backtrace(src.backtrace)
+    raise error
+  rescue Exception
+    # puts "[#{$!.class.name}] #{$!.message}"
+    raise
   end
 
   def kill(execution)
