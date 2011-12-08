@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.5.1"
+  s.version = "0.5.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
@@ -116,6 +116,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/dsls/0017_finally.rb",
     "spec/tengine/job/dsls/0018_expansion.rb",
     "spec/tengine/job/dsls/0019_execute_job_on_event.rb",
+    "spec/tengine/job/dsls/0020_duplicated_jobnet_name.rb",
     "spec/tengine/job/dsls/VERSION",
     "spec/tengine/job/edge_spec.rb",
     "spec/tengine/job/element_selector_notation_spec.rb",
