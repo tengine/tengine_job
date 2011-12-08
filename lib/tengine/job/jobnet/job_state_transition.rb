@@ -37,8 +37,8 @@ module Tengine::Job::Jobnet::JobStateTransition
       execution.signal = signal # ackを呼び返してもらうための苦肉の策
       begin
         run(execution)
-      rescue Tengine::Job::ScriptExecutable::Error
-        job_fail(signal)
+      rescue Tengine::Job::ScriptExecutable::Error => e
+        job_fail(signal, :message => e.message)
       end
     end
   end
@@ -77,20 +77,26 @@ module Tengine::Job::Jobnet::JobStateTransition
   available :job_succeed, :on => [:starting, :running, :dying, :stuck], :ignored => [:success]
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
-  def job_fail(signal)
+  def job_fail(signal, options = nil)
     self.phase_key = :error
     if msg = signal.event[:message]
       self.error_messages ||= []
       self.error_messages += [msg]
     end
+    if options && (msg = options[:message])
+      self.error_messages ||= []
+      self.error_messages += [msg]
+    end
     self.finished_at = signal.event.occurred_at
-    signal.fire(self, :"error.job.job.tengine", {
-        :exit_status => self.exit_status,
-        :target_jobnet_id => parent.id,
-        :target_jobnet_name_path => parent.name_path,
-        :target_job_id => self.id,
-        :target_job_name_path => self.name_path,
-      })
+    event_options = {
+      :exit_status => self.exit_status,
+      :target_jobnet_id => parent.id,
+      :target_jobnet_name_path => parent.name_path,
+      :target_job_id => self.id,
+      :target_job_name_path => self.name_path,
+    }
+    event_options.update(options) if options
+    signal.fire(self, :"error.job.job.tengine", event_options)
   end
   available :job_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
 

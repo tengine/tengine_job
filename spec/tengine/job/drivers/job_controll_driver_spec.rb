@@ -122,7 +122,8 @@ describe 'job_control_driver' do
               :target_jobnet_name_path => @jobnet.name_path,
               :target_job_id => @ctx.vertex(:j11).id.to_s,
               :target_job_name_path => @ctx.vertex(:j11).name_path,
-              :exit_status=>nil
+              :exit_status=>nil,
+              :message=>"Failure to execute /rjn0001/j11 via SSH: [Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh"
             }
           })
         tengine.receive("start.job.job.tengine", :properties => {
@@ -140,7 +141,8 @@ describe 'job_control_driver' do
         @ctx.vertex(:j11).tap do |job|
           job.phase_key.should == :error
           job.error_messages.should == [
-            "[Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh"
+            "[Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh",
+            "Failure to execute /rjn0001/j11 via SSH: [Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh"
           ]
         end
         @jobnet.phase_key.should == :running
