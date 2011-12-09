@@ -30,14 +30,14 @@ class Tengine::Job::Signal
     @execution ||= Tengine::Job::Execution.find(event[:execution_id])
   end
 
-  def leave(obj)
+  def leave(obj, action = :transmit)
     @paths << obj
     begin
       if obj.is_a?(Tengine::Job::Edge)
-        obj.destination.transmit(self)
+        obj.destination.send(action, self)
       elsif obj.is_a?(Tengine::Job::Vertex)
         obj.next_edges.each do |edge|
-          with_paths_backup{ edge.transmit(self) }
+          with_paths_backup{ edge.send(action, self) }
         end
       else
         raise Tengine::Job::Signal::Error, "leaving unsupported object: #{obj.inspect}"

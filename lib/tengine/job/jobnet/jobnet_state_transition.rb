@@ -90,4 +90,22 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     self.edges.each{|edge| edge.close(signal)}
   end
 
+
+  def jobnet_reset(signal, &block)
+    children.each{|c| c.reset(signal) }
+    if f = self.finally_vertex
+      f.reset(signal)
+    end
+    self.phase_key = :initialized
+    unless signal.execution.spot
+      if edge = (next_edges || []).first
+        next_edges.first.reset(signal)
+      end
+    end
+  rescue Exception => e
+    puts "#{self.name_path} [#{e.class}] #{e.message}"
+    raise
+  end
+  available :jobnet_reset, :on => [:initialized, :success, :error, :stuck]
+
 end
