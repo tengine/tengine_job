@@ -32,6 +32,10 @@ module Tengine::Job::Jobnet::JobStateTransition
       self.phase_key = :starting
       self.started_at = signal.event.occurred_at
       parent.ack(signal)
+      # このコールバックはjob_control_driverでupdate_with_lockの外側から
+      # 再度呼び出してもらうためにcallbackを設定しています
+      signal.callback = lambda{ root.vertex(self.id).activate(signal) }
+    when :starting then
       # 実際にSSHでスクリプトを実行
       execution = signal.execution
       execution.signal = signal # ackを呼び返してもらうための苦肉の策
@@ -42,8 +46,8 @@ module Tengine::Job::Jobnet::JobStateTransition
       end
     end
   end
-  available(:job_activate, :on => [:initialized, :ready],
-    :ignored => [:starting, :running, :dying, :success, :error, :stuck])
+  available(:job_activate, :on => [:initialized, :ready, :starting],
+    :ignored => [:running, :dying, :success, :error, :stuck])
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   # スクリプトのプロセスのPIDを取得できたときに実行されます

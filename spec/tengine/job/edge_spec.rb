@@ -47,6 +47,8 @@ describe Tengine::Job::Edge do
         @ctx[:j11].should_receive(:execute)
         @execution.should_receive(:signal=).with(@signal)
         @ctx[:j11].activate(@signal)
+        @signal.callback.should_not be_nil
+        @signal.callback.call # 2回に分けてphaseを更新するのでcallbackすることを期待しています
         @ctx[:e1].phase_key.should == :transmitted
         @ctx[:j11].phase_key.should == :starting
         @signal.reservations.length.should == 0
