@@ -36,11 +36,29 @@ class Tengine::Job::Execution
     root_jobnet.name_as_resource.sub(/^job:/, 'execution:')
   end
 
+  def target_actuals
+    r = self.root_jobnet
+    if target_actual_ids.nil? || target_actual_ids.empty?
+      [r]
+    else
+      target_actual_ids.map do |target_actual_id|
+        r.vertex(target_actual_id)
+      end
+    end
+  end
+
   def transmit(signal)
     case phase_key
     when :initialized then
+      if self.retry
+        target_actuals.each do |target|
+          target.reset(signal)
+        end
+      end
       self.phase_key = :ready
       activate(signal)
+    else
+      raise "Unsupported phase_key for transmit: #{phase_key.inspect}"
     end
   end
 
@@ -48,7 +66,15 @@ class Tengine::Job::Execution
     case phase_key
     when :ready then
       self.phase_key = :starting
-      root_jobnet.transmit(signal)
+      if self.retry
+        target_actuals.each do |target|
+          target.transmit(signal)
+        end
+      else
+        root_jobnet.transmit(signal)
+      end
+    else
+      raise "Unsupported phase_key for activate: #{phase_key.inspect}"
     end
   end
 

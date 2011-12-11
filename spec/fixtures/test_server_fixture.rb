@@ -4,7 +4,8 @@ module TestServerFixture
       :name => "test_server1",
       :properties => {},
       :addresses => {
-        :private_dns_name => "localhost"
+        :private_dns_name => "localhost",
+        # :private_ip_address => "127.0.0.1"
       }
       )
   end
