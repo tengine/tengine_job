@@ -393,4 +393,107 @@ describe 'job_control_driver' do
 
   end
 
+
+  context "<BUG>同じジョブネットが複数バージョン存在する際、ジョブ実行時にスクリプトに渡される環境変数の「MM_TEMPLATE_JOB_ID」「MM_TEMPLATE_JOB_ANCESTOR_IDS」が実行しているバージョン以外のものがセットされている" do
+    shared_examples_for "最新のバージョンのルートジョブネットを参照する" do |dsl_version|
+
+      it do
+        @root.phase_key = :starting
+        @root.element("prev!j11").phase_key = :transmitting
+        @root.element('j11').phase_key = :ready
+        @root.save!
+        @root.reload
+        tengine.should_not_fire
+        mock_ssh = mock(:ssh)
+        mock_channel = mock(:channel)
+        Net::SSH.should_receive(:start).
+          with("localhost", an_instance_of(Tengine::Resource::Credential), an_instance_of(Hash)).and_yield(mock_ssh)
+        mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
+        mock_channel.should_receive(:exec) do |*args|
+          args.length.should == 1
+          # args.first.should =~ %r<source \/etc\/profile && export MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" MM_ACTUAL_JOB_NAME_PATH=\\"/rjn0001/j11\\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" && tengine_job_agent_run -- \$HOME/j11\.sh>
+          args.first.should =~ %r<source \/etc\/profile>
+          args.first.should =~ %r<MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_ACTUAL_JOB_NAME_PATH=\"/rjn0001/j11\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\">
+          @template.dsl_version.should == dsl_version
+          template_job = @template.element("/rjn0001/j11")
+          args.first.should =~ %r<MM_TEMPLATE_JOB_ID=#{template_job.id.to_s}>
+          args.first.should =~ %r<MM_TEMPLATE_JOB_ANCESTOR_IDS=\"#{@template.id.to_s}\">
+          args.first.should =~ %r<job_test j11>
+        end
+        tengine.receive("start.job.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @root.id.to_s,
+            :root_jobnet_name_path => @root.name_path,
+            :target_jobnet_id => @root.id.to_s,
+            :target_jobnet_name_path => @root.name_path,
+            :target_job_id => @root.element('j11').id.to_s,
+            :target_job_name_path => @root.element('j11').name_path,
+          })
+        @root.reload
+        @root.element('prev!j11').phase_key.should == :transmitted
+        @root.element('next!j11').phase_key.should == :active
+        @root.element('j11').phase_key.should == :starting
+      end
+    end
+
+    context "バージョン1つだけ" do
+      before do
+        Tengine::Core::Setting.delete_all
+        Tengine::Core::Setting.create!(:name => "dsl_version", :value => "1")
+        Tengine::Job::Vertex.delete_all
+        Rjn0001SimpleJobnetBuilder.new.tap do |builder|
+          @template = builder.create_template(:dsl_version => "1")
+          @root = @template.generate
+          @ctx = builder.context
+        end
+        @execution = Tengine::Job::Execution.create!({
+            :root_jobnet_id => @root.id,
+          })
+      end
+      it{ @root.template.dsl_version.should == "1" }
+      it_should_behave_like "最新のバージョンのルートジョブネットを参照する", "1"
+    end
+
+    context "バージョン2つ" do
+      before do
+        Tengine::Core::Setting.delete_all
+        Tengine::Core::Setting.create!(:name => "dsl_version", :value => "2")
+        Tengine::Job::Vertex.delete_all
+        Rjn0001SimpleJobnetBuilder.new.tap do |builder|
+          builder.create_template(:dsl_version => "1")
+          @template = builder.create_template(:dsl_version => "2")
+          @root = @template.generate
+          @ctx = builder.context
+        end
+        @execution = Tengine::Job::Execution.create!({
+            :root_jobnet_id => @root.id,
+          })
+      end
+      it{ @root.template.dsl_version.should == "2" }
+      it_should_behave_like "最新のバージョンのルートジョブネットを参照する", "2"
+    end
+
+    context "バージョン10個" do
+      before do
+        Tengine::Core::Setting.delete_all
+        Tengine::Core::Setting.create!(:name => "dsl_version", :value => "10")
+        Tengine::Job::Vertex.delete_all
+        Rjn0001SimpleJobnetBuilder.new.tap do |builder|
+          (1..9).each do |idx|
+            builder.create_template(:dsl_version => idx.to_s)
+          end
+          @template = builder.create_template(:dsl_version => "10")
+          @root = @template.generate
+          @ctx = builder.context
+        end
+        @execution = Tengine::Job::Execution.create!({
+            :root_jobnet_id => @root.id,
+          })
+      end
+      it{ @root.template.dsl_version.should == "10" }
+      it_should_behave_like "最新のバージョンのルートジョブネットを参照する", "10"
+    end
+  end
+
+
 end
