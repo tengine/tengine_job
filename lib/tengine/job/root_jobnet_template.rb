@@ -34,6 +34,11 @@ class Tengine::Job::RootJobnetTemplate < Tengine::Job::JobnetTemplate
     result
   end
 
+  def find_duplication
+    return nil unless self.new_record?
+    self.class.find_by_name(name, :version => self.dsl_version)
+  end
+
   class << self
     # Tengine::Core::FindByName で定義しているクラスメソッドfind_by_nameを上書きしています
     def find_by_name(name, options = {})

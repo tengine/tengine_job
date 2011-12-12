@@ -32,18 +32,22 @@ module Tengine::Job::Jobnet::JobStateTransition
       self.phase_key = :starting
       self.started_at = signal.event.occurred_at
       parent.ack(signal)
+      # このコールバックはjob_control_driverでupdate_with_lockの外側から
+      # 再度呼び出してもらうためにcallbackを設定しています
+      signal.callback = lambda{ root.vertex(self.id).activate(signal) }
+    when :starting then
       # 実際にSSHでスクリプトを実行
       execution = signal.execution
       execution.signal = signal # ackを呼び返してもらうための苦肉の策
       begin
         run(execution)
-      rescue Tengine::Job::ScriptExecutable::Error
-        job_fail(signal)
+      rescue Tengine::Job::ScriptExecutable::Error => e
+        job_fail(signal, :message => e.message)
       end
     end
   end
-  available(:job_activate, :on => [:initialized, :ready],
-    :ignored => [:starting, :running, :dying, :success, :error, :stuck])
+  available(:job_activate, :on => [:initialized, :ready, :starting],
+    :ignored => [:running, :dying, :success, :error, :stuck])
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
   # スクリプトのプロセスのPIDを取得できたときに実行されます
@@ -77,20 +81,26 @@ module Tengine::Job::Jobnet::JobStateTransition
   available :job_succeed, :on => [:starting, :running, :dying, :stuck], :ignored => [:success]
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
-  def job_fail(signal)
+  def job_fail(signal, options = nil)
     self.phase_key = :error
     if msg = signal.event[:message]
       self.error_messages ||= []
       self.error_messages += [msg]
     end
+    if options && (msg = options[:message])
+      self.error_messages ||= []
+      self.error_messages += [msg]
+    end
     self.finished_at = signal.event.occurred_at
-    signal.fire(self, :"error.job.job.tengine", {
-        :exit_status => self.exit_status,
-        :target_jobnet_id => parent.id,
-        :target_jobnet_name_path => parent.name_path,
-        :target_job_id => self.id,
-        :target_job_name_path => self.name_path,
-      })
+    event_options = {
+      :exit_status => self.exit_status,
+      :target_jobnet_id => parent.id,
+      :target_jobnet_name_path => parent.name_path,
+      :target_job_id => self.id,
+      :target_job_name_path => self.name_path,
+    }
+    event_options.update(options) if options
+    signal.fire(self, :"error.job.job.tengine", event_options)
   end
   available :job_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
 

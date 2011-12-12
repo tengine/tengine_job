@@ -14,6 +14,10 @@ driver :job_control_driver do
         target_job.activate(signal) # transmitは既にされているはず。
       end
     end
+    root_jobnet.reload
+    if signal.callback
+      root_jobnet.update_with_lock(&signal.callback)
+    end
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 

@@ -20,4 +20,8 @@ class Tengine::Job::Junction < Tengine::Job::Vertex
     signal.leave(self)
   end
 
+  def reset(signal)
+    signal.leave(self, :reset)
+  end
+
 end

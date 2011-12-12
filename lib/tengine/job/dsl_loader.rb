@@ -26,6 +26,15 @@ module Tengine::Job::DslLoader
     end
     result.with_start
     @jobnet.children << result if @jobnet
+    if result.parent.nil?
+      if duplicated = result.find_duplication
+        if (duplicated.dsl_filepath != result.dsl_filepath) ||
+            (duplicated.dsl_lineno != result.dsl_lineno)
+          raise Tengine::Job::DslError, "2 jobnet named #{name.inspect} found at #{duplicated.dsl_filepath}:#{duplicated.dsl_lineno} and #{result.dsl_filepath}:#{result.dsl_lineno}"
+        end
+      end
+    end
+
     __stack_instance_variable__(:@auto_sequence,  auto_sequence || @auto_sequence) do
       __stack_instance_variable__(:@boot_job_names,  []) do
         __stack_instance_variable__(:@redirections,  []) do
@@ -34,8 +43,11 @@ module Tengine::Job::DslLoader
         end
       end
     end
-    result.save! if result.parent.nil?
-    result
+    if result.parent.nil?
+      result.find_duplication || (result.save!; result)
+    else
+      result
+    end
   end
 
   def auto_sequence
