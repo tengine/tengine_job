@@ -93,13 +93,10 @@ module Tengine::Job::Jobnet::JobnetStateTransition
 
   def jobnet_reset(signal, &block)
     children.each{|c| c.reset(signal) }
-    if f = self.finally_vertex
-      f.reset(signal)
-    end
     self.phase_key = :initialized
-    unless signal.execution.spot
+    unless (signal.execution.spot && (signal.execution.target_actual_ids || []).map(&:to_s).include?(self.id.to_s))
       if edge = (next_edges || []).first
-        next_edges.first.reset(signal)
+        edge.reset(signal)
       end
     end
   rescue Exception => e

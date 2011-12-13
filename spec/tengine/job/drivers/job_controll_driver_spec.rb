@@ -314,7 +314,8 @@ describe 'job_control_driver' do
             @ctx = builder.context
             @execution = Tengine::Job::Execution.create!({
                 :root_jobnet_id => @root.id,
-                :spot => spot,
+                :spot => spot, :retry => true,
+                :target_actual_ids => [@ctx[:j11].id.to_s]
               })
             @root.phase_key = :running
             @ctx[:j11].phase_key = :success

@@ -93,9 +93,7 @@ class Tengine::Job::Edge
   def reset(signal)
     # 全てのステータスから遷移する
     self.phase_key = :active
-    unless signal.execution.spot
-      destination.reset(signal)
-    end
+    destination.reset(signal)
   end
 
   def close(signal)

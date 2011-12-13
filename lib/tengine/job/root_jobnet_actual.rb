@@ -16,7 +16,6 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
         :retry => true,
         :root_jobnet_id => self.id,
       })
-puts "options: #{options.inspect}"
     result = Tengine::Job::Execution.new(options)
     result.target_actual_ids ||= []
     result.target_actual_ids += args.flatten
