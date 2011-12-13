@@ -82,17 +82,18 @@ class Tengine::Job::Edge
     case phase_key
     when :transmitting then
       self.phase_key = :transmitted
-    when :active, :suspended, :keeping, :closed then
-      raise Tengine::Job::Edge::StatusError, "complete not available on #{phase_key.inspect} at #{self.inspect}"
+    when :closed then
+      # IG
+    when :active, :suspended, :keeping then
+      # N/A
+      raise Tengine::Job::Edge::StatusError, "#{self.class.name}#complete not available on #{phase_key.inspect} at #{self.inspect}"
     end
   end
 
   def reset(signal)
     # 全てのステータスから遷移する
     self.phase_key = :active
-    unless signal.execution.spot
-      destination.reset(signal)
-    end
+    destination.reset(signal)
   end
 
   def close(signal)

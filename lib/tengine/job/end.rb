@@ -21,6 +21,15 @@ class Tengine::Job::End < Tengine::Job::Vertex
   end
 
   def reset(signal)
+    parent = self.parent # Endのparentであるジョブネット
+    unless (signal.execution.spot && (signal.execution.target_actual_ids || []).map(&:to_s).include?(parent.id.to_s))
+      if f = parent.finally_vertex
+        f.reset(signal)
+      end
+      if edge = (parent.next_edges || []).first
+        edge.reset(signal)
+      end
+    end
   end
 
 end
