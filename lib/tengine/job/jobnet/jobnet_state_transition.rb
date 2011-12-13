@@ -53,7 +53,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
         :target_jobnet_name_path => self.name_path,
       })
   end
-  available :jobnet_succeed, :on => [:starting, :running, :dying, :stuck], :ignored => [:success]
+  available :jobnet_succeed, :on => [:starting, :running, :dying, :stuck, :error], :ignored => [:success]
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def jobnet_fail(signal)
@@ -65,7 +65,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
         :target_jobnet_name_path => self.name_path,
       })
   end
-  available :jobnet_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
+  available :jobnet_fail, :on => [:starting, :running, :dying, :stuck, :success], :ignored => [:error]
 
   def jobnet_fire_stop(signal)
     return if self.phase_key == :initialized
