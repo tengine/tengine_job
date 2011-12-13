@@ -130,6 +130,8 @@ Gem::Specification.new do |s|
     "spec/tengine/job/jobnet_spec.rb",
     "spec/tengine/job/jobnet_template_spec.rb",
     "spec/tengine/job/killing_spec.rb",
+    "spec/tengine/job/reset_spec.rb",
+    "spec/tengine/job/reset_spec/4056_1_dump.txt",
     "spec/tengine/job/root_jobnet_actual_spec.rb",
     "spec/tengine/job/root_jobnet_template_spec.rb",
     "spec/tengine/job/script_executable_spec.rb",
