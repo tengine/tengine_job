@@ -9,6 +9,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     self.phase_key = :ready
     signal.fire(self, :"start.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
+        :target_jobnet_name_path => self.name_path,
       })
   end
   available(:jobnet_transmit, :on => :initialized,
@@ -49,9 +50,10 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     self.finished_at = signal.event.occurred_at
     signal.fire(self, :"success.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
+        :target_jobnet_name_path => self.name_path,
       })
   end
-  available :jobnet_succeed, :on => [:starting, :running, :dying, :stuck], :ignored => [:success]
+  available :jobnet_succeed, :on => [:starting, :running, :dying, :stuck, :error], :ignored => [:success]
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ
   def jobnet_fail(signal)
@@ -60,14 +62,16 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     self.finished_at = signal.event.occurred_at
     signal.fire(self, :"error.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
+        :target_jobnet_name_path => self.name_path,
       })
   end
-  available :jobnet_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
+  available :jobnet_fail, :on => [:starting, :running, :dying, :stuck, :success], :ignored => [:error]
 
   def jobnet_fire_stop(signal)
     return if self.phase_key == :initialized
     signal.fire(self, :"stop.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
+        :target_jobnet_name_path => self.name_path,
       })
   end
 
@@ -85,5 +89,20 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   def close(signal)
     self.edges.each{|edge| edge.close(signal)}
   end
+
+
+  def jobnet_reset(signal, &block)
+    children.each{|c| c.reset(signal) }
+    self.phase_key = :initialized
+    unless (signal.execution.spot && (signal.execution.target_actual_ids || []).map(&:to_s).include?(self.id.to_s))
+      if edge = (next_edges || []).first
+        edge.reset(signal)
+      end
+    end
+  rescue Exception => e
+    puts "#{self.name_path} [#{e.class}] #{e.message}"
+    raise
+  end
+  available :jobnet_reset, :on => [:initialized, :success, :error, :stuck]
 
 end

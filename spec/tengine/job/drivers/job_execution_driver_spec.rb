@@ -31,12 +31,16 @@ describe 'job_execution_driver' do
         :properties => {
           :execution_id => @execution.id.to_s,
           :root_jobnet_id => @root.id.to_s,
-          :target_jobnet_id => @root.id.to_s
+          :root_jobnet_name_path => @root.name_path,
+          :target_jobnet_id => @root.id.to_s,
+          :target_jobnet_name_path => @root.name_path,
         })
       tengine.receive("start.execution.job.tengine", :properties => {
           :execution_id => @execution.id.to_s,
           :root_jobnet_id => @root.id.to_s,
+          :root_jobnet_name_path => @root.name_path,
           :target_jobnet_id => @root.id.to_s,
+          :target_jobnet_name_path => @root.name_path,
         })
       @execution.reload
       @execution.phase_key.should == :starting
@@ -55,12 +59,16 @@ describe 'job_execution_driver' do
         :properties => {
           :execution_id => @execution.id.to_s,
           :root_jobnet_id => @root.id.to_s,
-          :target_jobnet_id => @root.id.to_s
+          :root_jobnet_name_path => @root.name_path,
+          :target_jobnet_id => @root.id.to_s,
+          :target_jobnet_name_path => @root.name_path,
         })
       tengine.receive("stop.execution.job.tengine", :properties => {
           :execution_id => @execution.id.to_s,
           :root_jobnet_id => @root.id.to_s,
+          :root_jobnet_name_path => @root.name_path,
           :target_jobnet_id => @root.id.to_s,
+          :target_jobnet_name_path => @root.name_path,
         })
       @execution.reload
       @execution.phase_key.should == :dying

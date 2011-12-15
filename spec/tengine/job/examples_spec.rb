@@ -34,17 +34,7 @@ describe "job DSL examples" do
         Tengine::Core::Driver.delete_all
         Tengine::Core::HandlerPath.delete_all
         Tengine::Job::Vertex.delete_all
-
-        config = Tengine::Core::Config::Core.new({
-            :tengined => {
-              :load_path => job_dsl_path,
-            }
-        })
         load_dsl(File.basename(job_dsl_path))
-        @binder = Tengine::Core::DslBindingContext.new(mock(:kernel))
-        @binder.extend(Tengine::Core::DslBinder)
-        @binder.config = config
-        @binder.__evaluate__
       end
 
     end

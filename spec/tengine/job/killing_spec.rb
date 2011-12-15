@@ -5,7 +5,7 @@ describe Tengine::Job::Killing do
 
   context "強制停止の設定" do
     before do
-      builder = Rjn0006NestedForkJobnetBuilder.new
+      builder = Rjn0011NestedForkJobnetBuilder.new
       @ctx = builder.context
       @root = builder.create_template
     end

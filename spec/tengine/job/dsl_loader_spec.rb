@@ -17,22 +17,22 @@ describe Tengine::Job::DslLoader do
   end
 
   describe "基本的なジョブDSL" do
-    context "0001_hadoop_job_run.rb" do
+    context "0013_hadoop_job_run.rb" do
       before{
         Tengine::Job::JobnetTemplate.delete_all
-        load_dsl("0001_hadoop_job_run.rb")
+        load_dsl("0013_hadoop_job_run.rb")
       }
 
       it do
-        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0001")
+        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0013")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.lock_version.should == 0
           j.dsl_version.should == @version
-          j.dsl_filepath.should == "0001_hadoop_job_run.rb"
+          j.dsl_filepath.should == "0013_hadoop_job_run.rb"
           j.dsl_lineno.should == 21
-          j.name.should == "jobnet0001"
-          j.description.should == "ジョブネット0001"
+          j.name.should == "jobnet0013"
+          j.description.should == "ジョブネット0013"
           j.server_name.should == "i-11111111"
           j.credential_name.should == "goku-ssh-pk1"
         end
@@ -105,22 +105,22 @@ describe Tengine::Job::DslLoader do
       end
     end
 
-    context "0002_join_and_join.rb" do
+    context "0014_join_and_join.rb" do
       before{
         Tengine::Job::JobnetTemplate.delete_all
-        load_dsl("0002_join_and_join.rb")
+        load_dsl("0014_join_and_join.rb")
       }
 
       it do
-        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0002")
+        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0014")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.lock_version.should == 0
           j.dsl_version.should == @version
-          j.dsl_filepath.should == "0002_join_and_join.rb"
+          j.dsl_filepath.should == "0014_join_and_join.rb"
           j.dsl_lineno.should == 12
-          j.name.should == "jobnet0002"
-          j.description.should == "jobnet0002"
+          j.name.should == "jobnet0014"
+          j.description.should == "jobnet0014"
           j.server_name.should == "i-11111111"
           j.credential_name.should == "goku-ssh-pk1"
         end
@@ -158,22 +158,22 @@ describe Tengine::Job::DslLoader do
       end
     end
 
-    context "0003_fork_and_fork.rb" do
+    context "0015_fork_and_fork.rb" do
       before{
         Tengine::Job::JobnetTemplate.delete_all
-        load_dsl("0003_fork_and_fork.rb")
+        load_dsl("0015_fork_and_fork.rb")
       }
 
       it do
-        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0003")
+        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0015")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.lock_version.should == 0
           j.dsl_version.should == @version
-          j.dsl_filepath.should == "0003_fork_and_fork.rb"
+          j.dsl_filepath.should == "0015_fork_and_fork.rb"
           j.dsl_lineno.should == 11
-          j.name.should == "jobnet0003"
-          j.description.should == "jobnet0003"
+          j.name.should == "jobnet0015"
+          j.description.should == "jobnet0015"
           j.server_name.should == "i-11111111"
           j.credential_name.should == "goku-ssh-pk1"
         end
@@ -211,22 +211,22 @@ describe Tengine::Job::DslLoader do
       end
     end
 
-    context "0004_complex_fork_and_join.rb" do
+    context "0016_complex_fork_and_join.rb" do
       before{
         Tengine::Job::JobnetTemplate.delete_all
-        load_dsl("0004_complex_fork_and_join.rb")
+        load_dsl("0016_complex_fork_and_join.rb")
       }
 
       it do
-        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0004")
+        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0016")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.lock_version.should == 0
           j.dsl_version.should == @version
-          j.dsl_filepath.should == "0004_complex_fork_and_join.rb"
+          j.dsl_filepath.should == "0016_complex_fork_and_join.rb"
           j.dsl_lineno.should == 11
-          j.name.should == "jobnet0004"
-          j.description.should == "jobnet0004"
+          j.name.should == "jobnet0016"
+          j.description.should == "jobnet0016"
           j.server_name.should == "i-11111111"
           j.credential_name.should == "goku-ssh-pk1"
         end
@@ -278,22 +278,22 @@ describe Tengine::Job::DslLoader do
       end
     end
 
-    context "0005_finally.rb" do
+    context "0017_finally.rb" do
       before{
         Tengine::Job::JobnetTemplate.delete_all
-        load_dsl("0005_finally.rb")
+        load_dsl("0017_finally.rb")
       }
 
       it do
-        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0005")
+        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0017")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.lock_version.should == 0
           j.dsl_version.should == @version
-          j.dsl_filepath.should == "0005_finally.rb"
+          j.dsl_filepath.should == "0017_finally.rb"
           j.dsl_lineno.should == 5
-          j.name.should == "jobnet0005"
-          j.description.should == "ジョブネット0005"
+          j.name.should == "jobnet0017"
+          j.description.should == "ジョブネット0017"
           j.server_name.should == "i-11111111"
           j.credential_name.should == "goku-ssh-pk1"
         end
@@ -336,22 +336,22 @@ describe Tengine::Job::DslLoader do
       end
     end
 
-    context "0006_expansion.rb" do
+    context "0018_expansion.rb" do
       before{
         Tengine::Job::JobnetTemplate.delete_all
-        load_dsl("0006_expansion.rb")
+        load_dsl("0018_expansion.rb")
       }
 
       it do
-        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0006")
+        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0018")
         root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
         root_jobnet.tap do |j|
           j.lock_version.should == 0
           j.dsl_version.should == @version
-          j.dsl_filepath.should == "0006_expansion.rb"
+          j.dsl_filepath.should == "0018_expansion.rb"
           j.dsl_lineno.should == 19
-          j.name.should == "jobnet0006"
-          j.description.should == "jobnet0006"
+          j.name.should == "jobnet0018"
+          j.description.should == "jobnet0018"
           j.server_name.should == nil
           j.credential_name.should == nil
         end
@@ -361,8 +361,8 @@ describe Tengine::Job::DslLoader do
           Tengine::Job::Expansion, # 2
           Tengine::Job::End      , # 3
         ]
-        root_jobnet.children[1].tap{|j| j.name.should == "jobnet0006_01" }
-        root_jobnet.children[2].tap{|j| j.name.should == "jobnet0006_02" }
+        root_jobnet.children[1].tap{|j| j.name.should == "jobnet0018_01" }
+        root_jobnet.children[2].tap{|j| j.name.should == "jobnet0018_02" }
 
         root_jobnet.edges.map{|edge| [edge.origin, edge.destination]}.should == [
           [root_jobnet.children[0], root_jobnet.children[1]],
@@ -376,6 +376,15 @@ describe Tengine::Job::DslLoader do
       end
     end
 
+  end
+
+  context "<バグ>同じDSLバージョンで同一のルートジョブネット名が定義できてしまう" do
+    it do
+      Tengine::Job::JobnetTemplate.delete_all
+      expect{
+        load_dsl("0020_duplicated_jobnet_name.rb")
+      }.to raise_error(Tengine::Job::DslError, "2 jobnet named \"jobnet0020\" found at 0020_duplicated_jobnet_name.rb:6 and 0020_duplicated_jobnet_name.rb:12")
+    end
   end
 
 end

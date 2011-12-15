@@ -44,8 +44,11 @@ describe 'job_control_driver' do
         tengine.receive("start.job.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx.vertex(:j11).id.to_s,
+            :target_job_name_path => @ctx.vertex(:j11).name_path,
           })
         @jobnet.reload
         @ctx.edge(:e1).phase_key.should == :transmitted
@@ -69,14 +72,19 @@ describe 'job_control_driver' do
                 :properties=>{
                   :execution_id => @execution.id.to_s,
                   :root_jobnet_id => @jobnet.id.to_s,
+                  :root_jobnet_name_path => @jobnet.name_path,
                   :target_jobnet_id => @jobnet.id.to_s,
+                  :target_jobnet_name_path => @jobnet.name_path,
                 }
               })
             tengine.receive("start.job.job.tengine", :properties => {
                 :execution_id => @execution.id.to_s,
                 :root_jobnet_id => @jobnet.id.to_s,
+                :root_jobnet_name_path => @jobnet.name_path,
                 :target_jobnet_id => @jobnet.id.to_s,
+                :target_jobnet_name_path => @jobnet.name_path,
                 :target_job_id => @ctx.vertex(:j11).id.to_s,
+                :target_job_name_path => @ctx.vertex(:j11).name_path,
               })
             @jobnet.reload
             @ctx.edge(:e1).phase_key.should == :closing
@@ -88,6 +96,58 @@ describe 'job_control_driver' do
         end
 
       end
+
+      it "存在しないスクリプトを実行しようとした場合、標準エラー出力にエラーメッセージが返されるので、それを保持する" do
+        @jobnet.phase_key = :starting
+        @ctx.edge(:e1).phase_key = :transmitting
+        @ctx.vertex(:j11).phase_key = :ready
+        @jobnet.save!
+        @jobnet.reload
+        mock_ssh = mock(:ssh)
+        Net::SSH.stub(:start).with(any_args).and_yield(mock_ssh)
+        mock_channel = mock(:channel)
+        mock_ssh.stub(:open_channel).and_yield(mock_channel)
+        mock_channel.stub(:exec).with(any_args).and_yield(mock_channel, true)
+        mock_channel.stub(:on_data)
+        mock_channel.should_receive(:on_extended_data).and_yield(mock_channel,
+          "session", "[Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh")
+        mock_channel.stub(:on_close)
+        tengine.should_fire(:"error.job.job.tengine", {
+            :source_name => @ctx[:j11].name_as_resource,
+            :properties=>{
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @jobnet.id.to_s,
+              :root_jobnet_name_path => @jobnet.name_path,
+              :target_jobnet_id => @jobnet.id.to_s,
+              :target_jobnet_name_path => @jobnet.name_path,
+              :target_job_id => @ctx.vertex(:j11).id.to_s,
+              :target_job_name_path => @ctx.vertex(:j11).name_path,
+              :exit_status=>nil,
+              :message=>"Failure to execute /rjn0001/j11 via SSH: [Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh"
+            }
+          })
+        tengine.receive("start.job.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
+            :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
+            :target_job_id => @ctx.vertex(:j11).id.to_s,
+            :target_job_name_path => @ctx.vertex(:j11).name_path,
+          })
+        @jobnet.reload
+        @ctx.edge(:e1).phase_key.should == :transmitted
+        @ctx.edge(:e2).phase_key.should == :active
+        @ctx.vertex(:j11).tap do |job|
+          job.phase_key.should == :error
+          job.error_messages.should == [
+            "[Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh",
+            "Failure to execute /rjn0001/j11 via SSH: [Errno::ENOENT] No such file or directory - /home/goku/unexist_script.sh"
+          ]
+        end
+        @jobnet.phase_key.should == :running
+      end
+
     end
 
 
@@ -109,10 +169,15 @@ describe 'job_control_driver' do
       @ctx.vertex(:j11).phase_key.should == :running
     end
 
+    test_error_message1 = "Job process failed. STDOUT and STDERR were redirected to files. You can see them at /home/goku/stdout-1234.log and /home/goku/stderr-1234.log on the server test_server1"
     {
-      :success => "0",
-      :error => "1"
-    }.each do |phase_key, exit_status|
+      :success => ["0", {}],
+      :error => ["1", {
+          :stdout_log => "/home/goku/stdout-1234.log",
+          :stderr_log => "/home/goku/stderr-1234.log",
+          :message => test_error_message1
+        }]
+    }.each do |phase_key, (exit_status, extra_props)|
       it "ジョブ実行#{phase_key}の通知" do
         test_key = "test_key.finished.process.job.tengine"
         Tengine::Core::Event.delete_all(:conditions => {:key => test_key})
@@ -129,8 +194,11 @@ describe 'job_control_driver' do
           :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
             :exit_status => exit_status
           })
         tengine.receive(:"finished.process.job.tengine",
@@ -139,16 +207,22 @@ describe 'job_control_driver' do
           :properties => {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @jobnet.id.to_s,
+            :root_jobnet_name_path => @jobnet.name_path,
             :target_jobnet_id => @jobnet.id.to_s,
+            :target_jobnet_name_path => @jobnet.name_path,
             :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
             :exit_status => exit_status
-          })
+          }.merge(extra_props))
         @jobnet.reload
         @ctx.edge(:e1).phase_key.should == :transmitted
         @ctx.edge(:e2).phase_key.should == :active
         @ctx.vertex(:j11).tap do |j|
           j.phase_key.should == phase_key
           j.exit_status.should == exit_status
+          if phase_key == :error
+            j.error_messages.should == [test_error_message1]
+          end
         end
       end
     end
@@ -240,7 +314,8 @@ describe 'job_control_driver' do
             @ctx = builder.context
             @execution = Tengine::Job::Execution.create!({
                 :root_jobnet_id => @root.id,
-                :spot => spot,
+                :spot => spot, :retry => true,
+                :target_actual_ids => [@ctx[:j11].id.to_s]
               })
             @root.phase_key = :running
             @ctx[:j11].phase_key = :success
@@ -258,16 +333,22 @@ describe 'job_control_driver' do
                   :source_name => @ctx[:j11].name_as_resource,
                   :properties=>{
                     :execution_id => @execution.id.to_s,
+                    :root_jobnet_name_path => @root.name_path,
                     :root_jobnet_id => @root.id.to_s,
+                    :target_jobnet_name_path => @root.name_path,
                     :target_jobnet_id => @root.id.to_s,
+                    :target_job_name_path => @ctx.vertex(:j11).name_path,
                     :target_job_id => @ctx.vertex(:j11).id.to_s,
                   }
                 })
               tengine.receive("restart.job.job.tengine", :properties => {
                   :execution_id => @execution.id.to_s,
                   :root_jobnet_id => @root.id.to_s,
+                  :root_jobnet_name_path => @root.name_path,
                   :target_jobnet_id => @root.id.to_s,
+                  :target_jobnet_name_path => @root.name_path,
                   :target_job_id => @ctx.vertex(:j11).id.to_s,
+                  :target_job_name_path => @ctx.vertex(:j11).name_path,
                 })
               @root.reload
               @root.phase_key.should == :running
@@ -312,5 +393,108 @@ describe 'job_control_driver' do
     end
 
   end
+
+
+  context "<BUG>同じジョブネットが複数バージョン存在する際、ジョブ実行時にスクリプトに渡される環境変数の「MM_TEMPLATE_JOB_ID」「MM_TEMPLATE_JOB_ANCESTOR_IDS」が実行しているバージョン以外のものがセットされている" do
+    shared_examples_for "最新のバージョンのルートジョブネットを参照する" do |dsl_version|
+
+      it do
+        @root.phase_key = :starting
+        @root.element("prev!j11").phase_key = :transmitting
+        @root.element('j11').phase_key = :ready
+        @root.save!
+        @root.reload
+        tengine.should_not_fire
+        mock_ssh = mock(:ssh)
+        mock_channel = mock(:channel)
+        Net::SSH.should_receive(:start).
+          with("localhost", an_instance_of(Tengine::Resource::Credential), an_instance_of(Hash)).and_yield(mock_ssh)
+        mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
+        mock_channel.should_receive(:exec) do |*args|
+          args.length.should == 1
+          # args.first.should =~ %r<source \/etc\/profile && export MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" MM_ACTUAL_JOB_NAME_PATH=\\"/rjn0001/j11\\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\\"[0-9a-f]{24}\\" && tengine_job_agent_run -- \$HOME/j11\.sh>
+          args.first.should =~ %r<source \/etc\/profile>
+          args.first.should =~ %r<MM_ACTUAL_JOB_ID=[0-9a-f]{24} MM_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_FULL_ACTUAL_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\" MM_ACTUAL_JOB_NAME_PATH=\"/rjn0001/j11\" MM_ACTUAL_JOB_SECURITY_TOKEN= MM_SCHEDULE_ID=[0-9a-f]{24} MM_SCHEDULE_ESTIMATED_TIME= MM_TEMPLATE_JOB_ID=[0-9a-f]{24} MM_TEMPLATE_JOB_ANCESTOR_IDS=\"[0-9a-f]{24}\">
+          @template.dsl_version.should == dsl_version
+          template_job = @template.element("/rjn0001/j11")
+          args.first.should =~ %r<MM_TEMPLATE_JOB_ID=#{template_job.id.to_s}>
+          args.first.should =~ %r<MM_TEMPLATE_JOB_ANCESTOR_IDS=\"#{@template.id.to_s}\">
+          args.first.should =~ %r<job_test j11>
+        end
+        tengine.receive("start.job.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @root.id.to_s,
+            :root_jobnet_name_path => @root.name_path,
+            :target_jobnet_id => @root.id.to_s,
+            :target_jobnet_name_path => @root.name_path,
+            :target_job_id => @root.element('j11').id.to_s,
+            :target_job_name_path => @root.element('j11').name_path,
+          })
+        @root.reload
+        @root.element('prev!j11').phase_key.should == :transmitted
+        @root.element('next!j11').phase_key.should == :active
+        @root.element('j11').phase_key.should == :starting
+      end
+    end
+
+    context "バージョン1つだけ" do
+      before do
+        Tengine::Core::Setting.delete_all
+        Tengine::Core::Setting.create!(:name => "dsl_version", :value => "1")
+        Tengine::Job::Vertex.delete_all
+        Rjn0001SimpleJobnetBuilder.new.tap do |builder|
+          @template = builder.create_template(:dsl_version => "1")
+          @root = @template.generate
+          @ctx = builder.context
+        end
+        @execution = Tengine::Job::Execution.create!({
+            :root_jobnet_id => @root.id,
+          })
+      end
+      it{ @root.template.dsl_version.should == "1" }
+      it_should_behave_like "最新のバージョンのルートジョブネットを参照する", "1"
+    end
+
+    context "バージョン2つ" do
+      before do
+        Tengine::Core::Setting.delete_all
+        Tengine::Core::Setting.create!(:name => "dsl_version", :value => "2")
+        Tengine::Job::Vertex.delete_all
+        Rjn0001SimpleJobnetBuilder.new.tap do |builder|
+          builder.create_template(:dsl_version => "1")
+          @template = builder.create_template(:dsl_version => "2")
+          @root = @template.generate
+          @ctx = builder.context
+        end
+        @execution = Tengine::Job::Execution.create!({
+            :root_jobnet_id => @root.id,
+          })
+      end
+      it{ @root.template.dsl_version.should == "2" }
+      it_should_behave_like "最新のバージョンのルートジョブネットを参照する", "2"
+    end
+
+    context "バージョン10個" do
+      before do
+        Tengine::Core::Setting.delete_all
+        Tengine::Core::Setting.create!(:name => "dsl_version", :value => "10")
+        Tengine::Job::Vertex.delete_all
+        Rjn0001SimpleJobnetBuilder.new.tap do |builder|
+          (1..9).each do |idx|
+            builder.create_template(:dsl_version => idx.to_s)
+          end
+          @template = builder.create_template(:dsl_version => "10")
+          @root = @template.generate
+          @ctx = builder.context
+        end
+        @execution = Tengine::Job::Execution.create!({
+            :root_jobnet_id => @root.id,
+          })
+      end
+      it{ @root.template.dsl_version.should == "10" }
+      it_should_behave_like "最新のバージョンのルートジョブネットを参照する", "10"
+    end
+  end
+
 
 end

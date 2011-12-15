@@ -10,12 +10,12 @@ describe Tengine::Job::DslLoader do
 
   include Tengine::RSpec::Extension
 
-  target_dsl File.expand_path("dsls/0007_execute_job_on_event.rb", File.dirname(__FILE__))
+  target_dsl File.expand_path("dsls/0019_execute_job_on_event.rb", File.dirname(__FILE__))
   driver :job_control_driver
 
 
   describe "実行時にジョブを起動するイベントドライバ" do
-    context "0007_execute_job_on_event.rb" do
+    context "0019_execute_job_on_event.rb" do
 
       it do
         mock_execution = mock(:execution, :id => "mock_execution_id")

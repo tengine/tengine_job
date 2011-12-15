@@ -33,6 +33,7 @@ class Tengine::Job::Edge
   end
 
   def alive?; !!phase_entry[:alive]; end
+  def alive_or_closing?; alive? || closing?; end
 
   phase_keys.each do |phase_key|
     class_eval(<<-END_OF_METHOD)
@@ -81,17 +82,18 @@ class Tengine::Job::Edge
     case phase_key
     when :transmitting then
       self.phase_key = :transmitted
-    when :active, :suspended, :keeping, :closed then
-      raise Tengine::Job::Edge::StatusError, "complete not available on #{phase_key.inspect} at #{self.inspect}"
+    when :closed then
+      # IG
+    when :active, :suspended, :keeping then
+      # N/A
+      raise Tengine::Job::Edge::StatusError, "#{self.class.name}#complete not available on #{phase_key.inspect} at #{self.inspect}"
     end
   end
 
   def reset(signal)
     # 全てのステータスから遷移する
     self.phase_key = :active
-    unless signal.execution.spot
-      destination.reset(signal)
-    end
+    destination.reset(signal)
   end
 
   def close(signal)
@@ -116,7 +118,11 @@ class Tengine::Job::Edge
 
   class Closer
     def visit(obj)
-      if obj.is_a?(Tengine::Job::Vertex)
+      if obj.is_a?(Tengine::Job::End)
+        if parent = obj.parent
+          (parent.next_edges || []).each{|edge| edge.accept_visitor(self)}
+        end
+      elsif obj.is_a?(Tengine::Job::Vertex)
         obj.next_edges.each{|edge| edge.accept_visitor(self)}
       elsif obj.is_a?(Tengine::Job::Edge)
         obj.close(nil)

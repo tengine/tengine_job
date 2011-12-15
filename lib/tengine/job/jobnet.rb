@@ -27,6 +27,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     entry 6, :map_phase     , "map phase"     , :chained_box => true
     entry 7, :reduce_phase  , "reduce phase"  , :chained_box => true
   end
+  def chained_box?; jobnet_type_entry[:chained_box]; end
 
   embeds_many :edges, :class_name => "Tengine::Job::Edge", :inverse_of => :owner
 

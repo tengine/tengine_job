@@ -23,8 +23,8 @@ require 'tengine_job'
 jobnet("jn0006", :instance_name => "test_server1", :credential_name => "test_credential1") do
   boot_jobs("jn1")
   jobnet("jn1", :to => "jn2") do
-   boot_jobs("j11")
-   jobnet("j11", :to => "j12") do
+   boot_jobs("jn11")
+   jobnet("jn11", :to => "j12") do
      boot_jobs("j111")
      job("j111", "$HOME/0006_retry_three_layer.sh",:to => "j112")
      job("j112", "$HOME/0006_retry_three_layer.sh" )
@@ -39,8 +39,8 @@ jobnet("jn0006", :instance_name => "test_server1", :credential_name => "test_cre
   end
   jobnet("jn2") do
    boot_jobs("j21")
-   job("j21", "$HOME/0006_retry_three_layer.sh", :to => "j22")    
-   jobnet("j22") do
+   job("j21", "$HOME/0006_retry_three_layer.sh", :to => "jn22")    
+   jobnet("jn22") do
      boot_jobs("j221")
      job("j221", "$HOME/0006_retry_three_layer.sh",:to => "j222")
      job("j222", "$HOME/0006_retry_three_layer.sh" )
@@ -49,7 +49,7 @@ jobnet("jn0006", :instance_name => "test_server1", :credential_name => "test_cre
      end
    end
    finally do
-     job("jn2_f","0006_retry_three_layer.sh")
+     job("jn2_f","$HOME/0006_retry_three_layer.sh")
    end
   end
   finally do 

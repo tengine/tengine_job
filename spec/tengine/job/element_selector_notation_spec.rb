@@ -171,7 +171,7 @@ describe Tengine::Job::ElementSelectorNotation do
       ],
     },
 
-    # in [rjn0004]
+    # in [rjn0009]
     # [S1] --e1-->[j1100]--e2-->[j1200]--e3-->[j1300]--e4-->[j1400]--e5-->[j1500]--e6-->[j1600]--e7-->[E1]
     #
     # [j1100]
@@ -204,46 +204,46 @@ describe Tengine::Job::ElementSelectorNotation do
     # [j1630]
     # [S11]--e30-->(j1631)--e31-->[E11]
 
-    Rjn0004TreeSequentialJobnetBuilder => {
+    Rjn0009TreeSequentialJobnetBuilder => {
       :S2 => [
-        "start@/rjn0004/j1100",
+        "start@/rjn0009/j1100",
         "start@j1100",
       ],
       :e8 => [
-        "next!start@/rjn0004/j1100",
+        "next!start@/rjn0009/j1100",
         "next!start@j1100",
-        "start~j1110@/rjn0004/j1100",
+        "start~j1110@/rjn0009/j1100",
         "start~j1110@j1100",
       ],
       :j11 => [
-        "/rjn0004/j1110",
-        "j1110@/rjn0004",
+        "/rjn0009/j1110",
+        "j1110@/rjn0009",
         "j1110",
       ],
       :e9 => [
-        "next!/rjn0004/j1100/j1110",
-        "next!j1110@/rjn0004/j1100",
+        "next!/rjn0009/j1100/j1110",
+        "next!j1110@/rjn0009/j1100",
         "next!j1110@j1100",
-        "prev!/rjn0004/j1100/j1120",
-        "prev!j1120@/rjn0004/j1100",
+        "prev!/rjn0009/j1100/j1120",
+        "prev!j1120@/rjn0009/j1100",
         "prev!j1120@j1100",
-        "j1110~j1120@/rjn0004/j1100",
+        "j1110~j1120@/rjn0009/j1100",
         "j1110~j1120@j1100",
       ],
       :E2 => [
-        "end@/rjn0004/j1100",
+        "end@/rjn0009/j1100",
         "end@j1100",
-        "end!/rjn0004/j1100",
+        "end!/rjn0009/j1100",
         "end!j1100",
       ],
       :E1 => [
         "end",
-        "end@/rjn0004",
-        "end!/rjn0004",
+        "end@/rjn0009",
+        "end!/rjn0009",
       ],
     },
 
-    # in [rjn0007]
+    # in [rjn0012]
     # (S1)--e1-->[j1000]--e2-->[j2000]--e3-->(E1)
     #
     # in [j1000]
@@ -270,15 +270,15 @@ describe Tengine::Job::ElementSelectorNotation do
     # in [jf000:finally (=jf000)]
     # (S9)--e19-->(jf100)--e20-->(E9)
     #
-    Rjn0007NestedAndFinallyBuilder => {
+    Rjn0012NestedAndFinallyBuilder => {
       :j1f00 => [
-        "/rjn0007/j1000/finally",
-        "finally@/rjn0007/j1000",
+        "/rjn0012/j1000/finally",
+        "finally@/rjn0012/j1000",
       ],
       :S5 => [
-        "start@/rjn0007/j1000/finally",
+        "start@/rjn0012/j1000/finally",
         "start@j1000/finally",
-        "start!finally@/rjn0007/j1000",
+        "start!finally@/rjn0012/j1000",
         "start!finally@j1000",
       ],
     },

@@ -30,9 +30,17 @@ describe Tengine::Job::Category do
             :dsl_lineno => 4,
             :dsl_version => "2"
           })
-        @base_dir = Dir.tmpdir
+        @root4 = Tengine::Job::RootJobnetTemplate.create!({
+            :name => "root_jobnet_template04",
+            :dsl_filepath => "jobnet4.rb",
+            :dsl_lineno => 4,
+            :dsl_version => "2"
+          })
+        @tmp_dir = Dir.tmpdir
+        @base_dir = File.expand_path("root", @tmp_dir)
         FileUtils.mkdir_p(File.expand_path("foo/bar2", @base_dir))
         FileUtils.mkdir_p(File.expand_path("foo/bar3", @base_dir))
+        File.open(File.expand_path("dictionary.yml", @tmp_dir), "w"){|f| YAML.dump({"root" => "ルート"}, f)}
         File.open(File.expand_path("dictionary.yml", @base_dir), "w"){|f| YAML.dump({"foo" => "ほげ"}, f)}
         File.open(File.expand_path("foo/dictionary.yml", @base_dir), "w"){|f|
           YAML.dump({"bar1" => "ばー1", "bar2" => "ばー2"}, f)}
@@ -42,11 +50,14 @@ describe Tengine::Job::Category do
         it "全ドキュメントを対象にしています・・・" do
           expect{
             Tengine::Job::Category.update_for(@base_dir)
-          }.to change(Tengine::Job::Category, :count).by(4)
-          foo = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
+          }.to change(Tengine::Job::Category, :count).by(5)
+          root = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
+          root.name.should == "root"
+          root.caption.should == "ルート"
+          root.children.count.should == 1
+          foo = root.children[0]
           foo.name.should == "foo"
           foo.caption.should == "ほげ"
-          foo.should_not be_nil
           foo.children.count.should == 3
           foo.children[0].tap do |c|
             c.name.should == "bar1"
@@ -75,7 +86,7 @@ describe Tengine::Job::Category do
       it "後から追加された場合" do
         expect{
           Tengine::Job::Category.update_for(@base_dir)
-        }.to change(Tengine::Job::Category, :count).by(4)
+        }.to change(Tengine::Job::Category, :count).by(5)
         @root4 = Tengine::Job::RootJobnetTemplate.create!({
             :name => "root_jobnet_template01",
             :dsl_filepath => "foo/bar3/baz1/jobnet2.rb",
@@ -85,7 +96,8 @@ describe Tengine::Job::Category do
         expect{
           Tengine::Job::Category.update_for(@base_dir)
         }.to change(Tengine::Job::Category, :count).by(1)
-        foo = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
+        root = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
+        foo = root.children[0]
         foo.children[2].tap do |bar3|
           bar3.name.should == "bar3"
           bar3.caption.should == "bar3"
@@ -108,8 +120,12 @@ describe Tengine::Job::Category do
         mock_sender.should_receive(:config).and_return(mock_config)
         expect{
           Tengine::Job.notify(mock_sender, :after_load_dsl)
-        }.to change(Tengine::Job::Category, :count).by(4)
-        foo = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
+        }.to change(Tengine::Job::Category, :count).by(5)
+        root = Tengine::Job::Category.first(:conditions => {:parent_id => nil})
+        root.name.should == "root"
+        root.caption.should == "ルート"
+        root.children.count.should == 1
+        foo = root.children[0]
         foo.name.should == "foo"
         foo.caption.should == "ほげ"
         foo.should_not be_nil

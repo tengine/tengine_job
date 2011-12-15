@@ -11,8 +11,12 @@ module Tengine::Job::ScriptExecutable
   end
 
   included do
+    include Tengine::Core::CollectionAccessible
+
     field :executing_pid, :type => String # 実行しているプロセスのPID
     field :exit_status  , :type => String # 終了したプロセスが返した終了ステータス
+    field :error_messages, :type => Array # エラーになった場合のメッセージを保持する配列。再実行時に追加される場合は末尾に追加されます。
+    array_text_accessor :error_messages, :delimeter => "\n"
   end
 
   def run(execution)
@@ -45,6 +49,8 @@ module Tengine::Job::ScriptExecutable
           end
 
           channel.on_extended_data do |ch, type, data|
+            self.error_messages ||= []
+            self.error_messages += [data]
             raise Error, "Failure to execute #{self.name_path} via SSH: #{data}"
           end
 
@@ -55,6 +61,15 @@ module Tengine::Job::ScriptExecutable
       end
 
     end
+  rescue Tengine::Job::ScriptExecutable::Error
+    raise
+  rescue Mongoid::Errors::DocumentNotFound, SocketError, Net::SSH::AuthenticationFailed => src
+    error = Error.new("[#{src.class.name}] #{src.message}")
+    error.set_backtrace(src.backtrace)
+    raise error
+  rescue Exception
+    # puts "[#{$!.class.name}] #{$!.message}"
+    raise
   end
 
   def kill(execution)
@@ -161,7 +176,7 @@ module Tengine::Job::ScriptExecutable
       unless t
         template_name_parts = self.name_path_until_expansion.split(Tengine::Job::NamePath::SEPARATOR).select{|s| !s.empty?}
         root_jobnet_name = template_name_parts.first
-        if rjt = Tengine::Job::RootJobnetTemplate.by_name(root_jobnet_name)
+        if rjt = Tengine::Job::RootJobnetTemplate.find_by_name(root_jobnet_name, :version => rjt.dsl_version)
           t = rjt.find_descendant_by_name_path(self.name_path_until_expansion)
           raise "template job #{path.inspect} not found in #{rjt.inspect}" unless t
         else

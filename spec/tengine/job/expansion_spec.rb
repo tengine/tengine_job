@@ -94,4 +94,23 @@ describe Tengine::Job::Expansion do
     end
 
   end
+
+  context "複数のバージョンが混在する場合" do
+    before do
+      Tengine::Job::Vertex.delete_all
+      @jobnet1_ver1 = Rjn0001SimpleJobnetBuilder.new.create_template(:dsl_version => 1)
+      @jobnet2_ver1 = Rjn0002SimpleParallelJobnetBuilder.new.create_template(:dsl_version => 1)
+      @jobnet1_ver2 = Rjn0001SimpleJobnetBuilder.new.create_template(:dsl_version => 2)
+      @jobnet2_ver2 = Rjn0002SimpleParallelJobnetBuilder.new.create_template(:dsl_version => 2)
+      @jobnet1_ver3 = Rjn0001SimpleJobnetBuilder.new.create_template(:dsl_version => 3)
+      @jobnet2_ver3 = Rjn0002SimpleParallelJobnetBuilder.new.create_template(:dsl_version => 3)
+      builder = Rjn0008ExpansionFixture.new
+      @template = builder.create_template(:dsl_version => 2)
+      @ctx = builder.context
+    end
+
+    it { @template.child_by_name("rjn0001").root_jobnet_template.id.should == @jobnet1_ver2.id }
+    it { @template.child_by_name("rjn0002").root_jobnet_template.id.should == @jobnet2_ver2.id }
+  end
+
 end

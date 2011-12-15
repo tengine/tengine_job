@@ -27,7 +27,9 @@ describe 'job_control_driver' do
       @base_props = {
         :execution_id => @execution.id.to_s,
         :root_jobnet_id => @root.id.to_s,
+        :root_jobnet_name_path => @root.name_path,
         :target_jobnet_id => @root.id.to_s,
+        :target_jobnet_name_path => @root.name_path,
       }
     end
 
@@ -40,6 +42,7 @@ describe 'job_control_driver' do
         :source_name => @ctx[:j11].name_as_resource,
         :properties => {
           :target_job_id => @ctx[:j11].id.to_s,
+          :target_job_name_path => @ctx[:j11].name_path,
         }.update(@base_props))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
       @execution.reload
@@ -62,11 +65,13 @@ describe 'job_control_driver' do
           :source_name => @ctx[:j12].name_as_resource,
           :properties => {
             :target_job_id => @ctx[:j12].id.to_s,
+            :target_job_name_path => @ctx[:j12].name_path,
           }.update(@base_props))
         tengine.receive("success.job.job.tengine",
           :source_name => @ctx[:j11].name_as_resource,
           :properties => {
             :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
           }.update(@base_props))
         @root.reload
         @root.phase_key.should == :running
@@ -192,7 +197,9 @@ describe 'job_control_driver' do
       @base_props = {
         :execution_id => @execution.id.to_s,
         :root_jobnet_id => @root.id.to_s,
+        :root_jobnet_name_path => @root.name_path,
         :target_jobnet_id => @root.id.to_s,
+        :target_jobnet_name_path => @root.name_path,
       }
     end
 
@@ -204,11 +211,13 @@ describe 'job_control_driver' do
         :source_name => @ctx.vertex(:j11).name_as_resource,
         :properties => {
           :target_job_id => @ctx[:j11].id.to_s,
+          :target_job_name_path => @ctx[:j11].name_path,
         }.update(@base_props))
       tengine.should_fire(:"start.job.job.tengine",
         :source_name => @ctx.vertex(:j12).name_as_resource,
         :properties => {
           :target_job_id => @ctx[:j12].id.to_s,
+          :target_job_name_path => @ctx[:j12].name_path,
         }.update(@base_props))
       tengine.receive("start.jobnet.job.tengine", :properties => @base_props)
       @root.reload
@@ -242,6 +251,7 @@ describe 'job_control_driver' do
         tengine.should_not_fire
         tengine.receive("success.job.job.tengine", :properties => {
             :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
           }.update(@base_props))
         @root.reload
         @ctx.vertex(:j12).phase_key.should == :running
@@ -255,7 +265,8 @@ describe 'job_control_driver' do
         @root.save!
         tengine.should_not_fire
         tengine.receive("error.job.job.tengine", :properties => {
-            :target_job_id => @ctx[:j11].id.to_s
+            :target_job_id => @ctx[:j11].id.to_s,
+            :target_job_name_path => @ctx[:j11].name_path,
           }.update(@base_props))
         @root.reload
         @ctx.vertex(:j12).phase_key.should == :running
@@ -349,7 +360,8 @@ describe 'job_control_driver' do
             :source_name => @root.name_as_resource,
             :properties => @base_props)
           tengine.receive("error.job.job.tengine", :properties => {
-              :target_job_id => @ctx[:j12].id.to_s
+              :target_job_id => @ctx[:j12].id.to_s,
+              :target_job_name_path => @ctx[:j12].name_path,
             }.update(@base_props))
           @root.reload
           @root.phase_key.should == :error
@@ -362,14 +374,14 @@ describe 'job_control_driver' do
 
   end
 
-  # in [rjn0005]
+  # in [rjn0010]
   #              |-----e2----->(j11)-----e4----->|
   # [S1]--e1-->[F1]                            [J1]--e7-->[E1]
   #              |--e3-->(j12)--e5-->(j13)--e6-->|
-  context "rjn0005" do
+  context "rjn0010" do
     before do
       Tengine::Job::Vertex.delete_all
-      builder = Rjn00052jobsAnd1jobParallelJobnetBuilder.new
+      builder = Rjn00102jobsAnd1jobParallelJobnetBuilder.new
       @root = builder.create_actual
       @ctx = builder.context
       @execution = Tengine::Job::Execution.create!({

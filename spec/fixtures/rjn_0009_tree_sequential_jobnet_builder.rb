@@ -6,7 +6,7 @@ require File.expand_path('test_server_fixture', File.dirname(__FILE__))
 # 以下のジョブネットについてテンプレートジョブネットや
 # 実行用ジョブネットを扱うフィクスチャ生成のためのクラスです。
 #
-# in [rjn0004]
+# in [rjn0009]
 # [S1] --e1-->[j1100]--e2-->[j1200]--e3-->[j1300]--e4-->[j1400]--e5-->[j1500]--e6-->[j1600]--e7-->[E1]
 #
 # [j1100]
@@ -38,12 +38,12 @@ require File.expand_path('test_server_fixture', File.dirname(__FILE__))
 #
 # [j1630]
 # [S11]--e30-->(j1631)--e31-->[E11]
-class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
+class Rjn0009TreeSequentialJobnetBuilder < JobnetFixtureBuilder
   include TestCredentialFixture
   include TestServerFixture
 
   DSL = <<-EOS
-    jobnet("rjn0004") do
+    jobnet("rjn0009") do
       jobnet("j1100", :credential_name => "test_credential1", :server_name => "test_server1") do
         job("j1110", "job_test j1110")
         job("j1120", "job_test j1120")
@@ -81,7 +81,7 @@ class Rjn0004TreeSequentialJobnetBuilder < JobnetFixtureBuilder
     resource_fixture = GokuAtEc2ApNortheast.new
     resource_fixture.mysql_master
 
-    root = new_root_jobnet("rjn0004", options)
+    root = new_root_jobnet("rjn0009", options)
     root.children << new_start
     root.children << new_jobnet("j1100", :credential_name => test_credential1.name, :server_name => test_server1.name)
     root.children << new_jobnet("j1200", :credential_name => test_credential1.name)

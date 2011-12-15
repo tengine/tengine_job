@@ -13,4 +13,8 @@ class Tengine::Job::Start < Tengine::Job::Vertex
     signal.leave(self)
   end
 
+  def reset(signal)
+    signal.leave(self, :reset)
+  end
+
 end

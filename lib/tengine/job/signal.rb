@@ -12,6 +12,13 @@ class Tengine::Job::Signal
   # 現時点ではジョブのrunからackを返す際にPIDを保持するために使用します。
   attr_accessor :data
 
+  # start.job.job.tengineイベントによって
+  # ジョブは :ready -> :starting -> :running に遷移するが、
+  # 一度のroot_jobnet.update_with_lock では :starting が保存されないので、
+  # 2回のroot_jobnet.update_with_lock に分けることができるようにするための
+  # 処理を記憶しておく属性です
+  attr_accessor :callback
+
   def initialize(event)
     @paths = []
     @reservations = []
@@ -23,14 +30,14 @@ class Tengine::Job::Signal
     @execution ||= Tengine::Job::Execution.find(event[:execution_id])
   end
 
-  def leave(obj)
+  def leave(obj, action = :transmit)
     @paths << obj
     begin
       if obj.is_a?(Tengine::Job::Edge)
-        obj.destination.transmit(self)
+        obj.destination.send(action, self)
       elsif obj.is_a?(Tengine::Job::Vertex)
         obj.next_edges.each do |edge|
-          with_paths_backup{ edge.transmit(self) }
+          with_paths_backup{ edge.send(action, self) }
         end
       else
         raise Tengine::Job::Signal::Error, "leaving unsupported object: #{obj.inspect}"
@@ -68,10 +75,13 @@ class Tengine::Job::Signal
     when Tengine::Job::Execution then
       properties[:execution_id] ||= source.id.to_s
       properties[:root_jobnet_id] ||= source.root_jobnet.id.to_s
+      properties[:root_jobnet_name_path] ||= source.root_jobnet.name_path
       properties[:target_jobnet_id] ||= source.root_jobnet.id.to_s
+      properties[:target_jobnet_name_path] ||= source.root_jobnet.name_path
     else
       properties[:execution_id] ||= self.execution.id.to_s
       properties[:root_jobnet_id] ||= source.root.id.to_s
+      properties[:root_jobnet_name_path] ||= source.root.name_path
     end
     # デバッグ用
     # properties[:target_jobnet_name] = source.root.vertex(properties[:target_jobnet_id]).name_path

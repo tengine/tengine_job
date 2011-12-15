@@ -12,7 +12,8 @@ class Tengine::Job::End < Tengine::Job::Vertex
   def activate(signal)
     complete_origin_edge(signal, :except_closed => true)
     parent = self.parent # Endのparentであるジョブネット
-    if parent_finally = parent.finally_vertex
+    parent_finally = parent.finally_vertex
+    if parent_finally && (parent.phase_key != :dying)
       parent_finally.transmit(signal)
     else
       parent.finish(signal)
@@ -20,7 +21,15 @@ class Tengine::Job::End < Tengine::Job::Vertex
   end
 
   def reset(signal)
-    # TODO 親にfinallyの代替ジョブネットがある場合、そのfinallyをresetする。
+    parent = self.parent # Endのparentであるジョブネット
+    unless (signal.execution.spot && (signal.execution.target_actual_ids || []).map(&:to_s).include?(parent.id.to_s))
+      if f = parent.finally_vertex
+        f.reset(signal)
+      end
+      if edge = (parent.next_edges || []).first
+        edge.reset(signal)
+      end
+    end
   end
 
 end

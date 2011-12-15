@@ -11,11 +11,15 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
 
   def rerun(*args)
     options = args.extract_options!
-    result = Tengine::Job::Execution.create!(:retry => true, :spot => !!options[:spot],
-      :root_jobnet_id => self.id,
-      :target_actual_ids => args.flatten
-      )
-    sender = options[:sender] || Tengine::Event.default_sender
+    sender = options.delete(:sender) || Tengine::Event.default_sender
+    options = options.merge({
+        :retry => true,
+        :root_jobnet_id => self.id,
+      })
+    result = Tengine::Job::Execution.new(options)
+    result.target_actual_ids ||= []
+    result.target_actual_ids += args.flatten
+    result.save!
     sender.wait_for_connection do
       sender.fire(:'start.execution.job.tengine', :properties => {
           :execution_id => result.id.to_s

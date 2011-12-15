@@ -47,6 +47,8 @@ describe Tengine::Job::Edge do
         @ctx[:j11].should_receive(:execute)
         @execution.should_receive(:signal=).with(@signal)
         @ctx[:j11].activate(@signal)
+        @signal.callback.should_not be_nil
+        @signal.callback.call # 2回に分けてphaseを更新するのでcallbackすることを期待しています
         @ctx[:e1].phase_key.should == :transmitted
         @ctx[:j11].phase_key.should == :starting
         @signal.reservations.length.should == 0
@@ -186,6 +188,48 @@ describe Tengine::Job::Edge do
         end
       end
 
+    end
+
+  end
+
+  context "<BUG>再実行したジョブが準備中のままになってしまう" do
+    # in [jn0004]
+    #                         |--e3-->(j2)--e5-->|
+    # (S1)--e1-->(j1)--e2-->[F1]                [J1]--e7-->(j4)--e8-->(E1)
+    #                         |--e4-->(j3)--e6-->|
+    #
+    # in [jn0004/finally]
+    # (S2) --e9-->(jn0004_f)-e10-->(E2)
+    before do
+      builder = Rjn0004ParallelJobnetWithFinally.new
+      builder.create_actual
+      @ctx = builder.context
+    end
+
+    context "j1が失敗するとe2以降のedgeはclosedになる。" do
+      before do
+        [:e1].each{|name| @ctx[name].phase_key = :transmitted}
+        [:e2, :e3, :e4, :e5, :e6, :e7, :e8].each{|name| @ctx[name].phase_key = :closed}
+        [:root, :j1].each{|name| @ctx[name].phase_key = :error}
+        [:j2].each{|name| @ctx[name].phase_key = :ready}
+        [:j3, :j4].each{|name| @ctx[name].phase_key = :initialized}
+        @ctx[:root].save!
+      end
+
+      it "j2以降を再実行しようとしてclosedのe3に対してcompleteしても問題なく動けばOK" do
+        @now = Time.now.utc
+        @event = mock(:event, :occurred_at => @now)
+        @execution = mock(:execution,
+          :id => "execution_id",
+          :estimated_time => 600,
+          :retry => true,
+          :spot => true,
+          :actual_estimated_end => Time.utc(2011,10,27,19,8),
+          :preparation_command => "export J2_FAIL=true")
+        @signal = Tengine::Job::Signal.new(@event)
+        @signal.stub!(:execution).and_return(@execution)
+        @ctx.vertex(:j2).activate(@signal)
+      end
     end
   end
 
