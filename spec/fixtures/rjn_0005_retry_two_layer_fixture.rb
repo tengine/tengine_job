@@ -141,8 +141,8 @@ class Rjn0005RetryTwoLayerFixture < JobnetFixtureBuilder
           jn0005_fjn_f.children << new_start
           jn0005_fjn_f.children << new_script("jn0005_fif", :script => "$HOME/0005_retry_two_layer.sh")
           jn0005_fjn_f.children << new_end
-          jn0005_fjn_f.edges << new_edge(:S5, :jn0005_fif)
-          jn0005_fjn_f.edges << new_edge(:jn0005_fif, :E5)
+          jn0005_fjn_f.edges << new_edge(:S6, :jn0005_fif)
+          jn0005_fjn_f.edges << new_edge(:jn0005_fif, :E6)
         end
       end
     end

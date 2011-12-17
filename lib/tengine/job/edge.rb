@@ -93,7 +93,11 @@ class Tengine::Job::Edge
   def reset(signal)
     # 全てのステータスから遷移する
     self.phase_key = :active
-    destination.reset(signal)
+    if d = destination
+      d.reset(signal)
+    else
+      raise "destination not found: #{destination_id.inspect} from #{origin.inspect}"
+    end
   end
 
   def close(signal)
