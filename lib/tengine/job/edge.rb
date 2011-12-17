@@ -82,9 +82,9 @@ class Tengine::Job::Edge
     case phase_key
     when :transmitting then
       self.phase_key = :transmitted
-    when :closed then
+    when :active, :closed then
       # IG
-    when :active, :suspended, :keeping then
+    when :suspended, :keeping then
       # N/A
       raise Tengine::Job::Edge::StatusError, "#{self.class.name}#complete not available on #{phase_key.inspect} at #{self.inspect}"
     end
