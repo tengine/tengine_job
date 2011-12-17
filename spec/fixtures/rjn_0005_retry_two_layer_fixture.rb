@@ -6,26 +6,26 @@ require File.expand_path('test_server_fixture', File.dirname(__FILE__))
 # 以下のジョブネットについてテンプレートジョブネットや
 # 実行用ジョブネットを扱うフィクスチャ生成のためのクラスです。
 #
-# in [rjn0005]
+# in [jn0005]
 #                         |--e3-->(j2)--e5--->|
 # (S1)--e1-->(j1)--e2-->[F1]                [J1]-->e7-->(j4)--e8-->(E1)
 #                         |--e4-->[jn4]--e6-->|
 #
-# in [rjn0005/jn4]
+# in [jn0005/jn4]
 #                          |--e11-->(j42)--e13-->|
 # (S2)--e9-->(j41)--e10-->[F2]                  [J2]--e15-->(j44)--e16-->(E2)
 #                          |--e12-->(j43)--e14-->|
 #
-# in [rjn0005/jn4/finally]
+# in [jn0005/jn4/finally]
 # (S3)--e17-->(jn4_f)--e18-->(E3)
 #
-# in [rjn0005/finally]
+# in [jn0005/finally]
 # (S4)--e19-->[jn0005_fjn]--e20-->(jn0005_f)--e21-->(E4)
 #
-# in [rjn0005/finally/jn0005_fjn]
+# in [jn0005/finally/jn0005_fjn]
 # (S5)--e22-->(jn0005_f1)--e23-->(jn0005_f1)--e24-->(E5)
 #
-# in [rjn0005/finally/jn0005_fjn/finally]
+# in [jn0005/finally/jn0005_fjn/finally]
 # (S6)--e25-->(jn0005_fif)--e26-->(E6)
 
 class Rjn0005RetryTwoLayerFixture < JobnetFixtureBuilder
