@@ -10,6 +10,7 @@ describe 'schedule_driver' do
 
   context "rjn0001" do
     before do
+      Tengine::Core::Schedule.delete_all
       Tengine::Job::Vertex.delete_all
       builder = Rjn0001SimpleJobnetBuilder.new
       @root = builder.create_actual
@@ -62,16 +63,24 @@ describe 'schedule_driver' do
             :target_jobnet_id => @root.id.to_s,
           })
         end
-        a = Tengine::Core::Schedule.where(:status => Tengine::Core::Schedule::SCHEDULED)
-        a.each do |i|
+        Tengine::Core::Schedule.count(:conditions => {:status => Tengine::Core::Schedule::SCHEDULED}).should == 2
+        s1 = Tengine::Core::Schedule.first(:conditions => {:event_type_name => "alert.execution.job.tengine"})
+        s2 = Tengine::Core::Schedule.first(:conditions => {:event_type_name => "stop.execution.job.tengine"})
+        [s1, s2].each do |i|
           i.source_name.should == @execution.name_as_resource
           i.scheduled_at.should >= Time.now
-          i.properties.should == {
-            'execution_id' => @execution.id.to_s,
-            'root_jobnet_id' => @root.id.to_s,
-            'target_jobnet_id' => @root.id.to_s,
-          }
         end
+        s1.properties.should == {
+          'execution_id' => @execution.id.to_s,
+          'root_jobnet_id' => @root.id.to_s,
+          'target_jobnet_id' => @root.id.to_s,
+        }
+        s2.properties.should == {
+          'execution_id' => @execution.id.to_s,
+          'root_jobnet_id' => @root.id.to_s,
+          'target_jobnet_id' => @root.id.to_s,
+          'stop_reason'=>'timeout'
+        }
       end
     end
 

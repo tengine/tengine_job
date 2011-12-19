@@ -13,7 +13,7 @@ driver :schedule_driver do
     end
     if exec.actual_base_timeout_termination
       t2 = Time.now + (exec.actual_base_timeout_termination * 60.0)
-      Tengine::Core::Schedule.create event_type_name: "stop.execution.job.tengine", scheduled_at: t2, source_name: name, status: status, properties: event.properties
+      Tengine::Core::Schedule.create event_type_name: "stop.execution.job.tengine", scheduled_at: t2, source_name: name, status: status, properties: event.properties.merge(stop_reason: 'timeout')
     end
   end
 
