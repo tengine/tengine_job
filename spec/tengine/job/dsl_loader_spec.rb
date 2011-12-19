@@ -387,4 +387,17 @@ describe Tengine::Job::DslLoader do
     end
   end
 
+  context "https://www.pivotaltracker.com/story/show/22350445" do
+    context "2003_expansion" do
+      before { Tengine::Job::JobnetTemplate.delete_all }
+
+      context "expansion_5" do
+        it do
+          expect do
+            load_dsl "2003_expansion/expansion_5.rb"
+          end.should raise_error(Tengine::Job::DslError)
+        end
+      end
+    end
+  end
 end
