@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.5.7"
+  s.version = "0.5.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
@@ -117,6 +117,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/dsls/0018_expansion.rb",
     "spec/tengine/job/dsls/0019_execute_job_on_event.rb",
     "spec/tengine/job/dsls/0020_duplicated_jobnet_name.rb",
+    "spec/tengine/job/dsls/2003_expansion/expansion_5.rb",
     "spec/tengine/job/dsls/VERSION",
     "spec/tengine/job/edge_spec.rb",
     "spec/tengine/job/element_selector_notation_spec.rb",
@@ -144,7 +145,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/tengine/tengine_job"
   s.licenses = ["MPL/LGPL"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.11"
+  s.rubygems_version = "1.8.12"
   s.summary = "tengine_job provides jobnet management"
 
   if s.respond_to? :specification_version then
