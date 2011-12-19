@@ -49,6 +49,23 @@ describe 'schedule_driver' do
         Tengine::Core::Schedule.where(:status => Tengine::Core::Schedule::SCHEDULED).should be_empty
       end
 
+      it "タイムアウトが0で設定されていた場合はなにもしない" do
+        @execution.phase_key = :initialized
+        @execution.actual_base_timeout_alert = 0
+        @execution.actual_base_timeout_termination = 0
+        @execution.save!
+        @root.phase_key = :initialized
+        @root.save!
+        EM.run_block do
+          tengine.receive("start.execution.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @root.id.to_s,
+            :target_jobnet_id => @root.id.to_s,
+          })
+        end
+        Tengine::Core::Schedule.where(:status => Tengine::Core::Schedule::SCHEDULED).should be_empty
+      end
+
       it "タイムアウトが設定されていればスケジュールストアに保存" do
         @execution.phase_key = :initialized
         @execution.actual_base_timeout_alert = 32768
