@@ -9,11 +9,11 @@ driver :schedule_driver do
     status = Tengine::Core::Schedule::SCHEDULED
     if exec.actual_base_timeout_alert
       t1 = Time.now + (exec.actual_base_timeout_alert * 60.0)
-      Tengine::Core::Schedule.create event_type_name: "alert.execution.job.tengine", scheduled_at: t1, source_name: name, status: status
+      Tengine::Core::Schedule.create event_type_name: "alert.execution.job.tengine", scheduled_at: t1, source_name: name, status: status , properties: event.properties
     end
     if exec.actual_base_timeout_termination
       t2 = Time.now + (exec.actual_base_timeout_termination * 60.0)
-      Tengine::Core::Schedule.create event_type_name: "stop.execution.job.tengine", scheduled_at: t2, source_name: name, status: status
+      Tengine::Core::Schedule.create event_type_name: "stop.execution.job.tengine", scheduled_at: t2, source_name: name, status: status, properties: event.properties
     end
   end
 

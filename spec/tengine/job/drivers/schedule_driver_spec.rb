@@ -66,6 +66,11 @@ describe 'schedule_driver' do
         a.each do |i|
           i.source_name.should == @execution.name_as_resource
           i.scheduled_at.should >= Time.now
+          i.properties.should == {
+            'execution_id' => @execution.id.to_s,
+            'root_jobnet_id' => @root.id.to_s,
+            'target_jobnet_id' => @root.id.to_s,
+          }
         end
       end
     end
