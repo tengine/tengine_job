@@ -188,7 +188,7 @@ describe "reset" do
           end
           @ctx[:e1].phase_key = :transmitted
           (2..8).each{|idx| @ctx[:"e#{idx}"].phase_key = :closed}
-          (22..26).each{|idx| @ctx[:"e#{idx}"].phase_key = :transmitted}
+          (19..26).each{|idx| @ctx[:"e#{idx}"].phase_key = :transmitted}
           @root.save!
         end
 
@@ -227,9 +227,56 @@ describe "reset" do
           signal2.reservations.length.should == 0
         end
 
-
       end
-
     end
   end
+
+  context "@4035" do
+
+    before do
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0005RetryTwoLayerFixture.new
+      @root = builder.create_actual
+      @ctx = builder.context
+    end
+
+    context "/jn0005/j1が:errorになって実行が終了した後、/jn0005/j2を再実行" do
+      before do
+        @ctx[:jn0005].phase_key = :error
+        @ctx[:j1].phase_key = :error
+        @ctx[:j2].phase_key = :success
+        [2,3,4,6].each{|idx| @ctx[:"e#{idx}"].phase_key = :closed}
+        [1].each{|idx| @ctx[:"e#{idx}"].phase_key = :transmitted}
+        [5,7,8].each{|idx| @ctx[:"e#{idx}"].phase_key = :active}
+        (9..26).each{|idx| @ctx[:"e#{idx}"].phase_key = :active}
+        @root.save!
+      end
+
+      it "成功しても/jn0005/j4は実行されない" do
+        execution = Tengine::Job::Execution.create!({
+            :retry => true, :spot => false,
+            :root_jobnet_id => @root.id,
+            :target_actual_ids => [@ctx[:j2].id.to_s]
+          })
+        execution.stub(:root_jobnet).and_return(@root)
+        t1 = Time.now
+        event1 = mock(:"success.job.job.tengine")
+        event1.stub(:occurred_at).and_return(t1)
+        signal1 = Tengine::Job::Signal.new(event1)
+        signal1.stub(:execution).and_return(execution)
+        next_of_j2 = @root.element("next!j2")
+        @root.update_with_lock do
+          next_of_j2.transmit(signal1)
+        end
+        signal1.reservations.map(&:fire_args).should == []
+        @root.reload
+        @root.element("j2").tap{|j| j.phase_key.should == :success }
+        @root.element("j4").tap{|j| j.phase_key.should == :initialized }
+        @root.element("next!j2").phase_key.should == :transmitted
+        @root.element("prev!j4").phase_key.should == :active
+      end
+    end
+
+  end
+
 end

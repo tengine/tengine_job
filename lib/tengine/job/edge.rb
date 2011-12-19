@@ -34,6 +34,7 @@ class Tengine::Job::Edge
 
   def alive?; !!phase_entry[:alive]; end
   def alive_or_closing?; alive? || closing?; end
+  def alive_or_closing_or_closed?; alive? || closing? || closed?; end
 
   phase_keys.each do |phase_key|
     class_eval(<<-END_OF_METHOD)
