@@ -3,6 +3,75 @@ require 'spec_helper'
 
 describe Tengine::Job::JobnetActual do
 
+  describe :human_phase_key do
+    human_phase_name_hash = {
+      :initialized=>"初期化済",
+      :ready=>"準備中",
+      :starting=>"開始中",
+      :running=>"実行中",
+      :dying=>"強制停止中",
+      :success=>"正常終了",
+      :error=>"エラー終了",
+      :stuck=>"状態不明",
+      :stopping_by_user => "強制停止中",
+      :stopped_by_user => "強制停止済",
+      :stopping_by_timeout => "タイムアウト強制停止中",
+      :stopped_by_timeout => "タイムアウト強制停止済",
+    }.freeze
+
+    before(:all) do
+      I18n.backend ||= I18n::Backend::Simple.new
+      @i18_locale_backup = I18n.locale
+      I18n.locale = :ja
+      I18n.backend.store_translations('ja',
+        'selectable_attrs' => {'tengine/job/jobnet_actual' => {'human_phase_name' => human_phase_name_hash } })
+    end
+
+    after(:all) do
+      I18n.locale = @i18_locale_backup
+    end
+
+    (Tengine::Job::JobnetActual.phase_keys - [:dying, :error]).each do |phase_key|
+      context "#{phase_key.inspect}の場合" do
+        subject{ Tengine::Job::JobnetActual.new(:phase_key => phase_key) }
+        its(:human_phase_key){ should == phase_key } # 変わらない
+        its(:human_phase_name){ should == human_phase_name_hash[phase_key] }
+      end
+    end
+
+    context "phase_keyが:dyingの場合" do
+      subject{ Tengine::Job::JobnetActual.new(:phase_key => :dying) }
+      its(:human_phase_key){ should == :dying }
+      its(:human_phase_name){ should == human_phase_name_hash[:dying] }
+      context "stop_reasonがuser_stopならば" do
+        before{ subject.stop_reason = "user_stop" }
+        its(:human_phase_key){ should == :stopping_by_user }
+        its(:human_phase_name){ should == human_phase_name_hash[:stopping_by_user] }
+      end
+      context "stop_reasonがtimeoutならば" do
+        before{ subject.stop_reason = "timeout" }
+        its(:human_phase_key){ should == :stopping_by_timeout }
+        its(:human_phase_name){ should == human_phase_name_hash[:stopping_by_timeout] }
+      end
+    end
+
+    context "phase_keyが:errorの場合" do
+      subject{ Tengine::Job::JobnetActual.new(:phase_key => :error) }
+      its(:human_phase_key){ should == :error }
+      its(:human_phase_name){ should == human_phase_name_hash[:error] }
+      context "stop_reasonがuser_stopならば" do
+        before{ subject.stop_reason = "user_stop" }
+        its(:human_phase_key){ should == :stopped_by_user }
+        its(:human_phase_name){ should == human_phase_name_hash[:stopped_by_user] }
+      end
+      context "stop_reasonがtimeoutならば" do
+        before{ subject.stop_reason = "timeout" }
+        its(:human_phase_key){ should == :stopped_by_timeout }
+        its(:human_phase_name){ should == human_phase_name_hash[:stopped_by_timeout] }
+      end
+    end
+  end
+
   describe "reset rjn0010" do
     # in [rjn0010]
     #              |-----e2----->(j11)-----e4----->|

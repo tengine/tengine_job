@@ -42,6 +42,33 @@ module Tengine::Job::Executable
       self.write_attribute(:phase_cd, self.class.phase_id_by_key(phase_key))
     end
 
+
+    unless defined?(HUMAN_PHASE_KEYS_HASH)
+      HUMAN_PHASE_KEYS_HASH = {
+        'user_stop' => { :dying => :stopping_by_user, :error => :stopped_by_user }.freeze,
+        'timeout' => { :dying => :stopping_by_timeout, :error => :stopped_by_timeout }.freeze,
+      }.freeze
+
+      HUMAN_PHASE_KEYS_ADDITIONAL = HUMAN_PHASE_KEYS_HASH.values.map{|hash| hash.values}.flatten.freeze
+      # HUMAN_PHASE_KEYS = (phase_keys + HUMAN_PHASE_KEYS_ADDITIONAL).freeze
+    end
+
+    # 可読可能なphase_keyを返します。
+    # 具体的にはphase_keyが:dying、:errorの場合は、stop_reasonを考慮した値を返します。
+    def human_phase_key
+      case phase_key
+      when :dying, :error then
+        hash = HUMAN_PHASE_KEYS_HASH[self.stop_reason]
+        hash ? hash[phase_key] : phase_key
+      else phase_key
+      end
+    end
+
+    # human_phase_keyの表示用の文字列を返します。
+    def human_phase_name
+      I18n.t(human_phase_key, :scope => "selectable_attrs.tengine/job/jobnet_actual.human_phase_name")
+    end
+
   end
 
 end
