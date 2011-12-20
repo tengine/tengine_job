@@ -5,6 +5,37 @@ require 'tengine/job'
 module Tengine::Job::DslLoader
   include Tengine::Job::DslEvaluator
 
+  class << self
+    def loading_template_block_store
+      @loading_template_block_store ||= {}
+    end
+
+    def template_block_store
+      @template_block_store ||= {}
+    end
+
+    def template_block_store_key(job, name)
+      "#{job.root.id.to_s}/#{job.id.to_s}##{name}"
+    end
+
+    def update_loaded_blocks(loaded_root)
+      if loaded_root
+        loading_template_block_store.each do |unsaved_job, (name, block)|
+          loaded_job = loaded_root.vertex_by_name_path(unsaved_job.name_path)
+          key = template_block_store_key(loaded_job, name)
+          template_block_store[key] = block
+        end
+      else
+        loading_template_block_store.each do |saved_job, (name, block)|
+          key = template_block_store_key(saved_job, name)
+          template_block_store[key] = block
+        end
+      end
+      loading_template_block_store.clear
+    end
+  end
+
+
   def jobnet(name, *args, &block)
     options = args.extract_options!
     options = {
@@ -44,7 +75,10 @@ module Tengine::Job::DslLoader
       end
     end
     if result.parent.nil?
-      result.find_duplication || (result.save!; result)
+      loaded = result.find_duplication
+      result.save! unless loaded
+      Tengine::Job::DslLoader.update_loaded_blocks(loaded)
+      loaded || result
     else
       result
     end
@@ -71,6 +105,9 @@ module Tengine::Job::DslLoader
       Tengine::Job::JobnetTemplate.new(options)
     end
     @jobnet.children << result
+    if preparation
+      Tengine::Job::DslLoader.loading_template_block_store[result] = [:preparation, preparation]
+    end
     result
   end
 

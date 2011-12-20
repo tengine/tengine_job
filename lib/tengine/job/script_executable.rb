@@ -104,6 +104,18 @@ module Tengine::Job::ScriptExecutable
       mm_env << ' ' << hadoop_job_env
     end
     result << "export #{mm_env}"
+    if template_root = root_or_expansion.template
+      if template_job = template_root.vertex_by_name_path(self.name_path)
+        key = Tengine::Job::DslLoader.template_block_store_key(template_job, :preparation)
+        preparation_block = Tengine::Job::DslLoader.template_block_store[key]
+        if preparation_block
+          preparation = instance_eval(&preparation_block)
+          unless preparation.blank?
+            result << preparation
+          end
+        end
+      end
+    end
     unless execution.preparation_command.blank?
       result << execution.preparation_command
     end
