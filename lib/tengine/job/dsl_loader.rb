@@ -66,6 +66,7 @@ module Tengine::Job::DslLoader
       :description => description,
       :script => script
     }.update(options)
+    preparation = options.delete(:preparation)
     result = __with_redirection__(options) do
       Tengine::Job::JobnetTemplate.new(options)
     end
