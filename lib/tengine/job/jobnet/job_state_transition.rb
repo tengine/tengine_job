@@ -31,7 +31,9 @@ module Tengine::Job::Jobnet::JobStateTransition
       complete_origin_edge(signal)
       self.phase_key = :starting
       self.started_at = signal.event.occurred_at
-      parent.ack(signal)
+      execution = signal.execution
+      retry_directly = execution.retry && execution.target_actual_ids.include?(self.id.to_s)
+      (retry_directly ? execution : parent).ack(signal)
       # このコールバックはjob_control_driverでupdate_with_lockの外側から
       # 再度呼び出してもらうためにcallbackを設定しています
       signal.callback = lambda{ root.vertex(self.id).activate(signal) }
@@ -106,7 +108,9 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   def job_fire_stop(signal)
     return if self.phase_key == :initialized
+    self.stop_reason = signal.event[:stop_reason]
     signal.fire(self, :"stop.job.job.tengine", {
+        :stop_reason => signal.event[:stop_reason],
         :target_jobnet_id => parent.id,
         :target_jobnet_name_path => parent.name_path,
         :target_job_id => self.id,

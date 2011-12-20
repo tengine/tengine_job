@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
+require 'tsort'
+
 class Tengine::Job::Jobnet::Builder
+  include TSort
 
   def initialize(client, boot_job_names, redirections)
     @client, @boot_job_names, @redirections = client, boot_job_names, redirections.dup
+    @graph = Hash.new do |h, k| h[k] = Array.new end
+    @redirections.each do |(x, y)|
+      @graph[x] << y
+    end
   end
 
   def children; @client.children; end
@@ -11,11 +18,25 @@ class Tengine::Job::Jobnet::Builder
   def prepare_end(*args, &block); @client.prepare_end(*args, &block); end
 
   def process
+    tsort
+  rescue TSort::Cyclic
+    raise Tengine::Job::DslError, "circular dependency found in jobnet ``#{@client.name}''"
+  else
     build_start_edges
     build_edge_by_redirections
     prepare_end do |_end|
       build_end_edges(_end, @boot_job_names.map{|jn| [:start, jn]} + @redirections)
     end
+  end
+
+  private
+
+  def tsort_each_child node, &block
+    @graph.fetch(node, Array.new).each(&block)
+  end
+
+  def tsort_each_node(&block)
+    @graph.each_key(&block)
   end
 
   def build_start_edges

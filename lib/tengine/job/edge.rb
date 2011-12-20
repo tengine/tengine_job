@@ -34,6 +34,7 @@ class Tengine::Job::Edge
 
   def alive?; !!phase_entry[:alive]; end
   def alive_or_closing?; alive? || closing?; end
+  def alive_or_closing_or_closed?; alive? || closing? || closed?; end
 
   phase_keys.each do |phase_key|
     class_eval(<<-END_OF_METHOD)
@@ -82,9 +83,9 @@ class Tengine::Job::Edge
     case phase_key
     when :transmitting then
       self.phase_key = :transmitted
-    when :closed then
+    when :active, :closed then
       # IG
-    when :active, :suspended, :keeping then
+    when :suspended, :keeping then
       # N/A
       raise Tengine::Job::Edge::StatusError, "#{self.class.name}#complete not available on #{phase_key.inspect} at #{self.inspect}"
     end
@@ -93,7 +94,11 @@ class Tengine::Job::Edge
   def reset(signal)
     # 全てのステータスから遷移する
     self.phase_key = :active
-    destination.reset(signal)
+    if d = destination
+      d.reset(signal)
+    else
+      raise "destination not found: #{destination_id.inspect} from #{origin.inspect}"
+    end
   end
 
   def close(signal)

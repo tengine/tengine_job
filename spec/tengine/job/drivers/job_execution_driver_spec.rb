@@ -48,34 +48,38 @@ describe 'job_execution_driver' do
       @root.phase_key.should == :ready
     end
 
-
-    it "強制停止イベントを受け取ったら" do
-      @execution.phase_key = :running
-      @execution.save!
-      @root.phase_key = :running
-      @root.save!
-      tengine.should_fire(:"stop.jobnet.job.tengine",
-        :source_name => @root.name_as_resource,
-        :properties => {
-          :execution_id => @execution.id.to_s,
-          :root_jobnet_id => @root.id.to_s,
-          :root_jobnet_name_path => @root.name_path,
-          :target_jobnet_id => @root.id.to_s,
-          :target_jobnet_name_path => @root.name_path,
-        })
-      tengine.receive("stop.execution.job.tengine", :properties => {
-          :execution_id => @execution.id.to_s,
-          :root_jobnet_id => @root.id.to_s,
-          :root_jobnet_name_path => @root.name_path,
-          :target_jobnet_id => @root.id.to_s,
-          :target_jobnet_name_path => @root.name_path,
-        })
-      @execution.reload
-      @execution.phase_key.should == :dying
-      @root.reload
-      @root.phase_key.should == :running
+    %w[user_stop timeout].each do |stop_reason|
+      context stop_reason do
+        it "強制停止イベントを受け取ったら" do
+          @execution.phase_key = :running
+          @execution.save!
+          @root.phase_key = :running
+          @root.save!
+          tengine.should_fire(:"stop.jobnet.job.tengine",
+            :source_name => @root.name_as_resource,
+            :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_jobnet_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+              :stop_reason => stop_reason
+            })
+          tengine.receive("stop.execution.job.tengine", :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_jobnet_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+              :stop_reason => stop_reason
+            })
+          @execution.reload
+          @execution.phase_key.should == :dying
+          @root.reload
+          @root.phase_key.should == :running
+        end
+      end
     end
-
     # jobnet_control_driverでexecution起動後の処理を行っています
   end
 

@@ -10,6 +10,7 @@ describe Tengine::Job::Edge do
       :estimated_time => 600,
       :actual_estimated_end => Time.utc(2011,10,27,19,8),
       :preparation_command => nil)
+    @execution.stub!(:retry).and_return(false) # 再実行ではないという設定
     @signal = Tengine::Job::Signal.new(@event)
     @signal.stub!(:execution).and_return(@execution)
   end
@@ -46,6 +47,7 @@ describe Tengine::Job::Edge do
         @ctx[:root].save!
         @ctx[:j11].should_receive(:execute)
         @execution.should_receive(:signal=).with(@signal)
+        @execution.stub(:retry).and_return(false)
         @ctx[:j11].activate(@signal)
         @signal.callback.should_not be_nil
         @signal.callback.call # 2回に分けてphaseを更新するのでcallbackすることを期待しています
@@ -224,8 +226,10 @@ describe Tengine::Job::Edge do
           :estimated_time => 600,
           :retry => true,
           :spot => true,
+          :target_actual_ids => [@ctx[:j2].id.to_s],
           :actual_estimated_end => Time.utc(2011,10,27,19,8),
           :preparation_command => "export J2_FAIL=true")
+        @execution.should_receive(:ack).with(an_instance_of(Tengine::Job::Signal))
         @signal = Tengine::Job::Signal.new(@event)
         @signal.stub!(:execution).and_return(@execution)
         @ctx.vertex(:j2).activate(@signal)
