@@ -25,17 +25,9 @@ describe 'hadoop_job_run' do
         TestServerFixture.test_server1
         TestCredentialFixture.test_credential1
         load_dsl("0020_dynamic_env.rb")
-        @template = Tengine::Job::RootJobnetTemplate.find_by_name!("rjn0020")
       end
 
-      context "実行" do
-        before do
-          mock_sender = mock(:sender)
-          mock_sender.should_receive(:fire).with(any_args)
-          @execution = @template.execute(:sender => mock_sender)
-          @root = @execution.root_jobnet
-        end
-
+      shared_examples_for "実行時に環境変数を設定できる" do
         it "j1" do
           mock_event = mock(:event)
           signal = Tengine::Job::Signal.new(mock_event)
@@ -61,6 +53,39 @@ describe 'hadoop_job_run' do
           end
           @root.element("j2").run(@execution)
         end
+      end
+
+      context "rjn0020_1" do
+        before do
+          @template = Tengine::Job::RootJobnetTemplate.find_by_name!("rjn0020_1")
+          mock_sender = mock(:sender)
+          mock_sender.should_receive(:fire).with(any_args)
+          @execution = @template.execute(:sender => mock_sender)
+          @root = @execution.root_jobnet
+        end
+        it_should_behave_like "実行時に環境変数を設定できる"
+      end
+
+      context "/rjn0020/rjn0020_1" do
+        before do
+          @template = Tengine::Job::RootJobnetTemplate.find_by_name!("rjn0020")
+          mock_sender = mock(:sender)
+          mock_sender.should_receive(:fire).with(any_args)
+          @execution = @template.execute(:sender => mock_sender)
+          @root = @execution.root_jobnet.vertex_by_name_path("/rjn0020/rjn0020_1")
+        end
+        it_should_behave_like "実行時に環境変数を設定できる"
+      end
+
+      context "/rjn0020/rjn0020_2" do
+        before do
+          @template = Tengine::Job::RootJobnetTemplate.find_by_name!("rjn0020")
+          mock_sender = mock(:sender)
+          mock_sender.should_receive(:fire).with(any_args)
+          @execution = @template.execute(:sender => mock_sender)
+          @root = @execution.root_jobnet.vertex_by_name_path("/rjn0020/rjn0020_2")
+        end
+        it_should_behave_like "実行時に環境変数を設定できる"
       end
 
     end
