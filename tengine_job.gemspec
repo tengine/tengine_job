@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.5.10"
+  s.version = "0.5.11"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
-  s.date = "2011-12-19"
+  s.date = "2011-12-23"
   s.description = "tengine_job provides jobnet management"
   s.email = "tengine@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -93,6 +93,7 @@ Gem::Specification.new do |s|
     "spec/sshd/id_rsa.pub",
     "spec/sshd/ssh_host_rsa_key",
     "spec/sshd/ssh_host_rsa_key.pub",
+    "spec/sshd/sshd_config",
     "spec/sshd/sshd_config.erb",
     "spec/sshd/tengine_job_test.sh",
     "spec/support/jobnet_fixture_builder.rb",
