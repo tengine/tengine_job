@@ -45,6 +45,16 @@ driver :job_control_driver do
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
+  on :'expired.job.heartbeat.tengine' do
+    event.tap do |e|
+      Tengine::Job::RootJobnetActual.find(e[:root_jobnet_id]).tap do |r|
+        r.update_with_lock do
+          r.find_descendant(e[:target_job_id]).phase_key = :stuck
+        end
+      end
+    end
+  end
+
   on :'restart.job.job.tengine' do
     signal = Tengine::Job::Signal.new(event)
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])

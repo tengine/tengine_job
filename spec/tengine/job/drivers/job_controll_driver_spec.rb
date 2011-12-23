@@ -496,5 +496,29 @@ describe 'job_control_driver' do
     end
   end
 
+  context "https://www.pivotaltracker.com/story/show/22624209" do
+    it "stuckにする" do
+      Tengine::Core::Schedule.delete_all
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+      @root.phase_key = :initialized
+      @root.save!
+      EM.run_block do
+        tengine.receive("expired.job.heartbeat.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_id => @root.id.to_s,
+            :target_job_id => @root.children[1].id.to_s,
+          })
+      end
+      @root.reload
+      @root.children[1].phase_key.should == :stuck
+      @root.phase_key.should_not == :stuck # initialized
+    end
+  end
 
 end

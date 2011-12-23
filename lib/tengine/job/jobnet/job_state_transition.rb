@@ -108,7 +108,9 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   def job_fire_stop(signal)
     return if self.phase_key == :initialized
+    self.stop_reason = signal.event[:stop_reason]
     signal.fire(self, :"stop.job.job.tengine", {
+        :stop_reason => signal.event[:stop_reason],
         :target_jobnet_id => parent.id,
         :target_jobnet_name_path => parent.name_path,
         :target_job_id => self.id,

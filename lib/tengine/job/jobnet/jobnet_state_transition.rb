@@ -72,6 +72,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
     signal.fire(self, :"stop.jobnet.job.tengine", {
         :target_jobnet_id => self.id,
         :target_jobnet_name_path => self.name_path,
+        :stop_reason => signal.event[:stop_reason]
       })
   end
 
