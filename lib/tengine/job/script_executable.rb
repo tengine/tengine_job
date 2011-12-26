@@ -40,7 +40,7 @@ module Tengine::Job::ScriptExecutable
       # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
       ssh.open_channel do |channel|
         Tengine.logger.info("now exec on ssh: " << cmd)
-        channel.exec(cmd) do |ch, success|
+        channel.exec(cmd.force_encoding("binary")) do |ch, success|
           raise Error, "could not execute command" unless success
 
           channel.on_data do |ch, data|
