@@ -157,6 +157,75 @@ describe Tengine::Job::RootJobnetActual do
     end
   end
 
+
+  context 'wait_to_acquire_lock' do
+    before do
+      Tengine::Job::Execution.delete_all
+      Tengine::Job::Vertex.delete_all
+      TestCredentialFixture.test_credential1
+      TestServerFixture.test_server1
+      builder = Rjn0002SimpleParallelJobnetBuilder.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @j11 = @root.element("j11")
+    end
+
+    context "基本" do
+      it "lockされていなければ自身がロックを取得できる" do
+        @root.release_lock
+        @root.version = 1
+        @root.save!
+
+        @root.reload
+        @root.version.should == 1
+        @root.lock_key.should == ""
+        Time.stub(:now).and_return(Time.local(2011,12,27,2,37))
+
+        @root.wait_to_acquire_lock(@j11)
+
+        @root.reload
+        @root.version.should == 2
+        @root.lock_key.should == "#{Process.pid.to_s}/#{@j11.id.to_s}"
+        @root.lock_timeout_key.should == "#{Process.pid.to_s}/#{@j11.id.to_s}-2011-12-26T17:37:00Z"
+        @root.locking_vertex_id.should == @j11.id.to_s
+      end
+
+      it "競合する場合は先勝ち。後者は解放されるまで待ちます" do
+        @root.acquire_lock(@j11)
+        @root.version = 1
+        @root.save!
+        @root.reload
+        @root.version.should == 1
+
+        f1 = Fiber.new do
+          r = Tengine::Job::RootJobnetActual.find(@root.id)
+          r.wait_to_acquire_lock(@root.element("j12"))
+          :end
+        end
+
+        Tengine::Job.test_harness_clear
+        10.times do |idx|
+          Tengine::Job.should_receive(:test_harness).with(idx + 1, "wait_to_acquire_lock").once{ Fiber.yield }
+          f1.resume.should_not == :end
+          @root.reload
+          @root.version.should == 1
+        end
+
+        @root.release_lock
+        @root.version = 2
+        @root.save!
+        @root.reload
+        @root.version.should == 2
+
+        f1.resume.should == :end # 後者がロックを取得する
+
+        @root.reload
+        @root.version.should == 3
+      end
+    end
+
+  end
+
   describe :rerun do
     before do
       Tengine::Job::Execution.delete_all

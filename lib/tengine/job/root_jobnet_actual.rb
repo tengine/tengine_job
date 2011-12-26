@@ -31,6 +31,31 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
     result
   end
 
+  def wait_to_acquire_lock(vertex, options = {})
+    acquire_lock(vertex)
+    loop_with_timeout(options) do
+      result = find_and_modify_lock
+      unless result
+        Tengine::Job.test_harness_hook("wait_to_acquire_lock")
+        reload
+      end
+      result
+    end
+    reload
+  end
+
+  def find_and_modify_lock
+    current_version = self.version
+    hash = as_document.dup
+    hash['version'] = current_version + 1
+    query = { :_id => self.id, :version => current_version, :lock_key => "", }
+    result = self.class.collection.find_and_modify({
+        :query => query,
+        :update => hash
+      })
+    result
+  end
+
   def acquire_lock(vertex)
     self.lock_key = "#{Process.pid.to_s}/#{vertex.id.to_s}"
     self.lock_timeout_key = "#{self.lock_key}-#{Time.now.utc.iso8601}"
@@ -64,6 +89,7 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
       !locked
     end
   end
+
 
   def loop_with_timeout(options = {})
     retry_interval = options[:interval] || 0.1 # seconds
