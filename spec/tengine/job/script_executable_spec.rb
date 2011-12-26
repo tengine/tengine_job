@@ -116,5 +116,17 @@ describe Tengine::Job::ScriptExecutable do
 #           )
 #       end
 
+    it "https://www.pivotaltracker.com/story/show/22269461" do
+      j = Tengine::Job::JobnetActual.new(
+        :server_name => @server.name, 
+        :credential_name => @credential.name,
+        :script => "echo \u{65e5}\u{672c}\u{8a9e}"
+      )
+      str = ''
+      j.execute(j.script) do |ch, data|
+        str << data
+      end
+      str.force_encoding('UTF-8').should be_valid_encoding
+    end
   end
 end
