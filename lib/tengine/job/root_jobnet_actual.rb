@@ -43,9 +43,15 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
     self.locking_vertex_id = nil
   end
 
-  def update_with_lock(options = {}, &block)
-    wait_for_lock_released unless (options || {}).delete(:skip_waiting)
-    super(options, &block)
+  def update_with_lock(options = {})
+    skip_waiting = (options || {}).delete(:skip_waiting)
+    first_time = true
+    super(options) do
+      reload unless first_time
+      wait_for_lock_released unless skip_waiting
+      yield
+      first_time = false
+    end
   end
 
   def wait_for_lock_released(options = {})
