@@ -17,6 +17,7 @@ driver :job_control_driver do
     end
     root_jobnet.reload
     if signal.callback
+      Tengine::Job.test_harness_hook("before callback in start.job.job.tengine")
       root_jobnet.update_with_lock(&signal.callback)
     end
     signal.reservations.each{|r| fire(*r.fire_args)}
