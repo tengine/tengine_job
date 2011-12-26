@@ -46,39 +46,41 @@ describe Tengine::Job::RootJobnetActual do
       builder = Rjn0002SimpleParallelJobnetBuilder.new
       @root = builder.create_actual
       @ctx = builder.context
+      @j11 = @root.element("j11")
     end
 
-    it "lockされているとupdate_with_lockに渡された処理は動かない" do
-      j11 = @root.element("j11")
-      @root.acquire_lock(j11)
-      @root.version = 1
-      @root.save!
-      @root.reload
-      @root.version.should == 1
+    context "基本" do
+      it "lockされているとupdate_with_lockに渡された処理は動かない" do
+        @root.acquire_lock(@j11)
+        @root.version = 1
+        @root.save!
+        @root.reload
+        @root.version.should == 1
 
-      f1_updated = false
-      f1 = Fiber.new do
-        @root.update_with_lock do
-          f1_updated = true
+        f1_updated = false
+        f1 = Fiber.new do
+          @root.update_with_lock do
+            f1_updated = true
+          end
+          :end
         end
-        :end
+
+        Tengine::Job.test_harness_clear
+        Tengine::Job.should_receive(:test_harness).with(1, "waiting_for_lock_released"){ Fiber.yield }
+
+        f1.resume
+        f1_updated.should == false
+
+        r = Tengine::Job::RootJobnetActual.find(@root.id)
+        r.release_lock
+        r.version = 2
+        r.save!
+
+        f1.resume.should == :end
+        f1_updated.should == true
+        @root.reload
+        @root.version.should == 3
       end
-
-      Tengine::Job.test_harness_clear
-      Tengine::Job.should_receive(:test_harness).with(1, "waiting_for_lock_released"){ Fiber.yield }
-
-      f1.resume
-      f1_updated.should == false
-
-      r = Tengine::Job::RootJobnetActual.find(@root.id)
-      r.release_lock
-      r.version = 2
-      r.save!
-
-      f1.resume.should == :end
-      f1_updated.should == true
-      @root.reload
-      @root.version.should == 3
     end
 
   end
