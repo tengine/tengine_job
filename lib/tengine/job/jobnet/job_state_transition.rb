@@ -32,8 +32,17 @@ module Tengine::Job::Jobnet::JobStateTransition
       self.phase_key = :starting
       self.started_at = signal.event.occurred_at
       execution = signal.execution
-      retry_directly = execution.retry && execution.target_actual_ids.include?(self.id.to_s)
-      (retry_directly ? execution : parent).ack(signal)
+      if execution.retry
+        if execution.target_actual_ids.include?(self.id.to_s)
+          execution.ack(signal)
+        elsif execution.target_actuals.map{|t| t.parent.id.to_s if t.parent }
+          # 自身とTengine::Job::Execution#target_actual_idsに含まれるジョブ／ジョブネットと親が同じならば、ackしない
+        else
+          parent.ack(signal)
+        end
+      else
+        parent.ack(signal) # 再実行でない場合
+      end
       # このコールバックはjob_control_driverでupdate_with_lockの外側から
       # 再度呼び出してもらうためにcallbackを設定しています
       signal.callback = lambda{ root.vertex(self.id).activate(signal) }
