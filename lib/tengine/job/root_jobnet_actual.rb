@@ -31,7 +31,7 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
     result
   end
 
-  def wait_to_acquire_lock(vertex, options = {})
+  def wait_to_acquire_lock(vertex, options = {}, &block)
     acquire_lock(vertex)
     loop_with_timeout(options) do
       result = find_and_modify_lock
@@ -45,8 +45,12 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
     if block_given?
       reload
       release_lock
-      update_with_lock(:skip_waiting => true) do
-        yield
+      begin
+        update_with_lock(:skip_waiting => true, &block)
+      rescue Exception
+        reload
+        update_with_lock(:skip_waiting => true){ release_lock }
+        raise
       end
     end
   end
