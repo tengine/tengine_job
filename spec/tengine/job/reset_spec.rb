@@ -143,8 +143,8 @@ describe "reset" do
       @root.element('/jn0006/jn1/jn11/finally'       ).phase_key.should == :initialized
       @root.element('/jn0006/jn1/jn11/finally/jn11_f').phase_key.should == :initialized
       @root.element('/jn0006/jn1/j12'                ).phase_key.should == :initialized
-      @root.element('/jn0006/jn1/finally'            ).phase_key.should == :success
-      @root.element('/jn0006/jn1/finally/jn1_f'      ).phase_key.should == :success
+      @root.element('/jn0006/jn1/finally'            ).phase_key.should == :initialized
+      @root.element('/jn0006/jn1/finally/jn1_f'      ).phase_key.should == :initialized
       @root.element('/jn0006/jn2'                    ).phase_key.should == :initialized
       @root.element('/jn0006/jn2/j21'                ).phase_key.should == :initialized
       @root.element('/jn0006/jn2/jn22'               ).phase_key.should == :initialized
@@ -160,7 +160,7 @@ describe "reset" do
       @root.element('/jn0006/jn1'             ).edges.map(&:phase_key).should == [:transmitted, :active, :active]
       @root.element('/jn0006/jn1/jn11'        ).edges.map(&:phase_key).should == [:active, :active, :active]
       @root.element('/jn0006/jn1/jn11/finally').edges.map(&:phase_key).should == [:active, :active]
-      @root.element('/jn0006/jn1/finally'     ).edges.map(&:phase_key).should == [:transmitted, :transmitted]
+      @root.element('/jn0006/jn1/finally'     ).edges.map(&:phase_key).should == [:active, :active]
       @root.element('/jn0006/jn2'             ).edges.map(&:phase_key).should == [:active, :active, :active]
       @root.element('/jn0006/jn2/jn22'        ).edges.map(&:phase_key).should == [:active, :active, :active]
       @root.element('/jn0006/jn2/jn22/finally').edges.map(&:phase_key).should == [:active, :active]
@@ -415,7 +415,7 @@ describe "reset" do
           @root.element('/jn0005/j1'               ).phase_key.should == :success
           @root.element('/jn0005/j2'               ).phase_key.should == :success
           @root.element('/jn0005/jn4'              ).phase_key.should == :success
-          @root.element('/jn0005/jn4/j41'          ).phase_key.should == :initialized
+          @root.element('/jn0005/jn4/j41'          ).phase_key.should == :ready
           @root.element('/jn0005/jn4/j42'          ).phase_key.should == :initialized
           @root.element('/jn0005/jn4/j43'          ).phase_key.should == :initialized
           @root.element('/jn0005/jn4/j44'          ).phase_key.should == :initialized
