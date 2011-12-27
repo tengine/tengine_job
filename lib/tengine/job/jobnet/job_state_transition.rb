@@ -107,7 +107,6 @@ module Tengine::Job::Jobnet::JobStateTransition
   available :job_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
 
   def job_fire_stop(signal)
-    self.stop_reason = signal.event[:stop_reason]
     signal.fire(self, :"stop.job.job.tengine", {
         :stop_reason => signal.event[:stop_reason],
         :target_jobnet_id => parent.id,
