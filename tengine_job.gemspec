@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.5.13"
+  s.version = "0.6.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
@@ -100,6 +100,7 @@ Gem::Specification.new do |s|
     "spec/tengine/job/category_spec.rb",
     "spec/tengine/job/connectable_spec.rb",
     "spec/tengine/job/drivers/job_controll_driver/connection_error_spec.rb",
+    "spec/tengine/job/drivers/job_controll_driver/duplicated_job_start_spec.rb",
     "spec/tengine/job/drivers/job_controll_driver/expansion_spec.rb",
     "spec/tengine/job/drivers/job_controll_driver_spec.rb",
     "spec/tengine/job/drivers/job_execution_driver_spec.rb",
@@ -154,7 +155,7 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<tengine_support>, ["~> 0.3.12"])
-      s.add_runtime_dependency(%q<tengine_core>, ["~> 0.5.7"])
+      s.add_runtime_dependency(%q<tengine_core>, ["~> 0.5.10"])
       s.add_runtime_dependency(%q<tengine_resource>, ["~> 0.5.4"])
       s.add_development_dependency(%q<rspec>, ["~> 2.6.0"])
       s.add_development_dependency(%q<factory_girl>, ["~> 2.1.2"])
@@ -165,7 +166,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<ZenTest>, ["~> 4.6.2"])
     else
       s.add_dependency(%q<tengine_support>, ["~> 0.3.12"])
-      s.add_dependency(%q<tengine_core>, ["~> 0.5.7"])
+      s.add_dependency(%q<tengine_core>, ["~> 0.5.10"])
       s.add_dependency(%q<tengine_resource>, ["~> 0.5.4"])
       s.add_dependency(%q<rspec>, ["~> 2.6.0"])
       s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
@@ -177,7 +178,7 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<tengine_support>, ["~> 0.3.12"])
-    s.add_dependency(%q<tengine_core>, ["~> 0.5.7"])
+    s.add_dependency(%q<tengine_core>, ["~> 0.5.10"])
     s.add_dependency(%q<tengine_resource>, ["~> 0.5.4"])
     s.add_dependency(%q<rspec>, ["~> 2.6.0"])
     s.add_dependency(%q<factory_girl>, ["~> 2.1.2"])
