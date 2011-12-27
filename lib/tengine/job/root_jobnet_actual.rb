@@ -38,10 +38,17 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
       unless result
         Tengine::Job.test_harness_hook("wait_to_acquire_lock")
         reload
+        acquire_lock(vertex)
       end
       result
     end
-    reload
+    if block_given?
+      reload
+      release_lock
+      update_with_lock(:skip_waiting => true) do
+        yield
+      end
+    end
   end
 
   def find_and_modify_lock

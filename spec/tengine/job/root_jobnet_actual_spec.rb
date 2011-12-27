@@ -224,6 +224,73 @@ describe Tengine::Job::RootJobnetActual do
       end
     end
 
+    context "ブロック付きの場合はちゃんと最後にロックを解放します" do
+      it do
+        j12 = @root.element("j12")
+        @root.element("j11").tap{|j| j.phase_key = :initialized}
+        @root.element("j12").tap{|j| j.phase_key = :initialized}
+        @root.version = 1
+        @root.save!
+
+        f1 = Fiber.new do
+          r = Tengine::Job::RootJobnetActual.find(@root.id)
+          r.wait_to_acquire_lock(r.element("j11")) do
+            Fiber.yield
+            j11 = r.element("j11")
+            j11.phase_key = :ready
+          end
+          :end
+        end
+
+        f2 = Fiber.new do
+          idx = 0
+          r = Tengine::Job::RootJobnetActual.find(@root.id)
+          r.wait_to_acquire_lock(r.element("j12")) do
+            j12 = r.element("j12")
+            j12.phase_key = :ready
+            Fiber.yield
+          end
+          :end
+        end
+
+        Tengine::Job.test_harness_clear
+
+        f1.resume.should_not == :end
+        @root.reload
+        @root.version.should == 2
+        @root.lock_key.should == "#{Process.pid.to_s}/#{@j11.id.to_s}"
+        @root.lock_timeout_key.should =~ /^#{Regexp.escape(@root.lock_key)}-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
+        @root.locking_vertex_id.should == @j11.id.to_s
+
+        Tengine::Job.should_receive(:test_harness).with(1, "wait_to_acquire_lock").once{ Fiber.yield }
+        f2.resume.should_not == :end
+        @root.reload
+        @root.version.should == 2
+        @root.lock_key.should == "#{Process.pid.to_s}/#{@j11.id.to_s}"
+
+        f1.resume.should == :end
+        @root.reload
+        @root.version.should == 3
+        @root.lock_key.should == ""
+        @root.lock_timeout_key.should == nil
+        @root.locking_vertex_id.should == nil
+
+        f2.resume.should_not == :end
+        @root.reload
+        @root.version.should == 4
+        @root.lock_key.should == "#{Process.pid.to_s}/#{j12.id.to_s}"
+        @root.lock_timeout_key.should =~ /^#{Regexp.escape(@root.lock_key)}-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
+        @root.locking_vertex_id.should == j12.id.to_s
+
+        f2.resume.should == :end
+        @root.reload
+        @root.version.should == 5
+        @root.lock_key.should == ""
+        @root.lock_timeout_key.should == nil
+        @root.locking_vertex_id.should == nil
+
+      end
+    end
   end
 
   describe :rerun do
