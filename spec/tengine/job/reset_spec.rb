@@ -346,4 +346,106 @@ describe "reset" do
     end
   end
 
+  context "ジョブネット内のジョブを起点にリセット" do
+    before do
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0005RetryTwoLayerFixture.new
+      @root = builder.create_actual
+      @ctx = builder.context
+    end
+
+    context "ルートジョブネットが正常終了した後に" do
+      before do
+        [:root, :jn0005, :j1, :jn4, :j2, :j4,
+         :j41, :j42, :j43, :j44, :jn4f, :jn4_f,
+         :finally, :jn0005_fjn, :jn0005_f, :jn0005_f1, :jn0005_f2,
+         :jn0005_fjn_f, :jn0005_fif].each{|j| @ctx[j].phase_key = :success}
+
+        (1..26).each{|idx| @ctx[:"e#{idx}"].phase_key = :transmitted}
+        @root.save!
+      end
+
+      it "j41を起点に再実行するとjn4内のVertexのみリセットされる" do
+        t1 = Time.now
+        event1 = mock(:event, :occurred_at => t1)
+        signal1 = Tengine::Job::Signal.new(event1)
+        j41 = @root.element('/jn0005/jn4/j41')
+        execution = Tengine::Job::Execution.create!({
+          :target_actual_ids => [j41.id.to_s],
+          :retry => true, :spot => false,
+          :root_jobnet_id => @root.id
+        })
+        execution.stub(:root_jobnet).and_return(@root)
+        event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
+        @root.update_with_lock{ execution.transmit(signal1) }
+        @root.save!
+        execution.save!
+        execution.reload
+        @root.reload
+
+        (10..18).each{|idx| @ctx[:"e#{idx}"].phase_key.should == :active}
+        (19..26).each{|idx| @ctx[:"e#{idx}"].phase_key.should == :transmitted}
+        (1..9).each{|idx| @ctx[:"e#{idx}"].phase_key.should == :transmitted}
+        @root.element('/jn0005/j1'               ).phase_key.should == :success
+        @root.element('/jn0005/j2'               ).phase_key.should == :success
+        @root.element('/jn0005/jn4'              ).phase_key.should == :success
+        @root.element('/jn0005/jn4/j41'          ).phase_key.should == :initialized
+        @root.element('/jn0005/jn4/j42'          ).phase_key.should == :initialized
+        @root.element('/jn0005/jn4/j43'          ).phase_key.should == :initialized
+        @root.element('/jn0005/jn4/j44'          ).phase_key.should == :initialized
+        @root.element('/jn0005/jn4/finally'      ).phase_key.should == :initialized
+        @root.element('/jn0005/jn4/finally/jn4_f').phase_key.should == :initialized
+        @root.element('/jn0005/j4'               ).phase_key.should == :success
+        @root.element('/jn0005/finally'                              ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn'                   ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn/jn0005_f1'         ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn/jn0005_f2'         ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_f'                     ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn/finally'           ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn/finally/jn0005_fif').phase_key.should == :success
+      end
+
+      it "finally内のジョブjn0005_fifを起点に再実行すると/jn0005/finally/jn0005_fjn/finally内のVertexのみリセットされる" do
+        t1 = Time.now
+        event1 = mock(:event, :occurred_at => t1)
+        signal1 = Tengine::Job::Signal.new(event1)
+        jn0005_fif = @root.element('/jn0005/finally/jn0005_fjn/finally/jn0005_fif')
+        execution = Tengine::Job::Execution.create!({
+          :target_actual_ids => [jn0005_fif.id.to_s],
+          :retry => true, :spot => false,
+          :root_jobnet_id => @root.id
+        })
+        execution.stub(:root_jobnet).and_return(@root)
+        event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
+        @root.update_with_lock{ execution.transmit(signal1) }
+        @root.save!
+        execution.save!
+        execution.reload
+        @root.reload
+
+        @ctx[:e26].phase_key.should == :active
+        @ctx[:e20].phase_key.should == :transmitted
+        @ctx[:e21].phase_key.should == :transmitted
+        (22..25).each{|idx| @ctx[:"e#{idx}"].phase_key.should == :transmitted}
+        (1..19).each{|idx| @ctx[:"e#{idx}"].phase_key.should == :transmitted}
+        @root.element('/jn0005/j1'               ).phase_key.should == :success
+        @root.element('/jn0005/j2'               ).phase_key.should == :success
+        @root.element('/jn0005/jn4'              ).phase_key.should == :success
+        @root.element('/jn0005/jn4/j41'          ).phase_key.should == :success
+        @root.element('/jn0005/jn4/j42'          ).phase_key.should == :success
+        @root.element('/jn0005/jn4/j43'          ).phase_key.should == :success
+        @root.element('/jn0005/jn4/j44'          ).phase_key.should == :success
+        @root.element('/jn0005/jn4/finally'      ).phase_key.should == :success
+        @root.element('/jn0005/jn4/finally/jn4_f').phase_key.should == :success
+        @root.element('/jn0005/j4'               ).phase_key.should == :success
+        @root.element('/jn0005/finally'                              ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn'                   ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn/jn0005_f1'         ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn/jn0005_f2'         ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_f'                     ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn/finally'           ).phase_key.should == :success
+        @root.element('/jn0005/finally/jn0005_fjn/finally/jn0005_fif').phase_key.should == :ready
+      end
+    end
+  end
 end
