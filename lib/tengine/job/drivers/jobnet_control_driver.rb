@@ -111,7 +111,7 @@ driver :jobnet_control_driver do
       target_jobnet = root_jobnet.find_descendant(event[:target_jobnet_id]) || root_jobnet
       target_jobnet.stop(signal)
     end
-    signal.reservations.each{|r| fire(*r.fire_args)}
+    signal.reservations.each{|r| fire(*r.fire_args) }
   end
 
 end

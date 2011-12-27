@@ -266,6 +266,105 @@ describe 'job_control_driver' do
       end
     end
 
+    it "強制停止(ジョブネット)" do
+      @pid11 = "11"
+      @pid12 = "12"
+      @jobnet.reload
+      j11 = @jobnet.find_descendant_by_name_path("/rjn0001/j11")
+      j11.executing_pid = @pid11
+      j11.phase_key = :success
+      j11.previous_edges.length.should == 1
+      j11.previous_edges.first.phase_key = :transmitted
+      j12 = @jobnet.find_descendant_by_name_path("/rjn0001/j12")
+      j12.executing_pid = @pid12
+      j12.phase_key = :running
+      j12.previous_edges.length.should == 1
+      j12.previous_edges.first.phase_key = :transmitted
+      @ctx[:root].save!
+
+      # phase_key が success の j11 は fireされない
+      tengine.should_not_fire(:"stop.job.job.tengine")
+      # phase_key が running の j12 は fireされる
+      tengine.should_fire(:"stop.job.job.tengine",
+        :source_name => @ctx[:j12].name_as_resource,
+        :properties => {
+          :stop_reason => "user_stop",
+          :target_jobnet_id => @jobnet.id.to_s,
+          :target_jobnet_name_path => "/rjn0001",
+          :target_job_id => @ctx[:j12].id.to_s,
+          :target_job_name_path => "/rjn0001/j12",
+          :execution_id => @execution.id.to_s,
+          :root_jobnet_id => @jobnet.id.to_s,
+          :root_jobnet_name_path => "/rjn0001",
+        })
+      # jobnet に対して強制停止された
+      tengine.receive(:"stop.jobnet.job.tengine",
+        :source_name => @jobnet.name_as_resource,
+        :properties => {
+          :stop_reason => "user_stop",
+          :target_jobnet_id => @jobnet.id.to_s,
+          :target_jobnet_name_path => "/rjn0001",
+          :execution_id => @execution.id.to_s,
+          :root_jobnet_id => @jobnet.id.to_s,
+          :root_jobnet_name_path => "/rjn0001",
+        })
+    end
+
+    it "強制停止(後続のジョブ)" do
+      @pid11 = "11"
+      @pid12 = "12"
+      @jobnet.reload
+      j11 = @jobnet.find_descendant_by_name_path("/rjn0001/j11")
+      j11.executing_pid = @pid11
+      j11.phase_key = :success
+      j11.previous_edges.length.should == 1
+      j11.previous_edges.first.phase_key = :transmitted
+      j12 = @jobnet.find_descendant_by_name_path("/rjn0001/j12")
+      j12.executing_pid = @pid12
+      j12.phase_key = :running
+      j12.previous_edges.length.should == 1
+      j12.previous_edges.first.phase_key = :transmitted
+      @ctx[:root].save!
+
+      mock_ssh = mock(:ssh)
+      mock_channel = mock(:channel)
+      Net::SSH.should_receive(:start).
+        with("localhost", an_instance_of(Tengine::Resource::Credential), an_instance_of(Hash)).and_yield(mock_ssh)
+      mock_ssh.should_receive(:open_channel).and_yield(mock_channel)
+      mock_channel.should_receive(:exec) do |*args|
+        interval = Tengine::Job::Killing::DEFAULT_KILLING_SIGNAL_INTERVAL
+        args.length.should == 1
+        args.first.should =~ %r<source \/etc\/profile>
+        args.first.should =~ %r<tengine_job_agent_kill #{@pid12} #{interval} KILL$>
+      end
+
+      # job12 に対して強制停止
+      tengine.receive(:"stop.job.job.tengine",
+        :source_name => @ctx[:j12].name_as_resource,
+        :properties => {
+          :stop_reason => "user_stop",
+          :target_jobnet_id => @jobnet.id.to_s,
+          :target_jobnet_name_path => "/rjn0001",
+          :target_job_id => @ctx[:j12].id.to_s,
+          :target_job_name_path => "/rjn0001/j12",
+          :execution_id => @execution.id.to_s,
+          :root_jobnet_id => @jobnet.id.to_s,
+          :root_jobnet_name_path => "/rjn0001",
+        })
+      @jobnet.reload
+      @ctx.edge(:e1).phase_key.should == :transmitted
+      @ctx.edge(:e2).phase_key.should == :transmitted
+      @ctx.edge(:e3).phase_key.should == :active
+      @ctx.vertex(:j11).tap do |j|
+        j.phase_key.should == :success
+        j.stop_reason.should == nil
+      end
+      @ctx.vertex(:j12).tap do |j|
+        j.phase_key.should == :dying
+        j.stop_reason.should == "user_stop"
+      end
+    end
+
 
     if ENV['PASSWORD']
     context "実際にSSHで接続", :ssh_actual => true do
