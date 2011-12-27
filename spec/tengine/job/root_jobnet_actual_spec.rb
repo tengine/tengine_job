@@ -217,6 +217,7 @@ describe Tengine::Job::RootJobnetActual do
         @root.reload
         @root.version.should == 2
 
+        Tengine::Job.should_receive(:test_harness).with(11, "after acquire_lock in wait_to_acquire_lock").once
         f1.resume.should == :end # 後者がロックを取得する
 
         @root.reload
@@ -310,6 +311,7 @@ describe Tengine::Job::RootJobnetActual do
 
         Tengine::Job.test_harness_clear
 
+        Tengine::Job.should_receive(:test_harness).with(1, "after acquire_lock in wait_to_acquire_lock").once
         f1.resume.should_not == :end
         @root.reload
         @root.version.should == 2
@@ -317,7 +319,7 @@ describe Tengine::Job::RootJobnetActual do
         @root.lock_timeout_key.should =~ /^#{Regexp.escape(@root.lock_key)}-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
         @root.locking_vertex_id.should == @j11.id.to_s
 
-        Tengine::Job.should_receive(:test_harness).with(1, "wait_to_acquire_lock").once{ Fiber.yield }
+        Tengine::Job.should_receive(:test_harness).with(2, "wait_to_acquire_lock").once{ Fiber.yield }
         f2.resume.should_not == :end
         @root.reload
         @root.version.should == 2
@@ -330,6 +332,7 @@ describe Tengine::Job::RootJobnetActual do
         @root.lock_timeout_key.should == nil
         @root.locking_vertex_id.should == nil
 
+        Tengine::Job.should_receive(:test_harness).with(3, "after acquire_lock in wait_to_acquire_lock").once
         f2.resume.should_not == :end
         @root.reload
         @root.version.should == 4
