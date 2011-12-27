@@ -130,9 +130,9 @@ describe "reset" do
       @root.element('/jn0006/jn2/jn22'        ).phase_key.should == :initialized
       @root.element('/jn0006/jn2/jn22/finally').phase_key.should == :initialized
       @root.element('/jn0006/jn2/finally'     ).phase_key.should == :initialized
-      @root.element('/jn0006/finally'         ).phase_key.should == :initialized
+      @root.element('/jn0006/finally'         ).phase_key.should == :success
 
-      @root.edges.map(&:phase_key).should == [:transmitted, :active, :active]
+      @root.edges.map(&:phase_key).should == [:transmitted, :closed, :closed]
       @root.element('/jn0006/jn1'             ).edges.map(&:phase_key).should == [:transmitted, :active, :active]
       @root.element('/jn0006/jn1/jn11'        ).edges.map(&:phase_key).should == [:active, :active, :active]
       @root.element('/jn0006/jn1/jn11/finally').edges.map(&:phase_key).should == [:active, :active]
@@ -141,7 +141,7 @@ describe "reset" do
       @root.element('/jn0006/jn2/jn22'        ).edges.map(&:phase_key).should == [:active, :active, :active]
       @root.element('/jn0006/jn2/jn22/finally').edges.map(&:phase_key).should == [:active, :active]
       @root.element('/jn0006/jn2/finally'     ).edges.map(&:phase_key).should == [:active, :active]
-      @root.element('/jn0006/finally'         ).edges.map(&:phase_key).should == [:active, :active]
+      @root.element('/jn0006/finally'         ).edges.map(&:phase_key).should == [:transmitted, :transmitted]
     end
   end
 
