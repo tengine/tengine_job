@@ -145,7 +145,7 @@ module Tengine::Job::Jobnet::JobStateTransition
 
   def job_reset(signal, &block)
     self.phase_key = :initialized
-    unless (signal.execution.spot && (signal.execution.target_actual_ids || []).map(&:to_s).include?(self.id.to_s))
+    if signal.execution.in_scope?(self)
       next_edges.first.reset(signal)
     end
   end
