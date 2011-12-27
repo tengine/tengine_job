@@ -279,4 +279,71 @@ describe "reset" do
 
   end
 
+  context "@4034 [bug]initializedのジョブネット内のジョブを起点として再実行すると、起点となるジョブの後続ジョブがactivateされた際に親のジョブネットにackを返してしまいTengine::Job::Executable::PhaseError" do
+    before do
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0005RetryTwoLayerFixture.new
+      @root = builder.create_actual
+      @ctx = builder.context
+    end
+
+    context "/jn0005/jn4/j41を起点として再実行" do
+      before do
+        @execution = Tengine::Job::Execution.create!({
+          :retry => true, :spot => false,
+          :root_jobnet_id => @root.id,
+          :target_actual_ids => [@ctx[:j41].id.to_s]
+        })
+        @execution.stub(:root_jobnet).and_return(@root)
+
+        [:root, :jn0005, :j1, :j41].each{|j| @ctx[j].phase_key = :error }
+        [:jn4, :j2, :j4,
+         :j42, :j43, :j44, :jn4f, :jn4_f].each{|j| @ctx[j].phase_key = :initialized }
+
+        [:finally, :jn0005_fjn, :jn0005_f, :jn0005_f1, :jn0005_f2,
+         :jn0005_fjn_f, :jn0005_fif].each{|j| @ctx[j].phase_key = :success}
+
+        @ctx[:e1].phase_key = :transmitted
+        (2..9).each{|idx| @ctx[:"e#{idx}"].phase_key = :closed}
+        (10..18).each{|idx| @ctx[:"e#{idx}"].phase_key = :active}
+        (19..26).each{|idx| @ctx[:"e#{idx}"].phase_key = :transmitted}
+        @root.save!
+      end
+
+      it "j41の後続のジョブがactivateされる" do
+        t1 = Time.now
+        event1 = mock(:"success.job.job.tengine")
+        event1.stub(:occurred_at).and_return(t1)
+        signal1 = Tengine::Job::Signal.new(event1)
+        signal1.stub(:execution).and_return(@execution)
+        next_of_j41 = @root.element("next!/jn0005/jn4/j41")
+        @root.update_with_lock do
+          next_of_j41.transmit(signal1)
+        end
+        signal1.reservations.length.should == 2
+        signal1.reservations.map(&:event_type_name).should == [:"start.job.job.tengine", :"start.job.job.tengine"]
+
+        @root.reload
+        @root.element("/jn0005/jn4/j42").tap{|j| j.phase_key.should == :ready }
+        @root.element("/jn0005/jn4/j43").tap{|j| j.phase_key.should == :ready }
+        @root.element("next!/jn0005/jn4/j41").phase_key.should == :transmitted
+        @root.element("prev!/jn0005/jn4/j42").phase_key.should == :transmitting
+        @root.element("prev!/jn0005/jn4/j43").phase_key.should == :transmitting
+
+        t2 = Time.now
+        event2 = mock(:"start.job.job.tengine")
+        event2.stub(:occurred_at).and_return(t2)
+        signal2 = Tengine::Job::Signal.new(event2)
+        signal2.stub(:execution).and_return(@execution)
+        j42 = @root.element("/jn0005/jn4/j42")
+        @root.update_with_lock do
+          j42.activate(signal2)
+        end
+        @root.reload
+        @root.element("/jn0005/jn4/j42").tap{|j| j.phase_key.should == :starting }
+        @root.element("/jn0005/jn4"    ).tap{|j| j.phase_key.should == :initialized }
+      end
+    end
+  end
+
 end
