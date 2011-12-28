@@ -35,7 +35,7 @@ module Tengine::Job::Jobnet::JobStateTransition
       if execution.retry
         if execution.target_actual_ids.include?(self.id.to_s)
           execution.ack(signal)
-        elsif execution.target_actuals.map{|t| t.parent.id.to_s if t.parent }
+        elsif execution.target_actuals.map{|t| t.parent.id.to_s if t.parent }.include?(self.parent.id.to_s)
           # 自身とTengine::Job::Execution#target_actual_idsに含まれるジョブ／ジョブネットと親が同じならば、ackしない
         else
           parent.ack(signal)
