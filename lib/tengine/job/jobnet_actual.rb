@@ -11,6 +11,10 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
 
   field :was_expansion, :type => Boolean # テンプレートがTenigne::Job::Expansionであった場合にtrueです。
 
+  # was_expansionがtrueなら元々のtemplateへの参照が必要なのでRootJobnetActualだけでなく
+  # JobnetActualでもtemplateが必要です。
+  belongs_to :template, :inverse_of => :root_jobnet_actuals, :index => true, :class_name => "Tengine::Job::RootJobnetTemplate"
+
   # https://cacoo.com/diagrams/hdLgrzYsTBBpV3Wj#D26C1
   STATE_TRANSITION_METHODS = [:transmit, :activate, :ack, :finish, :succeed, :fail, :fire_stop, :stop, :reset].freeze
   STATE_TRANSITION_METHODS.each do |method_name|
@@ -21,6 +25,11 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
           jobnet_#{method_name}(signal, &block)
       end
     END_OF_METHOD
+  end
+
+  def root_or_expansion
+    p = parent
+    p.nil? ? self : p.was_expansion ? p : p.root_or_expansion
   end
 
 end

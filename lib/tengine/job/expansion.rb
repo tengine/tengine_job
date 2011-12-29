@@ -19,6 +19,9 @@ class Tengine::Job::Expansion < Tengine::Job::Job
   def generating_attrs
     result = super
     attrs = root_jobnet_template.attributes.dup
+    if template = root_jobnet_template
+      attrs[:template_id] = template.id
+    end
     attrs.delete_if{|attr, value| IGNORED_FIELD_NAMES.include?(attr)}
     result.update(attrs)
     result
