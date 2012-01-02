@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.6.1"
+  s.version = "0.6.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
-  s.date = "2011-12-27"
+  s.date = "2012-1-2"
   s.description = "tengine_job provides jobnet management"
   s.email = "tengine@nautilus-technologies.com"
   s.extra_rdoc_files = [
