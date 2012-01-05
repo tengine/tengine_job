@@ -43,10 +43,6 @@ module Tengine::Job::ScriptExecutable
         channel.exec(cmd.force_encoding("binary")) do |ch, success|
           raise Error, "could not execute command" unless success
 
-          channel.on_close do |ch|
-            # puts "channel is closing!"
-          end
-
           channel.on_data do |ch, data|
             Tengine.logger.debug("got stdout: #{data}")
             yield(ch, data) if block_given?
@@ -58,6 +54,9 @@ module Tengine::Job::ScriptExecutable
             raise Error, "Failure to execute #{self.name_path} via SSH: #{data}"
           end
 
+          channel.on_close do |ch|
+            # puts "channel is closing!"
+          end
         end
       end
 
