@@ -48,13 +48,12 @@ describe Tengine::Job::RootJobnetActual do
       @ctx = builder.context
     end
 
-    it "lockされているとupdate_with_lockに渡された処理は動かない" do
-      j11 = @root.element("j11")
-      @root.acquire_lock(j11)
-      @root.version = 1
+    it "phase_lockされているとupdate_with_lockに渡された処理は動かない" do
+      @root.acquire_phase_lock
+      @root.lock_version = 1
       @root.save!
       @root.reload
-      @root.version.should == 1
+      @root.lock_version.should == 2
 
       f1_updated = false
       f1 = Fiber.new do
@@ -65,20 +64,20 @@ describe Tengine::Job::RootJobnetActual do
       end
 
       Tengine::Job.test_harness_clear
-      Tengine::Job.should_receive(:test_harness).with(1, "waiting_for_lock_released")
+      Tengine::Job.should_receive(:test_harness).with(1, "waiting_for_phase_lock_released")
 
       f1.resume
       f1_updated.should == false
 
       r = Tengine::Job::RootJobnetActual.find(@root.id)
-      r.release_lock
-      r.version = 2
+      r.release_phase_lock
+      r.lock_version = 3
       r.save!
 
       f1.resume.should == :end
       f1_updated.should == true
       @root.reload
-      @root.version.should == 3
+      @root.lock_version.should == 4
     end
 
   end
