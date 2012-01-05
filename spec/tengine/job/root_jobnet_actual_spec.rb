@@ -65,7 +65,7 @@ describe Tengine::Job::RootJobnetActual do
       end
 
       Tengine::Job.test_harness_clear
-      Tengine::Job.should_receive(:test_harness).with(1, "waiting_for_lock_released"){ Fiber.yield }
+      Tengine::Job.should_receive(:test_harness).with(1, "waiting_for_lock_released")
 
       f1.resume
       f1_updated.should == false
