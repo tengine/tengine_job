@@ -25,8 +25,13 @@ module Tengine::Job::ScriptExecutable
     # puts "cmd:\n" << cmd
     execute(cmd) do |ch, data|
       if signal = execution.signal
-        signal.data = {:executing_pid => data.strip}
-        ack(signal)
+        # signal.data = {:executing_pid => data.strip}
+        # ack(signal)
+        pid = data.strip
+        signal.callback = lambda do
+          signal.data = {:executing_pid => pid}
+          ack(signal)
+        end
       end
     end
   end

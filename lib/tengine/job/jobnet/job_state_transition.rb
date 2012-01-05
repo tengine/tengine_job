@@ -53,7 +53,9 @@ module Tengine::Job::Jobnet::JobStateTransition
       begin
         run(execution)
       rescue Tengine::Job::ScriptExecutable::Error => e
-        job_fail(signal, :message => e.message)
+        signal.callback = lambda do
+          job_fail(signal, :message => e.message)
+        end
       end
     end
   end
