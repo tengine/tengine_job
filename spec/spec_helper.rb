@@ -42,8 +42,6 @@ Tengine::Core.stderr_logger = Tengine.logger
 
 Tengine::Core::Kernel.event_exception_reporter = :raise_all
 
-Mongoid.logger = Tengine.logger
-
 RSpec.configure do |config|
   config.include Factory::Syntax::Methods
 

@@ -50,28 +50,6 @@ describe Tengine::Job::RootJobnetActual do
     end
 
     context "基本" do
-      it "lockされていなければ処理はそのまま実行される" do
-        @root.release_lock
-        @root.version = 1
-        @root.save!
-        @root.reload
-        @root.version.should == 1
-
-        f1_updated = false
-        f1 = Fiber.new do
-          @root.update_with_lock do
-            f1_updated = true
-          end
-          :end
-        end
-
-        Tengine::Job.test_harness_clear
-        Tengine::Job.stub(:test_harness).with(an_instance_of(Integer), "waiting_for_lock_released"){ Fiber.yield }
-
-        f1.resume.should == :end
-        f1_updated.should == true
-      end
-
       it "lockされているとupdate_with_lockに渡された処理は動かない" do
         @root.acquire_lock(@j11)
         @root.version = 1
@@ -103,58 +81,8 @@ describe Tengine::Job::RootJobnetActual do
         @root.reload
         @root.version.should == 3
       end
-
-      it "lockされていない状態でupdate_with_lockが実行されたが、ブロックの実行が終わる前にロックされた" do
-        @root.release_lock
-        @root.version = 1
-        @root.save!
-        @root.reload
-        @root.version.should == 1
-
-        f1_block_called_count = 0
-        f1 = Fiber.new do
-          r = Tengine::Job::RootJobnetActual.find(@root.id)
-          r.update_with_lock do
-            f1_block_called_count += 1
-            if f1_block_called_count == 1
-              Fiber.yield
-            end
-          end
-          :end
-        end
-
-        Tengine::Job.test_harness_clear
-
-        f1.resume # 上記のFiber.yieldでとまるはず
-        f1_block_called_count.should == 1
-        @root.reload
-        @root.version.should == 1
-
-        @root.acquire_lock(@j11)
-        @root.version = 2
-        @root.save!
-
-        10.times do |idx|
-          Tengine::Job.should_receive(:test_harness).with(idx + 1, "waiting_for_lock_released").once{ Fiber.yield }
-          # resumeすると、version違いでリトライされるが、
-          # リトライ時に、lockされているかどうかのチェックを行うので、lockが解放されるまで進まない
-          f1.resume.should_not == :end
-          f1_block_called_count.should == 1
-          @root.reload
-          @root.version.should == 2
-        end
-
-        @root.release_lock
-        @root.version = 3
-        @root.save!
-
-        f1.resume.should == :end
-        @root.reload
-        @root.version.should == 4
-        f1_block_called_count.should == 2
-      end
-
     end
+
   end
 
   describe :rerun do
