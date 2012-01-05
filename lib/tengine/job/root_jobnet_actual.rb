@@ -41,7 +41,6 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
       end
       result
     end
-    Tengine::Job.test_harness_hook("after acquire_lock in wait_to_acquire_lock")
     if block_given?
       reload
       release_lock
