@@ -137,7 +137,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
     #  B-1.2.
     #  B-2.
 
-    before do
+    it "tengine1が起動したプロセスのPIDを得る前にtengine2がプロセスを起動することはできない" do
       @ctx[:e1].phase_key = :transmitted
       @ctx[:e2].phase_key = :transmitting
       @ctx[:e3].phase_key = :transmitting
@@ -147,9 +147,9 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.version = 1
       @root.save!
 
-      @pid1 = "111"
-      @f1 = Fiber.new do
-        Process.stub(:pid).and_return(@pid1)
+      pid1 = "111"
+      f1 = Fiber.new do
+        Process.stub(:pid).and_return(pid1)
         ssh1 = mock(:ssh1)
         Net::SSH.stub(:start).with(any_args).and_yield(ssh1)
         channel1 = mock(:channel1)
@@ -159,7 +159,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
           Tengine.logger.debug( ("!" * 100) << "\non_close: Fiber.yield #{Process.pid} #{__FILE__}##{__LINE__}")
           Fiber.yield
         end # on_dataが呼び出される前に止める
-        channel1.should_receive(:on_data).and_yield(channel1, @pid1)
+        channel1.should_receive(:on_data).and_yield(channel1, pid1)
         channel1.stub(:on_extended_data)
         @tengine1.receive("start.job.job.tengine", :properties => {
             :target_job_id => @ctx.vertex(:j11).id.to_s,
@@ -167,9 +167,9 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
           }.update(@base_props))
       end
 
-      @pid2 = "222"
-      @f2 = Fiber.new do
-        Process.stub(:pid).and_return(@pid2)
+      pid2 = "222"
+      f2 = Fiber.new do
+        Process.stub(:pid).and_return(pid2)
         ssh2 = mock(:ssh2)
         Net::SSH.stub(:start).with(any_args).and_yield(ssh2)
         channel2 = mock(:channel2)
@@ -179,7 +179,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
           Tengine.logger.debug( ("!" * 100) << "\non_close: Fiber.yield #{Process.pid} #{__FILE__}##{__LINE__}")
           Fiber.yield
         end # on_dataが呼び出される前に止める
-        channel2.should_receive(:on_data).and_yield(channel2, @pid2)
+        channel2.should_receive(:on_data).and_yield(channel2, pid2)
         channel2.stub(:on_extended_data)
         @tengine2.receive("start.job.job.tengine", :properties => {
             :target_job_id => @ctx.vertex(:j12).id.to_s,
@@ -187,8 +187,8 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
           }.update(@base_props))
       end
 
-      @j11 = @root.element("j11")
-      @j12 = @root.element("j12")
+      j11 = @root.element("j11")
+      j12 = @root.element("j12")
 
       @root.reload
       @root.version.should == 1
@@ -197,13 +197,10 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.lock_timeout_key.should be_nil
 
       Tengine::Job.test_harness_clear
-    end
-
-    it "tengine1が起動したプロセスのPIDを得る前にtengine2がプロセスを起動することはできない" do
 
       Tengine::Job.should_receive(:test_harness).with(1, "before callback in start.job.job.tengine").once{ Fiber.yield }
 
-      @f1.resume # j11がreadyからstartingへ遷移する。SSH接続を開始する前。
+      f1.resume # j11がreadyからstartingへ遷移する。SSH接続を開始する前。
       @root.reload
       @root.version.should == 2 # start.job.job.tengineの最初のupdate_with_lock+1。
       @root.lock_key.should == ""
@@ -212,61 +209,61 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :ready
 
-      @f1.resume # SSH接続を開始する。PIDはまだ取得していない。
+      f1.resume # SSH接続を開始する。PIDはまだ取得していない。
       @root.reload
       @root.version.should == 3 # wait_to_acquire_lockの最初のlock_keyの取得で+1。
-      @root.lock_key.should == "#{@pid1}/#{@j11.id.to_s}"
-      @root.locking_vertex_id.should == @j11.id.to_s
+      @root.lock_key.should == "#{pid1}/#{j11.id.to_s}"
+      @root.locking_vertex_id.should == j11.id.to_s
       @root.lock_timeout_key.should_not be_nil
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :ready
 
       Tengine::Job.should_receive(:test_harness).with(2, "waiting_for_lock_released").once{ Fiber.yield }
-      @f2.resume # j12がreadyからstartingへ遷移しようとする。j11がstartingになるのでSSH接続を開始できない。
+      f2.resume # j12がreadyからstartingへ遷移しようとする。j11がstartingになるのでSSH接続を開始できない。
       @root.reload
       @root.version.should == 3
-      @root.lock_key.should == "#{@pid1}/#{@j11.id.to_s}"
-      @root.locking_vertex_id.should == @j11.id.to_s
+      @root.lock_key.should == "#{pid1}/#{j11.id.to_s}"
+      @root.locking_vertex_id.should == j11.id.to_s
       @root.lock_timeout_key.should_not be_nil
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :ready
 
-      @f1.resume # wait_to_acquire_lockのブロックが終了して、j11がstartingからrunningへ遷移する。PIDを取得済み
+      f1.resume # wait_to_acquire_lockのブロックが終了して、j11がstartingからrunningへ遷移する。PIDを取得済み
       @root.reload
       @root.version.should == 4
       @root.lock_key.should == ""
       @root.locking_vertex_id.should be_nil
       @root.lock_timeout_key.should be_nil
-      @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid1 }
+      @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == pid1 }
       @root.element("j12").tap{|j| j.phase_key.should == :ready }
 
       Tengine::Job.should_receive(:test_harness).with(3, "before callback in start.job.job.tengine").once{ Fiber.yield }
-      @f2.resume # j12についてのstart.job.job.tengineの最初のupdate_with_lock+1。readyからstartingへ遷移する。まだSSH接続を開始していない
+      f2.resume # j12についてのstart.job.job.tengineの最初のupdate_with_lock+1。readyからstartingへ遷移する。まだSSH接続を開始していない
       @root.reload
       @root.version.should == 5
       @root.lock_key.should == ""
       @root.locking_vertex_id.should == nil
       @root.lock_timeout_key.should be_nil
-      @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid1 }
+      @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == pid1 }
       @root.element("j12").tap{|j| j.phase_key.should == :starting }
 
-      @f2.resume # j12のSSH接続を開始する。PIDはまだ取得していない
+      f2.resume # j12のSSH接続を開始する。PIDはまだ取得していない
       @root.reload
       @root.version.should == 6
-      @root.lock_key.should == "#{@pid2}/#{@j12.id.to_s}"
-      @root.locking_vertex_id.should == @j12.id.to_s
+      @root.lock_key.should == "#{pid2}/#{j12.id.to_s}"
+      @root.locking_vertex_id.should == j12.id.to_s
       @root.lock_timeout_key.should_not be_nil
-      @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid1 }
+      @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == pid1 }
       @root.element("j12").tap{|j| j.phase_key.should == :starting }
 
-      @f2.resume # j12がstartingからrunningへ遷移する。PIDを取得済み
+      f2.resume # j12がstartingからrunningへ遷移する。PIDを取得済み
       @root.reload
       @root.version.should == 7
       @root.lock_key.should == ""
       @root.locking_vertex_id.should be_nil
       @root.lock_timeout_key.should be_nil
-      @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid1 }
-      @root.element("j12").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid2 }
+      @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == pid1 }
+      @root.element("j12").tap{|j| j.phase_key.should == :running; j.executing_pid.should == pid2 }
     end
   end
 end
