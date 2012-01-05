@@ -8,7 +8,6 @@ driver :job_execution_driver do
     execution = signal.execution
     root_jobnet = execution.root_jobnet
     root_jobnet.update_with_lock do
-      signal.reset
       execution.transmit(signal)
     end
     execution.save!
@@ -20,7 +19,6 @@ driver :job_execution_driver do
     execution = signal.execution
     root_jobnet = execution.root_jobnet
     root_jobnet.update_with_lock do
-      signal.reset
       execution.stop(signal)
     end
     execution.save!

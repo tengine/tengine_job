@@ -20,15 +20,10 @@ class Tengine::Job::Signal
   attr_accessor :callback
 
   def initialize(event)
-    @event = event
-    reset
-  end
-
-  def reset
     @paths = []
     @reservations = []
+    @event = event
     @data = nil
-    @callback = nil
   end
 
   def execution
