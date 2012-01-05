@@ -104,7 +104,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
     #  f2-2.2.
     #  f2-2.3.
     #
-    # パターン2 (f1-2.1. の前にf2が動き出す)
+    # パターン2 (f1-2.1. のにf2が動き出す)
     #  f1-1.1.
     #  f1-1.2.
     #  f2-1.1.
@@ -116,7 +116,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
     #  f2-1.2. 3rd
     #  f2-2.
     #
-    # パターン3 (f1-2.2. の前にf2が動き出す)
+    # パターン3 (f1-2.2. のにf2が動き出す)
     #  f1-1.1.
     #  f1-1.2.
     #  f1-2.1.
@@ -128,7 +128,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
     #  f2-1.2.
     #  f2-2.
     #
-    # パターン4 (f1-2.3. の前にf2が動き出す)
+    # パターン4 (f1-2.3. のにf2が動き出す)
     #  f1-1.1.
     #  f1-1.2.
     #  f1-2.1.
@@ -202,6 +202,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
     end
 
     it "パターン1" do
+Tengine.logger.debug "#{__FILE__}##{__LINE__}" << ("*" * 100)
       # f1-1.1.
       # f1-1.2.
       Tengine::Job.should_receive(:test_harness).with(1, "before callback in start.job.job.tengine").once{ Fiber.yield }
@@ -214,6 +215,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :ready
 
+Tengine.logger.debug "#{__FILE__}##{__LINE__}" << ("*" * 100)
       # f2-1.1.
       # f2-1.2.
       Tengine::Job.should_receive(:test_harness).with(2, "before callback in start.job.job.tengine").once{ Fiber.yield }
@@ -226,12 +228,14 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :starting
 
+Tengine.logger.debug "#{__FILE__}##{__LINE__}" << ("*" * 100)
       # f1-2.1.
       Tengine::Job.should_receive(:test_harness).with(3, "wait_to_acquire_lock").once{ Fiber.yield }
       @f1.resume.should_not == :end # ロックを取得しようとするが、f1上でのルートが保持しているバージョンが2なので、失敗する
       @root.reload
       @root.version.should == 3
 
+Tengine.logger.debug "#{__FILE__}##{__LINE__}" << ("*" * 100)
       # f1-2.1.
       @f1.resume.should_not == :end # ロックを取得する
       @root.reload
@@ -242,6 +246,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :starting
 
+Tengine.logger.debug "#{__FILE__}##{__LINE__}" << ("*" * 100)
       # f2-2.1. 1st
       Tengine::Job.should_receive(:test_harness).with(4, "wait_to_acquire_lock").once{ Fiber.yield }
       @f2.resume.should_not == :end # ロックを取得しようとする
@@ -253,6 +258,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :starting
 
+Tengine.logger.debug "#{__FILE__}##{__LINE__}" << ("*" * 100)
       # f1-2.3.
       @f1.resume.should == :end # wait_to_acquire_lockのブロックが終了して、j11がstartingからrunningへ遷移する。PIDを取得済み
       @root.reload
@@ -263,6 +269,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid }
       @root.element("j12").tap{|j| j.phase_key.should == :starting }
 
+Tengine.logger.debug "#{__FILE__}##{__LINE__}" << ("*" * 100)
       # f2-2.1. 2nd
       # f2-2.2.
       @f2.resume.should_not == :end # j12のSSH接続を開始する。PIDはまだ取得していない
@@ -274,6 +281,7 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid }
       @root.element("j12").tap{|j| j.phase_key.should == :starting }
 
+Tengine.logger.debug "#{__FILE__}##{__LINE__}" << ("*" * 100)
       # f2-2.3.
       @f2.resume.should == :end # j12がstartingからrunningへ遷移する。PIDを取得済み
       @root.reload
