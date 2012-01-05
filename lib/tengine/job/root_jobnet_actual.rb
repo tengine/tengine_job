@@ -26,4 +26,14 @@ class Tengine::Job::RootJobnetActual < Tengine::Job::JobnetActual
     end
     result
   end
+
+  def update_with_lock(*args)
+    super(*args) do
+      Tengine::Job.test_harness_hook("before yield in update_with_lock")
+      yield if block_given?
+      Tengine::Job.test_harness_hook("after yield in update_with_lock")
+    end
+    Tengine::Job.test_harness_hook("after update_with_lock")
+  end
+
 end
