@@ -225,68 +225,13 @@ describe Tengine::Job::RootJobnetActual do
     end
 
     context "ブロック付きの場合はちゃんと最後にロックを解放します" do
-      before do
+      it do
+        j12 = @root.element("j12")
         @root.element("j11").tap{|j| j.phase_key = :initialized}
         @root.element("j12").tap{|j| j.phase_key = :initialized}
         @root.version = 1
         @root.save!
-      end
 
-      it "通常" do
-        f1 = Fiber.new do
-          r = Tengine::Job::RootJobnetActual.find(@root.id)
-          r.wait_to_acquire_lock(r.element("j11")) do
-            Fiber.yield
-            j11 = r.element("j11")
-            j11.phase_key = :ready
-          end
-          :end
-        end
-
-        f1.resume.should_not == :end
-        @root.reload
-        @root.version.should == 2
-        @root.lock_key.should == "#{Process.pid.to_s}/#{@j11.id.to_s}"
-        @root.lock_timeout_key.should =~ /^#{Regexp.escape(@root.lock_key)}-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
-        @root.locking_vertex_id.should == @j11.id.to_s
-
-        f1.resume.should == :end
-        @root.reload
-        @root.version.should == 3
-        @root.lock_key.should == ""
-        @root.lock_timeout_key.should == nil
-        @root.locking_vertex_id.should == nil
-      end
-
-      it "ブロック内で例外がraiseされた場合場合" do
-        f1 = Fiber.new do
-          r = Tengine::Job::RootJobnetActual.find(@root.id)
-          r.wait_to_acquire_lock(r.element("j11")) do
-            Fiber.yield
-            raise "Some Runtime Error"
-          end
-          :end
-        end
-
-        f1.resume.should_not == :end
-        @root.reload
-        @root.version.should == 2
-        @root.lock_key.should == "#{Process.pid.to_s}/#{@j11.id.to_s}"
-        @root.lock_timeout_key.should =~ /^#{Regexp.escape(@root.lock_key)}-\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
-        @root.locking_vertex_id.should == @j11.id.to_s
-
-        expect{
-          f1.resume
-        }.to raise_error("Some Runtime Error")
-        @root.reload
-        @root.version.should == 3
-        @root.lock_key.should == ""
-        @root.lock_timeout_key.should == nil
-        @root.locking_vertex_id.should == nil
-      end
-
-      it "競合した場合" do
-        j12 = @root.element("j12")
         f1 = Fiber.new do
           r = Tengine::Job::RootJobnetActual.find(@root.id)
           r.wait_to_acquire_lock(r.element("j11")) do
