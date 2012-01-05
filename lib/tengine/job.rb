@@ -65,26 +65,6 @@ Tengine::Core.stdout_logger.info("#{self.name}.notify  #{f}")
       end
     end
 
-
-    # 自動テストで呼び出しをフックするためのメソッド
-    def test_harness(idx, msg)
-    end
-
-    # test_harnessメソッドに渡されるidxを初期化します
-    def test_harness_clear
-      @test_harness_index = 0
-      Tengine.logger.debug("#{self.name}.test_harness_clear")
-    end
-
-    # test_harness呼び出すメソッド。
-    # ライブラリを提供する側が使用します。
-    def test_harness_hook(msg)
-      @test_harness_index ||= 0
-      @test_harness_index += 1
-      Tengine.logger.debug("#{self.name}.test_harness(#{@test_harness_index}, #{msg.inspect})")
-      test_harness(@test_harness_index, msg)
-    end
-
   end
 
   # DSLの記述に問題があることを示す例外
