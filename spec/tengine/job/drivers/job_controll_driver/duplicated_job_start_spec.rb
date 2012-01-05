@@ -75,8 +75,6 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @tengine2 = Tengine::RSpec::ContextWrapper.new(@bootstrap2.kernel)
     end
 
-    # tengine1が起動したプロセスのPIDを得る前にtengine2がプロセスを起動することはできません。
-    #
     # job_control_driverでのstart.job.job.tengineの処理の概略以下の通りです
     #
     # 1. Tengine::Job::RootJobnetActual#update_with_lock
@@ -91,53 +89,53 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
     # 以下のようなパターンがあり得ます
     #
     # パターン1 (ほぼ同時に2に突入する)
-    #  f1-1.1.
-    #  f1-1.2.
-    #  f2-1.1.
-    #  f2-1.2.
-    #  f1-2.1.
-    #  f2-2.1. 1st
-    #  f1-2.2.
-    #  f2-2.1. 2nd
-    #  f1-2.3.
-    #  f2-2.1. 3rd
-    #  f2-2.2.
-    #  f2-2.3.
+    #  A-1.1.
+    #  A-1.2.
+    #  B-1.1.
+    #  B-1.2.
+    #  A-2.1.
+    #  B-2.1. 1st
+    #  A-2.2.
+    #  B-2.1. 2nd
+    #  A-2.3.
+    #  B-2.1. 3rd
+    #  B-2.2.
+    #  B-2.3.
     #
-    # パターン2 (f1-2.1. のにf2が動き出す)
-    #  f1-1.1.
-    #  f1-1.2.
-    #  f2-1.1.
-    #  f1-2.1.
-    #  f2-1.2. 1st
-    #  f1-2.2.
-    #  f2-1.2. 2nd
-    #  f1-2.3.
-    #  f2-1.2. 3rd
-    #  f2-2.
+    # パターン2 (A-2.1. のにBが動き出す)
+    #  A-1.1.
+    #  A-1.2.
+    #  B-1.1.
+    #  A-2.1.
+    #  B-1.2. 1st
+    #  A-2.2.
+    #  B-1.2. 2nd
+    #  A-2.3.
+    #  B-1.2. 3rd
+    #  B-2.
     #
-    # パターン3 (f1-2.2. のにf2が動き出す)
-    #  f1-1.1.
-    #  f1-1.2.
-    #  f1-2.1.
-    #  f2-1.1. 1st
-    #  f1-2.2.
-    #  f2-1.1. 2nd
-    #  f1-2.3.
-    #  f2-1.1. 3rd
-    #  f2-1.2.
-    #  f2-2.
+    # パターン3 (A-2.2. のにBが動き出す)
+    #  A-1.1.
+    #  A-1.2.
+    #  A-2.1.
+    #  B-1.1. 1st
+    #  A-2.2.
+    #  B-1.1. 2nd
+    #  A-2.3.
+    #  B-1.1. 3rd
+    #  B-1.2.
+    #  B-2.
     #
-    # パターン4 (f1-2.3. のにf2が動き出す)
-    #  f1-1.1.
-    #  f1-1.2.
-    #  f1-2.1.
-    #  f1-2.2.
-    #  f2-1.1. 1st
-    #  f1-2.3.
-    #  f2-1.1. 2nd
-    #  f2-1.2.
-    #  f2-2.
+    # パターン4 (A-2.3. のにBが動き出す)
+    #  A-1.1.
+    #  A-1.2.
+    #  A-2.1.
+    #  A-2.2.
+    #  B-1.1. 1st
+    #  A-2.3.
+    #  B-1.1. 2nd
+    #  B-1.2.
+    #  B-2.
 
     before do
       @ctx[:e1].phase_key = :transmitted
@@ -201,11 +199,10 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       Tengine::Job.test_harness_clear
     end
 
-    it "パターン3" do
+    it "tengine1が起動したプロセスのPIDを得る前にtengine2がプロセスを起動することはできない" do
+
       Tengine::Job.should_receive(:test_harness).with(1, "before callback in start.job.job.tengine").once{ Fiber.yield }
 
-      # f1-1.1.
-      # f1-1.2.
       @f1.resume # j11がreadyからstartingへ遷移する。SSH接続を開始する前。
       @root.reload
       @root.version.should == 2 # start.job.job.tengineの最初のupdate_with_lock+1。
@@ -215,7 +212,6 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :ready
 
-      # f1-2.1.
       @f1.resume # SSH接続を開始する。PIDはまだ取得していない。
       @root.reload
       @root.version.should == 3 # wait_to_acquire_lockの最初のlock_keyの取得で+1。
@@ -225,9 +221,8 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :ready
 
-      # f2-1.1. 1st
       Tengine::Job.should_receive(:test_harness).with(2, "waiting_for_lock_released").once{ Fiber.yield }
-      @f2.resume # j12がreadyからstartingへ遷移しようとする。j11がstartingになるのでupdate_with_lockも動かない。
+      @f2.resume # j12がreadyからstartingへ遷移しようとする。j11がstartingになるのでSSH接続を開始できない。
       @root.reload
       @root.version.should == 3
       @root.lock_key.should == "#{@pid1}/#{@j11.id.to_s}"
@@ -236,8 +231,6 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").phase_key.should == :starting
       @root.element("j12").phase_key.should == :ready
 
-      # f1-2.2.
-      # f1-2.3.
       @f1.resume # wait_to_acquire_lockのブロックが終了して、j11がstartingからrunningへ遷移する。PIDを取得済み
       @root.reload
       @root.version.should == 4
@@ -247,8 +240,6 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid1 }
       @root.element("j12").tap{|j| j.phase_key.should == :ready }
 
-      # f2-1.1. 2nd
-      # f2-1.2.
       Tengine::Job.should_receive(:test_harness).with(3, "before callback in start.job.job.tengine").once{ Fiber.yield }
       @f2.resume # j12についてのstart.job.job.tengineの最初のupdate_with_lock+1。readyからstartingへ遷移する。まだSSH接続を開始していない
       @root.reload
@@ -259,8 +250,6 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid1 }
       @root.element("j12").tap{|j| j.phase_key.should == :starting }
 
-      # f2-2.1.
-      # f2-2.2.
       @f2.resume # j12のSSH接続を開始する。PIDはまだ取得していない
       @root.reload
       @root.version.should == 6
@@ -270,7 +259,6 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid1 }
       @root.element("j12").tap{|j| j.phase_key.should == :starting }
 
-      # f2-2.3.
       @f2.resume # j12がstartingからrunningへ遷移する。PIDを取得済み
       @root.reload
       @root.version.should == 7
@@ -280,6 +268,5 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @root.element("j11").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid1 }
       @root.element("j12").tap{|j| j.phase_key.should == :running; j.executing_pid.should == @pid2 }
     end
-
   end
 end
