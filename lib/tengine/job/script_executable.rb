@@ -25,8 +25,13 @@ module Tengine::Job::ScriptExecutable
     # puts "cmd:\n" << cmd
     execute(cmd) do |ch, data|
       if signal = execution.signal
-        signal.data = {:executing_pid => data.strip}
-        ack(signal)
+        # signal.data = {:executing_pid => data.strip}
+        # ack(signal)
+        pid = data.strip
+        signal.callback = lambda do
+          signal.data = {:executing_pid => pid}
+          ack(signal)
+        end
       end
     end
   end
@@ -40,8 +45,12 @@ module Tengine::Job::ScriptExecutable
       # see http://net-ssh.github.com/ssh/v2/api/classes/Net/SSH/Connection/Channel.html
       ssh.open_channel do |channel|
         Tengine.logger.info("now exec on ssh: " << cmd)
-        channel.exec(cmd) do |ch, success|
+        channel.exec(cmd.force_encoding("binary")) do |ch, success|
           raise Error, "could not execute command" unless success
+
+          channel.on_close do |ch|
+            # puts "channel is closing!"
+          end
 
           channel.on_data do |ch, data|
             Tengine.logger.debug("got stdout: #{data}")
@@ -52,10 +61,6 @@ module Tengine::Job::ScriptExecutable
             self.error_messages ||= []
             self.error_messages += [data]
             raise Error, "Failure to execute #{self.name_path} via SSH: #{data}"
-          end
-
-          channel.on_close do |ch|
-            # puts "channel is closing!"
           end
         end
       end
@@ -104,6 +109,21 @@ module Tengine::Job::ScriptExecutable
       mm_env << ' ' << hadoop_job_env
     end
     result << "export #{mm_env}"
+    template_root = root_or_expansion.template
+    if template_root
+      template_job = template_root.vertex_by_name_path(self.name_path_until_expansion)
+      unless template_job
+        raise "job not found #{self.name_path_until_expansion.inspect} in #{template_root.inspect}"
+      end
+      key = Tengine::Job::DslLoader.template_block_store_key(template_job, :preparation)
+      preparation_block = Tengine::Job::DslLoader.template_block_store[key]
+      if preparation_block
+        preparation = instance_eval(&preparation_block)
+        unless preparation.blank?
+          result << preparation
+        end
+      end
+    end
     unless execution.preparation_command.blank?
       result << execution.preparation_command
     end
@@ -158,6 +178,7 @@ module Tengine::Job::ScriptExecutable
   # MM_FAILED_JOB_ANCESTOR_IDS      : ジョブが失敗した場合にrecoverやfinally内のジョブを実行時に設定される、失敗したジョブの祖先のMM上でのIDをセミコロンで繋げた文字列。
   def build_mm_env(execution)
     result = {
+      "MM_SERVER_NAME" => actual_server_name,  # [Tengineの仕様として追加] ジョブの実行サーバ名を設定
       "MM_ROOT_JOBNET_ID" => root.id.to_s,
       "MM_TARGET_JOBNET_ID" => parent.id.to_s,
       "MM_ACTUAL_JOB_ID" => id.to_s,

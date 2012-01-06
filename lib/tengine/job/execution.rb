@@ -47,6 +47,22 @@ class Tengine::Job::Execution
     end
   end
 
+  def scope_root
+    unless @scope_root
+      actual = target_actuals.first
+      @scope_root = spot ? actual : actual.parent || actual
+      unless @scope_root
+        raise "@scope_root must not be nil"
+      end
+    end
+    @scope_root
+  end
+
+  def in_scope?(vertex)
+    return false if vertex.nil?
+    (vertex.id == scope_root.id) || vertex.ancestors.map(&:id).include?(scope_root.id)
+  end
+
   def transmit(signal)
     case phase_key
     when :initialized then

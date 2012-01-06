@@ -14,11 +14,14 @@ class Tengine::Job::Expansion < Tengine::Job::Job
     @root_jobnet_template
   end
 
-  IGNORED_FIELD_NAMES = (Tengine::Job::Vertex::IGNORED_FIELD_NAMES + %w[name dsl_version jobnet_type_cd lock_version updated_at created_at children edges]).freeze
+  IGNORED_FIELD_NAMES = (Tengine::Job::Vertex::IGNORED_FIELD_NAMES + %w[name dsl_version jobnet_type_cd version updated_at created_at children edges]).freeze
 
   def generating_attrs
     result = super
     attrs = root_jobnet_template.attributes.dup
+    if template = root_jobnet_template
+      attrs[:template_id] = template.id
+    end
     attrs.delete_if{|attr, value| IGNORED_FIELD_NAMES.include?(attr)}
     result.update(attrs)
     result

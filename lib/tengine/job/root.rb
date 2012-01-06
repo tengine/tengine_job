@@ -7,9 +7,10 @@ module Tengine::Job::Root
 
   included do
     include Tengine::Core::OptimisticLock
+    set_locking_field :version
 
     belongs_to :category, :inverse_of => :root_jobnet_templates, :index => true, :class_name => "Tengine::Job::Category"
 
-    field :lock_version, :type => Integer, :default => 0 # ジョブネット全体を更新する際の楽観的ロックのためのバージョン。更新するたびにインクリメントされます。
+    field :version, :type => Integer, :default => 0 # ジョブネット全体を更新する際の楽観的ロックのためのバージョン。更新するたびにインクリメントされます。
   end
 end
