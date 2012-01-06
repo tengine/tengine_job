@@ -111,6 +111,23 @@ module Tengine::Job::DslLoader
     result
   end
 
+  def ruby_job(name, *args, &block)
+    raise Tengine::Job::DslError, "no block given for ruby_job" unless block
+    args.extract_options!
+    dedcription = args.shift
+    options = {
+      :name => name,
+      :description => description,
+    }.update(options)
+    preparation = options.delete(:preparation)
+    result = __with_redirection__(options) do
+      Tengine::Job::JobnetTemplate.new(options)
+    end
+    @jobnet.children << result
+    Tengine::Job::DslLoader.loading_template_block_store[result] = [:ruby_job, block]
+    result
+  end
+
   def hadoop_job_run(name, *args, &block)
     script, description, options = __parse_job_args__(name, args)
     options[:script] = script
