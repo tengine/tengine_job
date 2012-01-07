@@ -26,9 +26,9 @@ jobnet("rjn0024") do
   # job.runが2回記述されているけど一度しか動かさない
   ruby_job('j10', :conductor => lambda{|job| job.run; job.run}){|job| STDOUT.puts("j10 end") }
 
-  # conductorではjob.success の後に job.failure を実行するとsuccessに。
-  ruby_job('j11', :conductor => lambda{|job| job.run; job.success; job.failure}){|job| STDOUT.puts("j11 end") }
+  # conductorではjob.succeed の後に job.fail を実行するとsuccessに。
+  ruby_job('j11', :conductor => lambda{|job| job.run; job.succeed; job.fail}){|job| STDOUT.puts("j11 end") }
 
   # conductorではjob.fail の後に job.succeed を実行するとerrorに。
-  ruby_job('j12', :conductor => lambda{|job| job.run; job.failure; job.success}){|job| STDOUT.puts("j12 end") }
+  ruby_job('j12', :conductor => lambda{|job| job.run; job.fail; job.succeed}){|job| STDOUT.puts("j12 end") }
 end
