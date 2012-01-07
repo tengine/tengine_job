@@ -43,8 +43,8 @@ module Tengine::Job::Jobnet::RubyJobStateTransition
   # end
 
   # ハンドリングするドライバ: ジョブ制御ドライバ
-  def ruby_job_succeed(signal)
-    job_base_succeed(signal)
+  def ruby_job_succeed(signal, options = nil)
+    job_base_succeed(signal, options)
   end
   available :ruby_job_succeed, :on => [:starting, :running, :dying, :stuck], :ignored => [:success]
 
