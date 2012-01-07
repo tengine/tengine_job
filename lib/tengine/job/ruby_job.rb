@@ -43,8 +43,8 @@ module Tengine::Job::RubyJob
 
     def initialize(source)
       @source = source
-      @last_args = nil
-      @result = true
+      @last_args = []
+      @result = nil
       @started = false
       @done = false
     end
@@ -64,7 +64,7 @@ module Tengine::Job::RubyJob
     end
 
     def fail(options = {})
-      return if @done && (result == false)
+      return if @done && !result.nil?
       if exception = options.delete(:exception)
         options[:message] = "[#{exception.class.name}] #{exception.message}\n  " << (exception.backtrace || []).join("\n  ")
       end
@@ -73,10 +73,7 @@ module Tengine::Job::RubyJob
     end
 
     def succeed(options = {})
-      if @source.name == 'j03'
-        STDERR.puts caller.join("\n  ")
-      end
-      return if @done && (result == true)
+      return if @done && !result.nil?
       @result = true
       @last_args = [options]
     end

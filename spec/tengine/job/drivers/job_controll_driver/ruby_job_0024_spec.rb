@@ -170,12 +170,12 @@ describe 'job_control_driver' do
 
       it "j11" do
         STDOUT.should_receive(:puts).with("j11 end")
-        assert_error(:j11)
+        assert_success(:j11)
       end
 
       it "j12" do
         STDOUT.should_receive(:puts).with("j12 end")
-        assert_success(:j12)
+        assert_error(:j12)
       end
     end
 
