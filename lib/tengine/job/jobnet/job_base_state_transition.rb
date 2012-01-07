@@ -29,7 +29,7 @@ module Tengine::Job::Jobnet::JobBaseStateTransition
     end
   end
 
-  def job_base_succeed(signal)
+  def job_base_succeed(signal, options = nil)
     self.phase_key = :success
     self.finished_at = signal.event.occurred_at
     event_options = {
@@ -38,11 +38,13 @@ module Tengine::Job::Jobnet::JobBaseStateTransition
       :target_job_id => self.id,
       :target_job_name_path => self.name_path,
     }
+    event_options.update(options) if options
     case self.jobnet_type_key
     when :ruby_job then
     else
       event_options[:exit_status] = self.exit_status
     end
+    event_options.update(options) if options
     signal.fire(self, :"success.job.job.tengine", event_options)
   end
 
