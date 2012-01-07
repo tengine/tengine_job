@@ -18,6 +18,12 @@ module Tengine::Job::RubyJob
   end
   self.default_conductor = DEFAULT_CONDUCTOR
 
+  class << self
+    def run(job, signal, conductor)
+      conductor.call(JobExecutionWrapper.new(job, signal))
+    end
+  end
+
   class JobExecutionWrapper
 
     attr_reader :source, :signal

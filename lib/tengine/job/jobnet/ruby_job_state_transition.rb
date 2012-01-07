@@ -25,7 +25,7 @@ module Tengine::Job::Jobnet::RubyJobStateTransition
       signal.callback = lambda{ root.vertex(self.id).activate(signal) }
     when :running then
       signal.callback = lambda do
-        conductor.call(Tengine::Job::RubyJob::JobExecutionWrapper.new(self, signal))
+        Tengine::Job::RubyJob.run(self, signal, conductor)
       end
     end
   end
