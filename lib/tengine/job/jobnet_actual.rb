@@ -32,4 +32,17 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
     p.nil? ? self : p.was_expansion ? p : p.root_or_expansion
   end
 
+  def template_block_for(block_name)
+    key = Tengine::Job::DslLoader.template_block_store_key(self, block_name)
+    result = Tengine::Job::DslLoader.template_block_store[key]
+    return result if result
+    template_root = root_or_expansion.template
+    return nil unless template_root
+    template_job = template_root.vertex_by_name_path(self.name_path_until_expansion)
+    unless template_job
+      raise "job not found #{self.name_path_until_expansion.inspect} in #{template_root.inspect}"
+    end
+    template_job.template_block_for(block_name)
+  end
+
 end
