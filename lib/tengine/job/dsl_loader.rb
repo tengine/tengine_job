@@ -25,6 +25,10 @@ module Tengine::Job::DslLoader
       if loaded_root
         loading_template_block_store.each do |(unsaved_job ,name), block|
           loaded_job = loaded_root.vertex_by_name_path(unsaved_job.name_path)
+          unless loaded_job
+            Tengine.logger.warn("#{unsaved_job.name_path} not found")
+            next
+          end
           key = template_block_store_key(loaded_job, name)
           template_block_store[key] = block
         end
