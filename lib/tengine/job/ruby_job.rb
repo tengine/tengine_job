@@ -13,7 +13,7 @@ module Tengine::Job::RubyJob
       job.run
       job.succeed
     rescue => e # StandardError以外はTengineの例外として扱います
-      job.fail(:message => "[#{e.class.name}] #{e.message}\n  " << e.backtrace.join("\n  "))
+      job.fail(:exception => e)
     end
   end
   self.default_conductor = DEFAULT_CONDUCTOR
@@ -32,14 +32,15 @@ module Tengine::Job::RubyJob
     end
 
     def fail(options = nil)
+      if exception = options.delete(:exception)
+        options[:message] = "[#{exception.class.name}] #{exception.message}\n  " << exception.backtrace.join("\n  ")
+      end
       @source.ruby_job_fail(signal, options)
     end
 
     def succeed(options = nil)
       @source.ruby_job_succeed(signal)
     end
-
   end
-
 
 end

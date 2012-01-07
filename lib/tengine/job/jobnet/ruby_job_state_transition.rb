@@ -24,7 +24,6 @@ module Tengine::Job::Jobnet::RubyJobStateTransition
       # 再度呼び出してもらうためにcallbackを設定しています
       signal.callback = lambda{ root.vertex(self.id).activate(signal) }
     when :running then
-      conductor = Tengine::Job::RubyJob.default_conductor
       signal.callback = lambda do
         conductor.call(Tengine::Job::RubyJob::JobExecutionWrapper.new(self, signal))
       end

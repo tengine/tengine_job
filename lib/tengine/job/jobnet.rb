@@ -174,7 +174,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   end
 
   def ruby_job_conductor
-    result = 
+    result =
       case jobnet_type_key
       when :ruby_job then
         template_block_for(:conductor)
@@ -188,7 +188,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   def conductor
     case jobnet_type_key
     when :ruby_job then
-      ruby_job_conductor
+      ruby_job_conductor || Tengine::Job::RubyJob.default_conductor
     else
       raise "jobnet has no #conductor but #ruby_job_conductor and #ssh_conductor"
     end
