@@ -173,4 +173,26 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     tail ? child.vertex_by_relative_name_path(tail) : child
   end
 
+  def ruby_job_conductor
+    result = 
+      case jobnet_type_key
+      when :ruby_job then
+        template_block_for(:conductor)
+      else
+        template_block_for(:ruby_job_conductor)
+      end
+    return result if result
+    parent ? parent.ruby_job_conductor : nil
+  end
+
+  def conductor
+    case jobnet_type_key
+    when :ruby_job then
+      ruby_job_conductor
+    else
+      raise "jobnet has no #conductor but #ruby_job_conductor and #ssh_conductor"
+    end
+  end
+
+
 end

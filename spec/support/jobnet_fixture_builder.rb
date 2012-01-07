@@ -69,8 +69,10 @@ class JobnetFixtureBuilder
   %w[root_jobnet jobnet script].each do |method_name|
     root_assign = method_name =~ /^root_/ ? "@instances[:root] = result" : ""
 
-    class_eval(<<-EOS)
+    class_eval(<<-EOS, __FILE__, __LINE__ + 1)
       def new_#{method_name}(name, attrs = {}, &block)
+        conductor = attrs.delete(:conductor)
+        conductors = attrs.delete(:conductors)
         attrs[:name] = name.to_s
         klass = MODE_AND_METHOD_TO_CLASS[ [@mode, :#{method_name}] ]
         if klass == Tengine::Job::RootJobnetTemplate
@@ -79,6 +81,15 @@ class JobnetFixtureBuilder
         result = klass.new(attrs, &block)
         @instances[name.to_sym] = result
         #{root_assign}
+        if conductor
+puts "\#{result.name_path}: \#{conductor.inspect}"
+          Tengine::Job::DslLoader.add_loading_template_block(result, :conductor, conductor)
+        end
+        if conductors
+          if c = conductors[:ruby_job]
+            Tengine::Job::DslLoader.add_loading_template_block(result, :ruby_job_conductor, c)
+          end
+        end
         result
       end
     EOS
@@ -88,7 +99,7 @@ class JobnetFixtureBuilder
     attrs.update(:jobnet_type_key => :ruby_job)
     raise ":script options is not available" if attrs.delete(:script)
     result = new_script(name, attrs)
-    Tengine::Job::DslLoader.loading_template_block_store[result] = [:ruby_job, block]
+    Tengine::Job::DslLoader.add_loading_template_block(result, :ruby_job, block)
     result
   end
 

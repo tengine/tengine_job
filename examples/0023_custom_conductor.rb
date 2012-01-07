@@ -24,6 +24,8 @@ module Rjn0023
   end
 end
 
-jobnet("rjn0023", :conductor => custom_conductor) do
+jobnet("rjn0023", :conductors => {:ruby_job => custom_conductor}) do
   ruby_job('j1'){ Rjn0023.raise_test_exception  }
+  ruby_job('j2', :conductor => Tengine::Job::RubyJob::DEFAULT_CONDUCTOR){
+    Rjn0023.raise_test_exception  }
 end
