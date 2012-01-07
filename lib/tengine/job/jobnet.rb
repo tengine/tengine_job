@@ -26,6 +26,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
     entry 5, :hadoop_job    , "hadoop job"    , :chained_box => true
     entry 6, :map_phase     , "map phase"     , :chained_box => true
     entry 7, :reduce_phase  , "reduce phase"  , :chained_box => true
+    entry 8, :ruby_job      , "ruby job"
   end
   def chained_box?; jobnet_type_entry[:chained_box]; end
 

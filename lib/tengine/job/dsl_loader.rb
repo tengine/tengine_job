@@ -113,13 +113,19 @@ module Tengine::Job::DslLoader
 
   def ruby_job(name, *args, &block)
     raise Tengine::Job::DslError, "no block given for ruby_job" unless block
-    args.extract_options!
-    dedcription = args.shift
+    options = args.extract_options!
+    description = args.shift
     options = {
       :name => name,
       :description => description,
+      :jobnet_type_key => :ruby_job,
     }.update(options)
-    preparation = options.delete(:preparation)
+    if preparation = options.delete(:preparation)
+      Tengine.logger.warn(":preparation option is ignored at #{@jobnet.name_path}/#{name}")
+    end
+
+puts "options: #{options.inspect}"
+
     result = __with_redirection__(options) do
       Tengine::Job::JobnetTemplate.new(options)
     end
