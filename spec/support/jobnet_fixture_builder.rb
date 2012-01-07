@@ -84,6 +84,14 @@ class JobnetFixtureBuilder
     EOS
   end
 
+  def new_ruby_job(name, attrs = {}, &block)
+    attrs.update(:jobnet_type_key => :ruby_job)
+    raise ":script options is not available" if attrs.delete(:script)
+    result = new_script(name, attrs)
+    Tengine::Job::DslLoader.loading_template_block_store[result] = [:ruby_job, block]
+    result
+  end
+
   def new_finally
     klass = MODE_AND_METHOD_TO_CLASS[ [@mode, :finally] ]
     result = klass.new(:name => "finally", :jobnet_type_key => :finally)
