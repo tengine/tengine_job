@@ -61,9 +61,7 @@ class Rjn0023CustomConductor < JobnetFixtureBuilder
     root.edges << new_edge(:j1, :j2)
     root.edges << new_edge(:j2, :E1)
     root.save!
-    puts Tengine::Job::DslLoader.loading_template_block_store.inspect
     Tengine::Job::DslLoader.update_loaded_blocks(root)
-    puts Tengine::Job::DslLoader.template_block_store.inspect
     root
   end
 end

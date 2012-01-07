@@ -82,7 +82,6 @@ class JobnetFixtureBuilder
         @instances[name.to_sym] = result
         #{root_assign}
         if conductor
-puts "\#{result.name_path}: \#{conductor.inspect}"
           Tengine::Job::DslLoader.add_loading_template_block(result, :conductor, conductor)
         end
         if conductors

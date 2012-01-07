@@ -138,7 +138,7 @@ module Tengine::Job::DslLoader
       Tengine.logger.warn(":preparation option for ruby_job is ignored at #{@jobnet.name_path}/#{name}")
     end
     conductor = options.delete(:conductor)
-    unless conductor.respond_to?(:call)
+    if conductor && !conductor.respond_to?(:call)
       raise Tengine::Job::DslError, ":conductor options must be an object which responds to 'call' like Proc. "
     end
     if conductors = options.delete(:conductors)
