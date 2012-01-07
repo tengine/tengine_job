@@ -13,6 +13,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
   autoload :StateTransition, 'tengine/job/jobnet/state_transition'
   autoload :JobStateTransition, 'tengine/job/jobnet/job_state_transition'
   autoload :JobnetStateTransition, 'tengine/job/jobnet/jobnet_state_transition'
+  autoload :RubyJobStateTransition, 'tengine/job/jobnet/ruby_job_state_transition'
 
   field :script        , :type => String # 実行されるスクリプト(本来Tengine::Job::Scriptが保持しますが、子要素を保持してかつスクリプトを実行するhadoop_job_runもある)
   field :description   , :type => String # ジョブネットの説明

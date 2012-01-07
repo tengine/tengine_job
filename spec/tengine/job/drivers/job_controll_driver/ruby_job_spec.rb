@@ -72,9 +72,9 @@ describe 'job_control_driver' do
 
         STDOUT.should_receive(:puts).with("j1").and_raise(Errno::ENOMEM.new("Not enough space."))
 
-        tengine.should_fire(:"error.job.job.tengine", an_instance_of(Hash)) do |_, hash|
-          hash[:source_name].should == @ctx[:root].name_as_resource
-          hash[:properties].delete(:message).should =~ /^\[Errno::ENOMEM\] Not enough space\./
+        @__kernel__.should_receive(:fire).with(:"error.job.job.tengine", an_instance_of(Hash)) do |_, hash|
+          hash[:source_name].should == @ctx[:j1].name_as_resource
+          hash[:properties].delete(:message).should =~ /^\[Errno::ENOMEM\] Cannot allocate memory - Not enough space\./
           hash[:properties].should == {
             :execution_id => @execution.id.to_s,
             :root_jobnet_id => @root.id.to_s,

@@ -8,6 +8,7 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
   include Tengine::Job::Stoppable
   include Tengine::Job::Jobnet::JobStateTransition
   include Tengine::Job::Jobnet::JobnetStateTransition
+  include Tengine::Job::Jobnet::RubyJobStateTransition
 
   field :was_expansion, :type => Boolean # テンプレートがTenigne::Job::Expansionであった場合にtrueです。
 
@@ -20,6 +21,8 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
   STATE_TRANSITION_METHODS.each do |method_name|
     class_eval(<<-END_OF_METHOD, __FILE__, __LINE__ + 1)
       def #{method_name}(signal, &block)
+        jobnet_type_key == :ruby_job ?
+          ruby_job_#{method_name}(signal, &block) :
         script_executable? ?
           job_#{method_name}(signal, &block) :
           jobnet_#{method_name}(signal, &block)
