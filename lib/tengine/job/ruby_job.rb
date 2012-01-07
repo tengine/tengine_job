@@ -34,17 +34,22 @@ module Tengine::Job::RubyJob
 
     def run
       ruby_job_block = @source.template_block_for(:ruby_job)
-      ruby_job_block.call
+      case ruby_job_block.respond_to?(:arity) ? ruby_job_block.arity : 0
+      when 0 then
+        ruby_job_block.call
+      else
+        ruby_job_block.call(self)
+      end
     end
 
-    def fail(options = nil)
+    def fail(options = {})
       if exception = options.delete(:exception)
         options[:message] = "[#{exception.class.name}] #{exception.message}\n  " << exception.backtrace.join("\n  ")
       end
       @source.ruby_job_fail(signal, options)
     end
 
-    def succeed(options = nil)
+    def succeed(options = {})
       @source.ruby_job_succeed(signal)
     end
   end
