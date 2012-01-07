@@ -10,7 +10,7 @@ module Tengine::Job::DslLoader
       @loading_template_block_store ||= {}
     end
     def add_loading_template_block(job, name, block)
-      loading_template_block_store[job] = [name, block]
+      loading_template_block_store[[job, name]] = block
     end
 
     def template_block_store
@@ -23,13 +23,13 @@ module Tengine::Job::DslLoader
 
     def update_loaded_blocks(loaded_root)
       if loaded_root
-        loading_template_block_store.each do |unsaved_job, (name, block)|
+        loading_template_block_store.each do |(unsaved_job ,name), block|
           loaded_job = loaded_root.vertex_by_name_path(unsaved_job.name_path)
           key = template_block_store_key(loaded_job, name)
           template_block_store[key] = block
         end
       else
-        loading_template_block_store.each do |saved_job, (name, block)|
+        loading_template_block_store.each do |(saved_job, name), block|
           key = template_block_store_key(saved_job, name)
           template_block_store[key] = block
         end
@@ -218,7 +218,5 @@ module Tengine::Job::DslLoader
     end
     result
   end
-
-
 
 end
