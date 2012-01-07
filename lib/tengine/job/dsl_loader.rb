@@ -123,9 +123,6 @@ module Tengine::Job::DslLoader
     if preparation = options.delete(:preparation)
       Tengine.logger.warn(":preparation option is ignored at #{@jobnet.name_path}/#{name}")
     end
-
-puts "options: #{options.inspect}"
-
     result = __with_redirection__(options) do
       Tengine::Job::JobnetTemplate.new(options)
     end
