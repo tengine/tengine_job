@@ -11,6 +11,7 @@ class Tengine::Job::Jobnet < Tengine::Job::Job
 
   autoload :Builder, "tengine/job/jobnet/builder"
   autoload :StateTransition, 'tengine/job/jobnet/state_transition'
+  autoload :JobBaseStateTransition, 'tengine/job/jobnet/job_base_state_transition'
   autoload :JobStateTransition, 'tengine/job/jobnet/job_state_transition'
   autoload :JobnetStateTransition, 'tengine/job/jobnet/jobnet_state_transition'
   autoload :RubyJobStateTransition, 'tengine/job/jobnet/ruby_job_state_transition'
