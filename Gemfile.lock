@@ -89,10 +89,9 @@ GEM
     tzinfo (0.3.31)
     uuid (2.3.4)
       macaddr (~> 1.0)
-    wakame-adapters-tengine (0.0.6)
+    wakame-adapters-tengine (0.0.7)
       json
       right_aws (~> 2.1.0)
-      rspec
     yard (0.7.4)
 
 PLATFORMS
