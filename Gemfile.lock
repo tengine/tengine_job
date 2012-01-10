@@ -62,7 +62,7 @@ GEM
       simplecov-html (~> 0.5.3)
     simplecov-html (0.5.3)
     systemu (2.4.2)
-    tengine_core (0.5.14)
+    tengine_core (0.5.16)
       activemodel (~> 3.1.0)
       activesupport (~> 3.1.0)
       bson (~> 1.5.2)
