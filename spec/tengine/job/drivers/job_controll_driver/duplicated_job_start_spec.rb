@@ -239,7 +239,10 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @f1.resume.should == :end
       @root.reload
       @root.version.should == 3
-      @root.element("j11").phase_key.should == :running
+      @root.element("j11").tap do |j|
+        j.phase_key.should == :running
+        j.executing_pid.should_not be_nil
+      end
       @root.element("j12").phase_key.should == :starting
 
       # f2-4. 1st
@@ -249,7 +252,10 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @f2.resume.should_not == :end
       @root.reload
       @root.version.should == 3
-      @root.element("j11").phase_key.should == :running
+      @root.element("j11").tap do |j|
+        j.phase_key.should == :running
+        j.executing_pid.should_not be_nil
+      end
       @root.element("j12").phase_key.should == :starting
 
       # f2-5.
@@ -258,7 +264,10 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @f2.resume.should_not == :end
       @root.reload
       @root.version.should == 3
-      @root.element("j11").phase_key.should == :running
+      @root.element("j11").tap do |j|
+        j.phase_key.should == :running
+        j.executing_pid.should_not be_nil
+      end
       @root.element("j12").phase_key.should == :starting
 
       # f2-4. 2nd
@@ -267,7 +276,10 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @f2.resume.should_not == :end
       @root.reload
       @root.version.should == 3
-      @root.element("j11").phase_key.should == :running
+      @root.element("j11").tap do |j|
+        j.phase_key.should == :running
+        j.executing_pid.should_not be_nil
+      end
       @root.element("j12").phase_key.should == :starting
 
       # f2-5.
@@ -276,9 +288,14 @@ describe "<BUG>tengindのプロセスを二つ起動した際に並列ジョブ�
       @f2.resume.should == :end
       @root.reload
       @root.version.should == 4
-      @root.element("j11").phase_key.should == :running
-      # @root.element("j12").phase_key.should == :running
-
+      @root.element("j11").tap do |j|
+        j.phase_key.should == :running
+        j.executing_pid.should_not be_nil
+      end
+      @root.element("j12").tap do |j|
+        j.executing_pid.should_not be_nil
+        j.phase_key.should == :running
+      end
     end
 
   end
