@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tengine_job"
-  s.version = "0.6.3"
+  s.version = "0.6.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["saishu", "w-irie", "taigou", "totty", "hiroshinakao", "g-morita", "guemon", "aoetk", "hattori-at-nt", "t-yamada", "y-karashima", "akm"]
-  s.date = "2012-01-05"
+  s.date = "2012-01-10"
   s.description = "tengine_job provides jobnet management"
   s.email = "tengine@nautilus-technologies.com"
   s.extra_rdoc_files = [
@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
     "examples/0006_retry_three_layer.rb",
     "examples/0006_retry_three_layer.sh",
     "examples/0007_simple_jobnet.rb",
-    "examples/0020_dynamic_env.rb",
+    "examples/0021_dynamic_env.rb",
     "examples/VERSION",
     "examples/tengine_job_test.sh",
     "lib/tengine/job.rb",
@@ -98,6 +98,7 @@ Gem::Specification.new do |s|
     "spec/sshd/sshd_config.erb",
     "spec/sshd/tengine_job_test.sh",
     "spec/support/jobnet_fixture_builder.rb",
+    "spec/support/mongo_index_key_log.rb",
     "spec/tengine/job/category_spec.rb",
     "spec/tengine/job/connectable_spec.rb",
     "spec/tengine/job/drivers/job_controll_driver/connection_error_spec.rb",
