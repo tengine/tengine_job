@@ -32,7 +32,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
   def jobnet_ack(signal)
     self.phase_key = :running
   end
-  available(:jobnet_ack, :on => :starting,
+  available(:jobnet_ack, :on => [:initialized, :ready, :starting],
     :ignored => [:running, :dying, :success, :error, :stuck])
 
   # ハンドリングするドライバ: ジョブネット制御ドライバ
