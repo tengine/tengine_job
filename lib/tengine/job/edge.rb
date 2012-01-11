@@ -62,8 +62,13 @@ class Tengine::Job::Edge
   def transmit(signal)
     case phase_key
     when :active then
-      self.phase_key = :transmitting
-      signal.leave(self)
+      d = destination
+      if signal.execution.in_scope?(d)
+        self.phase_key = :transmitting
+        signal.leave(self)
+      else
+        Tengine.logger.info("#{d.name_path} will not be executed, becauase it is out of execution scope.")
+      end
     when :suspended then
       self.phase_key = :keeping
     when :closing then

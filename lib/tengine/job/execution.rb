@@ -60,6 +60,7 @@ class Tengine::Job::Execution
 
   def in_scope?(vertex)
     return false if vertex.nil?
+    return true if target_actual_ids.nil? || target_actual_ids.empty?
     (vertex.id == scope_root.id) || vertex.ancestors.map(&:id).include?(scope_root.id)
   end
 
