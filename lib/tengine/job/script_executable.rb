@@ -30,7 +30,15 @@ module Tengine::Job::ScriptExecutable
         pid = data.strip
         signal.callback = lambda do
           signal.data = {:executing_pid => pid}
-          ack(signal)
+
+          # このブロック内の処理はupdate_with_lockによって複数回実行されることがあります。
+          # 1回目と同じリロードされていないオブジェクトを2回目以降に使用すると、1回目の変更が残っているので
+          # そのオブジェクトに対して処理を行うのはNGです。
+          # self.ack(signal) # これはNG
+
+          # このブロックが実行されるたびに、rootからselfと同じidのオブジェクトを新たに取得する必要があります。
+          job = root.vertex(self.id)
+          job.ack(signal)
         end
       end
     end
