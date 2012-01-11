@@ -149,7 +149,9 @@ module Tengine::Job::Jobnet::JobStateTransition
       self.phase_key = :dying
       self.stopped_at = signal.event.occurred_at
       self.stop_reason = signal.event[:stop_reason]
-      kill(signal.execution)
+      signal.callback = lambda do
+        kill(signal.execution)
+      end
     end
   end
   available :job_stop, :on => [:ready, :starting, :running], :ignored => [:initialized, :dying, :success, :error, :stuck]

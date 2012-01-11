@@ -119,6 +119,8 @@ describe Tengine::Job::Stoppable do
             job.phase_key.should == :dying
             job.stop_reason.should == "test stopping"
             job.stopped_at.to_time.iso8601.should == t.utc.iso8601
+            @signal.callback.should_not be_nil
+            @signal.callback.call
           end
         end
       end
@@ -152,6 +154,8 @@ describe Tengine::Job::Stoppable do
             j.stop_reason.should == "test stopping"
             j.stopped_at.to_time.iso8601.should == t.utc.iso8601
           end
+          @signal.callback.should_not be_nil
+          @signal.callback.call
         end
       end
 

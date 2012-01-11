@@ -38,6 +38,10 @@ driver :job_control_driver do
         target_job.stop(signal)
       end
     end
+    root_jobnet.reload
+    if signal.callback
+      signal.callback.call
+    end
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
