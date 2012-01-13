@@ -50,7 +50,7 @@ describe "reset" do
       @execution = Tengine::Job::Execution.create!({
           :target_actual_ids => [@jn11.id.to_s],
           :retry => true, :spot => true,
-          :root_jobnet_id => @root.id
+          :root_jobnet_actual_id => @root.id
         })
       @execution.phase_key.should == :initialized
       @event.stub(:[]).with(:execution_id).and_return(@execution.id.to_s)
@@ -113,7 +113,7 @@ describe "reset" do
       @execution = Tengine::Job::Execution.create!({
           :target_actual_ids => [@jn11.id.to_s],
           :retry => true, :spot => false,
-          :root_jobnet_id => @root.id
+          :root_jobnet_actual_id => @root.id
         })
       @execution.phase_key.should == :initialized
       @event.stub(:[]).with(:execution_id).and_return(@execution.id.to_s)
@@ -222,7 +222,7 @@ describe "reset" do
               :root_jobnet_id => @root.id,
               :target_actual_ids => [@ctx[:j41].id.to_s]
             })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           t1 = Time.now
           event1 = mock(:event1)
           event1.stub(:occurred_at).and_return(t1)
@@ -282,7 +282,7 @@ describe "reset" do
             :root_jobnet_id => @root.id,
             :target_actual_ids => [@ctx[:j2].id.to_s]
           })
-        execution.stub(:root_jobnet).and_return(@root)
+        execution.stub(:root_jobnet_actual).and_return(@root)
         t1 = Time.now
         event1 = mock(:"success.job.job.tengine")
         event1.stub(:occurred_at).and_return(t1)
@@ -315,10 +315,10 @@ describe "reset" do
       before do
         @execution = Tengine::Job::Execution.create!({
           :retry => true, :spot => false,
-          :root_jobnet_id => @root.id,
+          :root_jobnet_actual_id => @root.id,
           :target_actual_ids => [@ctx[:j41].id.to_s]
         })
-        @execution.stub(:root_jobnet).and_return(@root)
+        @execution.stub(:root_jobnet_actual).and_return(@root)
 
         [:root, :jn0005, :j1, :j41].each{|j| @ctx[j].phase_key = :error }
         [:jn4, :j2, :j4,
@@ -398,9 +398,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [j41.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!
@@ -441,7 +441,7 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [j41.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
 
           t2 = Time.now
@@ -486,9 +486,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [jn4.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!
@@ -528,9 +528,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
                         :target_actual_ids => [jn0005_fif.id.to_s],
                         :retry => true, :spot => false,
-                        :root_jobnet_id => @root.id
+                        :root_jobnet_actual_id => @root.id
                        })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!
@@ -569,12 +569,12 @@ describe "reset" do
           @execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [j1.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
           t1 = Time.now
           event1 = mock(:event, :occurred_at => t1)
           signal1 = Tengine::Job::Signal.new(event1)
-          @execution.stub(:root_jobnet).and_return(@root)
+          @execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(@execution.id.to_s)
           @root.update_with_lock{ @execution.transmit(signal1) }
           @root.save!
@@ -683,9 +683,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [j43.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!
@@ -728,9 +728,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [j44.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!
@@ -774,9 +774,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [jn4.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!
@@ -835,9 +835,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [jn0005_f2.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!
@@ -879,9 +879,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [jn0005_fjn.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!
@@ -921,9 +921,9 @@ describe "reset" do
           execution = Tengine::Job::Execution.create!({
             :target_actual_ids => [finally.id.to_s],
             :retry => true, :spot => false,
-            :root_jobnet_id => @root.id
+            :root_jobnet_actual_id => @root.id
           })
-          execution.stub(:root_jobnet).and_return(@root)
+          execution.stub(:root_jobnet_actual).and_return(@root)
           event1.stub(:[]).with(:execution_id).and_return(execution.id.to_s)
           @root.update_with_lock{ execution.transmit(signal1) }
           @root.save!

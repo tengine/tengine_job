@@ -22,7 +22,8 @@ class Tengine::Job::Execution
   field :retry, :type => Boolean, :default => false # 再実行かどうか
   field :spot , :type => Boolean, :default => false # スポット実行かどうか
 
-  belongs_to :root_jobnet, :class_name => "Tengine::Job::RootJobnetActual", :index => true, :inverse_of => :executions
+  belongs_to :root_jobnet_template, :class_name => "Tengine::Job::RootJobnetTemplate", :index => true
+  belongs_to :root_jobnet_actual, :class_name => "Tengine::Job::RootJobnetActual", :index => true, :inverse_of => :executions
 
   attr_accessor :signal # runを実行して、ackを返す際に一時的にsignalを記録しておく属性です。それ以外には使用しないでください。
 
@@ -33,11 +34,11 @@ class Tengine::Job::Execution
   end
 
   def name_as_resource
-    root_jobnet.name_as_resource.sub(/^job:/, 'execution:')
+    root_jobnet_template.name_as_resource.sub(/^job:/, 'execution:')
   end
 
   def target_actuals
-    r = self.root_jobnet
+    r = self.root_jobnet_actual
     if target_actual_ids.nil? || target_actual_ids.empty?
       [r]
     else
@@ -88,7 +89,7 @@ class Tengine::Job::Execution
           target.transmit(signal)
         end
       else
-        root_jobnet.transmit(signal)
+        root_jobnet_actual.transmit(signal)
       end
     else
       raise "Unsupported phase_key for activate: #{phase_key.inspect}"
@@ -135,7 +136,7 @@ class Tengine::Job::Execution
 
   def stop(signal)
     self.phase_key = :dying
-    root_jobnet.fire_stop(signal)
+    root_jobnet_actual.fire_stop(signal)
   end
 
 end

@@ -178,7 +178,7 @@ describe Tengine::Job::RootJobnetTemplate do
       mock_sender.should_receive(:fire)
       execution = @jobnet.execute(:sender => mock_sender)
       execution.should be_a(Tengine::Job::Execution)
-      root_jobnet_actual = execution.root_jobnet
+      root_jobnet_actual = execution.root_jobnet_actual
       root_jobnet_actual.should be_a(Tengine::Job::RootJobnetActual)
       root_jobnet_actual.template.id.should == @jobnet.id
     end

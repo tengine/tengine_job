@@ -17,7 +17,7 @@ describe 'job_control_driver' do
       @jobnet = builder.create_actual
       @ctx = builder.context
       @execution = Tengine::Job::Execution.create!({
-          :root_jobnet_id => @jobnet.id,
+          :root_jobnet_actual_id => @jobnet.id,
         })
     end
 
@@ -412,7 +412,7 @@ describe 'job_control_driver' do
             @root = builder.create_actual
             @ctx = builder.context
             @execution = Tengine::Job::Execution.create!({
-                :root_jobnet_id => @root.id,
+                :root_jobnet_actual_id => @root.id,
                 :spot => spot, :retry => true,
                 :target_actual_ids => [@ctx[:j11].id.to_s]
               })
@@ -547,7 +547,7 @@ describe 'job_control_driver' do
           @ctx = builder.context
         end
         @execution = Tengine::Job::Execution.create!({
-            :root_jobnet_id => @root.id,
+            :root_jobnet_actual_id => @root.id,
           })
       end
       it{ @root.template.dsl_version.should == "1" }
@@ -566,7 +566,7 @@ describe 'job_control_driver' do
           @ctx = builder.context
         end
         @execution = Tengine::Job::Execution.create!({
-            :root_jobnet_id => @root.id,
+            :root_jobnet_actual_id => @root.id,
           })
       end
       it{ @root.template.dsl_version.should == "2" }
@@ -587,7 +587,7 @@ describe 'job_control_driver' do
           @ctx = builder.context
         end
         @execution = Tengine::Job::Execution.create!({
-            :root_jobnet_id => @root.id,
+            :root_jobnet_actual_id => @root.id,
           })
       end
       it{ @root.template.dsl_version.should == "10" }
@@ -603,7 +603,7 @@ describe 'job_control_driver' do
       @root = builder.create_actual
       @ctx = builder.context
       @execution = Tengine::Job::Execution.create!({
-          :root_jobnet_id => @root.id,
+          :root_jobnet_actual_id => @root.id,
         })
       @root.phase_key = :initialized
       @root.save!

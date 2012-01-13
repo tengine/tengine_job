@@ -61,7 +61,7 @@ describe 'hadoop_job_run' do
           mock_sender = mock(:sender)
           mock_sender.should_receive(:fire).with(any_args)
           @execution = @template.execute(:sender => mock_sender)
-          @root = @execution.root_jobnet
+          @root = @execution.root_jobnet_actual
         end
         it_should_behave_like "実行時に環境変数を設定できる"
       end
@@ -72,7 +72,7 @@ describe 'hadoop_job_run' do
           mock_sender = mock(:sender)
           mock_sender.should_receive(:fire).with(any_args)
           @execution = @template.execute(:sender => mock_sender)
-          @root = @execution.root_jobnet.vertex_by_name_path("/rjn0021/rjn0021_1")
+          @root = @execution.root_jobnet_actual.vertex_by_name_path("/rjn0021/rjn0021_1")
         end
         it_should_behave_like "実行時に環境変数を設定できる"
       end
@@ -83,7 +83,7 @@ describe 'hadoop_job_run' do
           mock_sender = mock(:sender)
           mock_sender.should_receive(:fire).with(any_args)
           @execution = @template.execute(:sender => mock_sender)
-          @root = @execution.root_jobnet.vertex_by_name_path("/rjn0021/rjn0021_2")
+          @root = @execution.root_jobnet_actual.vertex_by_name_path("/rjn0021/rjn0021_2")
         end
         it_should_behave_like "実行時に環境変数を設定できる"
       end

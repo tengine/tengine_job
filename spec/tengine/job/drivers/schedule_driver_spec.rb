@@ -13,10 +13,10 @@ describe 'schedule_driver' do
       Tengine::Core::Schedule.delete_all
       Tengine::Job::Vertex.delete_all
       builder = Rjn0001SimpleJobnetBuilder.new
-      @root = builder.create_actual
+      @template = builder.create_template
       @ctx = builder.context
       @execution = Tengine::Job::Execution.create!({
-          :root_jobnet_id => @root.id,
+          :root_jobnet_template_id => @template.id,
         })
     end
 
@@ -37,13 +37,10 @@ describe 'schedule_driver' do
         @execution.unset :actual_base_timeout_alert
         @execution.unset :actual_base_timeout_termination
         @execution.save!
-        @root.phase_key = :initialized
-        @root.save!
         EM.run_block do
           tengine.receive("start.execution.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
-            :root_jobnet_id => @root.id.to_s,
-            :target_jobnet_id => @root.id.to_s,
+            :root_jobnet_template_id => @template.id.to_s
           })
         end
         Tengine::Core::Schedule.where(:status => Tengine::Core::Schedule::SCHEDULED).should be_empty
@@ -54,13 +51,10 @@ describe 'schedule_driver' do
         @execution.actual_base_timeout_alert = 0
         @execution.actual_base_timeout_termination = 0
         @execution.save!
-        @root.phase_key = :initialized
-        @root.save!
         EM.run_block do
           tengine.receive("start.execution.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
-            :root_jobnet_id => @root.id.to_s,
-            :target_jobnet_id => @root.id.to_s,
+            :root_jobnet_template_id => @template.id.to_s
           })
         end
         Tengine::Core::Schedule.where(:status => Tengine::Core::Schedule::SCHEDULED).should be_empty
@@ -71,15 +65,14 @@ describe 'schedule_driver' do
         @execution.actual_base_timeout_alert = 32768
         @execution.actual_base_timeout_termination = 65536
         @execution.save!
-        @root.phase_key = :initialized
-        @root.save!
         EM.run_block do
           tengine.receive("start.execution.job.tengine", :properties => {
             :execution_id => @execution.id.to_s,
-            :root_jobnet_id => @root.id.to_s,
-            :target_jobnet_id => @root.id.to_s,
+            :root_jobnet_template_id => @template.id.to_s
           })
         end
+        @execution.reload
+        @root = @execution.root_jobnet_actual
         Tengine::Core::Schedule.count(:conditions => {:status => Tengine::Core::Schedule::SCHEDULED}).should == 2
         s1 = Tengine::Core::Schedule.first(:conditions => {:event_type_name => "alert.execution.job.tengine"})
         s2 = Tengine::Core::Schedule.first(:conditions => {:event_type_name => "stop.execution.job.tengine"})
@@ -89,12 +82,14 @@ describe 'schedule_driver' do
         end
         s1.properties.should == {
           'execution_id' => @execution.id.to_s,
-          'root_jobnet_id' => @root.id.to_s,
+          'root_jobnet_template_id' => @template.id.to_s,
+          'root_jobnet_actual_id' => @root.id.to_s,
           'target_jobnet_id' => @root.id.to_s,
         }
         s2.properties.should == {
           'execution_id' => @execution.id.to_s,
-          'root_jobnet_id' => @root.id.to_s,
+          'root_jobnet_template_id' => @template.id.to_s,
+          'root_jobnet_actual_id' => @root.id.to_s,
           'target_jobnet_id' => @root.id.to_s,
           'stop_reason'=>'timeout'
         }
@@ -107,7 +102,7 @@ describe 'schedule_driver' do
         EM.run_block do
           tengine.receive(event, :properties => {
             :execution_id => @execution.id.to_s,
-            :root_jobnet_id => @root.id.to_s,
+            :root_jobnet_actual_id => @root.id.to_s,
             :target_jobnet_id => @root.id.to_s,
           })
         end
@@ -127,7 +122,7 @@ describe 'schedule_driver' do
         EM.run_block do
           tengine.receive(event, :properties => {
             :execution_id => @execution.id.to_s,
-            :root_jobnet_id => @root.id.to_s,
+            :root_jobnet_actual_id => @root.id.to_s,
             :target_jobnet_id => @root.id.to_s,
           })
         end
@@ -146,7 +141,7 @@ describe 'schedule_driver' do
         EM.run_block do
           tengine.receive(event, :properties => {
             :execution_id => @execution.id.to_s,
-            :root_jobnet_id => @root.id.to_s,
+            :root_jobnet_actual_id => @root.id.to_s,
             :target_jobnet_id => @root.id.to_s,
           })
         end
@@ -163,7 +158,7 @@ describe 'schedule_driver' do
         EM.run_block do
           tengine.receive(event, :properties => {
             :execution_id => @execution.id.to_s,
-            :root_jobnet_id => @root.id.to_s,
+            :root_jobnet_actual_id => @root.id.to_s,
             :target_jobnet_id => @root.id.to_s,
           })
         end
@@ -180,7 +175,7 @@ describe 'schedule_driver' do
         EM.run_block do
           tengine.receive(event, :properties => {
             :execution_id => @execution.id.to_s,
-            :root_jobnet_id => @root.id.to_s,
+            :root_jobnet_actual_id => @root.id.to_s,
             :target_jobnet_id => @root.id.to_s,
           })
         end
@@ -190,11 +185,24 @@ describe 'schedule_driver' do
     end
 
     context "success" do
+      before do
+        @root = @template.generate
+        @root.save!
+        @execution.root_jobnet_actual_id = @root.id
+        @execution.save!
+      end
       let(:event) { "success.execution.job.tengine" }
       it_should_behave_like "terminated"
     end
 
     context "error" do
+      before do
+        @root = @template.generate
+        @root.save!
+        @execution.root_jobnet_actual_id = @root.id
+        @execution.save!
+      end
+
       let(:event) { "error.execution.job.tengine" }
       it_should_behave_like "terminated"
     end

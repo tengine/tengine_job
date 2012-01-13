@@ -32,7 +32,7 @@ describe Tengine::Job::Execution do
       @root = builder.create_actual
       @ctx = builder.context
       @execution = Tengine::Job::Execution.create!({
-          :root_jobnet_id => @root.id,
+          :root_jobnet_actual_id => @root.id,
           :retry => true, :spot => false,
         })
       @base_props = {
@@ -51,7 +51,7 @@ describe Tengine::Job::Execution do
         [:root, :j11, :j12, :j13].each{|j| @ctx[j].phase_key = :success}
         @root.edges.each{|edge| edge.phase_key = :transmitted }
         @root.save!
-        @execution.stub(:root_jobnet).and_return(@root)
+        @execution.stub(:root_jobnet_actual).and_return(@root)
       end
 
       context 'target_actualでジョブを取得' do

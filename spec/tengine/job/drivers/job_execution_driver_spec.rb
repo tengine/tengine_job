@@ -14,69 +14,72 @@ describe 'job_execution_driver' do
     before do
       Tengine::Job::Vertex.delete_all
       builder = Rjn0001SimpleJobnetBuilder.new
-      @root = builder.create_actual
+      @template = builder.create_template
       @ctx = builder.context
       @execution = Tengine::Job::Execution.create!({
-          :root_jobnet_id => @root.id,
+          :root_jobnet_template_id => @template.id,
         })
     end
 
     it "ジョブの起動イベントを受け取ったら" do
       @execution.phase_key = :initialized
       @execution.save!
-      @root.phase_key = :initialized
-      @root.save!
+      @execution.root_jobnet_template.should_not be_nil
+      @execution.root_jobnet_actual.should be_nil
       tengine.should_fire(:"start.jobnet.job.tengine",
-        :source_name => @root.name_as_resource,
+        :source_name => @template.name_as_resource,
         :properties => {
           :execution_id => @execution.id.to_s,
-          :root_jobnet_id => @root.id.to_s,
-          :root_jobnet_name_path => @root.name_path,
-          :target_jobnet_id => @root.id.to_s,
-          :target_jobnet_name_path => @root.name_path,
+          :root_jobnet_template_id => @template.id.to_s,
+          :root_jobnet_template_name_path => @template.name_path
         })
-      tengine.receive("start.execution.job.tengine", :properties => {
-          :execution_id => @execution.id.to_s,
-          :root_jobnet_id => @root.id.to_s,
-          :root_jobnet_name_path => @root.name_path,
-          :target_jobnet_id => @root.id.to_s,
-          :target_jobnet_name_path => @root.name_path,
-        })
+      expect{
+        tengine.receive("start.execution.job.tengine", :properties => {
+            :execution_id => @execution.id.to_s,
+            :root_jobnet_template_id => @template.id.to_s,
+            :root_jobnet_template_name_path => @template.name_path
+          })
+      }.to change(Tengine::Job::RootJobnetActual, :count).by(1)
       @execution.reload
       @execution.phase_key.should == :starting
-      @root.reload
-      @root.phase_key.should == :ready
+      @execution.root_jobnet_template_id.should == @template.id
+      @execution.root_jobnet_actual.tap do |root|
+        root.reload
+        root.phase_key.should == :ready
+      end
     end
 
     %w[user_stop timeout].each do |stop_reason|
       context stop_reason do
         it "強制停止イベントを受け取ったら" do
+          actual = @template.generate
+          actual.phase_key = :running
+          actual.save!
+          @execution.root_jobnet_actual_id = actual.id
           @execution.phase_key = :running
           @execution.save!
-          @root.phase_key = :running
-          @root.save!
           tengine.should_fire(:"stop.jobnet.job.tengine",
-            :source_name => @root.name_as_resource,
+            :source_name => actual.name_as_resource,
             :properties => {
               :execution_id => @execution.id.to_s,
-              :root_jobnet_id => @root.id.to_s,
-              :root_jobnet_name_path => @root.name_path,
-              :target_jobnet_id => @root.id.to_s,
-              :target_jobnet_name_path => @root.name_path,
+              :root_jobnet_id => actual.id.to_s,
+              :root_jobnet_name_path => actual.name_path,
+              :target_jobnet_id => actual.id.to_s,
+              :target_jobnet_name_path => actual.name_path,
               :stop_reason => stop_reason
             })
           tengine.receive("stop.execution.job.tengine", :properties => {
               :execution_id => @execution.id.to_s,
-              :root_jobnet_id => @root.id.to_s,
-              :root_jobnet_name_path => @root.name_path,
-              :target_jobnet_id => @root.id.to_s,
-              :target_jobnet_name_path => @root.name_path,
+              :root_jobnet_actual_id => actual.id.to_s,
+              :root_jobnet_actual_name_path => actual.name_path,
+              :target_jobnet_id => actual.id.to_s,
+              :target_jobnet_name_path => actual.name_path,
               :stop_reason => stop_reason
             })
           @execution.reload
           @execution.phase_key.should == :dying
-          @root.reload
-          @root.phase_key.should == :running
+          actual.reload
+          actual.phase_key.should == :running
         end
       end
     end
