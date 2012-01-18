@@ -65,7 +65,9 @@ describe 'job_execution_driver' do
               :target_jobnet_name_path => @root.name_path,
               :stop_reason => stop_reason
             })
-          tengine.receive("stop.execution.job.tengine", :properties => {
+          tengine.receive("stop.execution.job.tengine",
+            :source_name => @execution.name_as_resource,
+            :properties => {
               :execution_id => @execution.id.to_s,
               :root_jobnet_id => @root.id.to_s,
               :root_jobnet_name_path => @root.name_path,
