@@ -50,8 +50,12 @@ class Tengine::Job::Edge
     owner.children.detect{|c| c.id == destination_id}
   end
 
+  def inspect_vertecs
+    "from #{origin ? origin.name_path : 'no origin'} to #{destination ? destination.name_path : 'no destination'}"
+  end
+
   def name_for_message
-    "edge(#{id.to_s}) from #{origin ? origin.name_path : 'no origin'} to #{destination ? destination.name_path : 'no destination'}"
+    "edge(#{id.to_s}) #{inspect_vertecs}"
   end
 
   def inspect
@@ -124,7 +128,7 @@ class Tengine::Job::Edge
   end
 
   def phase_key=(phase_key)
-    Tengine.logger.debug("edge phase changed. <#{self.id.to_s}> #{self.phase_name} -> #{Tengine::Job::Edge.phase_name_by_key(phase_key)}")
+    Tengine.logger.debug("edge phase changed. <#{self.id.to_s}> version:#{owner.root.version} edge[#{inspect_vertecs}] #{self.phase_name} -> #{Tengine::Job::Edge.phase_name_by_key(phase_key)}")
     self.write_attribute(:phase_cd, Tengine::Job::Edge.phase_id_by_key(phase_key))
   end
 

@@ -35,7 +35,15 @@ module Tengine::Job::Executable
       when Tengine::Job::JobnetActual then element_type = self.script_executable? ? "job" :
         self.jobnet_type_key == :normal ?  "jobnet" : self.jobnet_type_name
       end
-      Tengine.logger.debug("#{element_type} phase changed. <#{ self.id.to_s}> #{self.phase_name} -> #{ self.class.phase_name_by_key(phase_key)}")
+      log_caption =
+        if respond_to?(:name_path) && respond_to?(:root)
+          r = root
+          root.respond_to?(:version) ? "version:#{r.version} #{name_path}" : name_path
+        else
+          r = root_jobnet
+          "version:#{r.version} #{self.class.name}"
+        end
+      Tengine.logger.debug("#{element_type} phase changed. <#{self.id.to_s}> #{log_caption} #{self.phase_name} -> #{ self.class.phase_name_by_key(phase_key)}")
       if is_a?(Tengine::Job::JobnetActual)
         children.each{|child| child.phase_key = phase_key if child.respond_to?(:chained_box?) && child.chained_box?}
       end
