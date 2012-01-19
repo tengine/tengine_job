@@ -32,4 +32,24 @@ class Tengine::Job::JobnetActual < Tengine::Job::Jobnet
     p.nil? ? self : p.was_expansion ? p : p.root_or_expansion
   end
 
+  # https://www.pivotaltracker.com/story/show/23329935
+
+  def stop_reason= r
+    super
+    children.each do |i|
+      if i.respond_to?(:chained_box?) && i.chained_box?
+        i.stop_reason = r
+      end
+    end
+  end
+
+  def stopped_at= t
+    super
+    children.each do |i|
+      if i.respond_to?(:chained_box?) && i.chained_box?
+        i.stopped_at = t
+      end
+    end
+  end
+
 end
