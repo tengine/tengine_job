@@ -40,4 +40,23 @@ describe "job DSL examples" do
     end
   end
 
+  context "<BUG>[tenginedがジョブネット定義をロードするパスとして指定したディレクトリ内に更にディレクトリが存在すると、Errorが発生してtenginedが起動できない]" do
+    it do
+      Tengine::Core::Driver.delete_all
+      Tengine::Core::HandlerPath.delete_all
+      Tengine::Job::Vertex.delete_all
+      Tengine::Job::Vertex.count.should == 0
+      expect {
+        dsl_dir = File.expand_path("dsls/1060_test_dir1", File.dirname(__FILE__))
+        config = {
+          :action => "load",
+          :tengined => { :load_path => dsl_dir },
+        }
+        @bootstrap = Tengine::Core::Bootstrap.new(config)
+        @bootstrap.boot
+      }.to_not raise_error
+      Tengine::Job::Vertex.count.should_not == 0
+    end
+  end
+
 end
