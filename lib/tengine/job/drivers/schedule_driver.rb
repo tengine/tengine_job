@@ -15,16 +15,19 @@ driver :schedule_driver do
       t2 = Time.now + (exec.actual_base_timeout_termination * 60.0)
       Tengine::Core::Schedule.create event_type_name: "stop.execution.job.tengine", scheduled_at: t2, source_name: name, status: status, properties: event.properties.merge(stop_reason: 'timeout')
     end
+    submit
   end
 
   on :'success.execution.job.tengine' do
     name = Tengine::Job::Signal.new(event).execution.name_as_resource
     Tengine::Core::Schedule.where(source_name: name, status: Tengine::Core::Schedule::SCHEDULED).update_all(status: Tengine::Core::Schedule::INVALID)
+    submit
   end
 
   on :'error.execution.job.tengine' do
     name = Tengine::Job::Signal.new(event).execution.name_as_resource
     Tengine::Core::Schedule.where(source_name: name, status: Tengine::Core::Schedule::SCHEDULED).update_all(status: Tengine::Core::Schedule::INVALID)
+    submit
   end
 
 end
