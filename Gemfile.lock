@@ -1,5 +1,4 @@
 GEM
-  remote: http://bts.tenginefw.com/gemserver/
   remote: http://rubygems.org/
   specs:
     ZenTest (4.6.2)
@@ -62,7 +61,7 @@ GEM
       simplecov-html (~> 0.5.3)
     simplecov-html (0.5.3)
     systemu (2.4.2)
-    tengine_core (0.5.27)
+    tengine_core (0.5.28)
       activemodel (~> 3.1.0)
       activesupport (~> 3.1.0)
       bson (~> 1.5.2)
@@ -73,12 +72,12 @@ GEM
       selectable_attr (~> 0.3.15)
       tengine_event (~> 0.4.0)
       tengine_support (~> 0.3.12)
-    tengine_event (0.4.5)
+    tengine_event (0.4.6)
       activesupport (>= 3.0.0)
       amqp (~> 0.8.0)
       tengine_support (>= 0.3.24)
       uuid (~> 2.3.4)
-    tengine_resource (0.5.12)
+    tengine_resource (0.5.13)
       net-ssh (~> 2.2.1)
       right_aws (~> 2.1.0)
       tengine_core (~> 0.5.23)
