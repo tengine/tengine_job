@@ -16,7 +16,7 @@ Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "tengine_job"
   gem.homepage = "http://github.com/tengine/tengine_job"
-  gem.license = "MPL/LGPL"
+  gem.license = "MPL2.0/LGPLv3"
   gem.summary = %Q{tengine_job provides jobnet management}
   gem.description = %Q{tengine_job provides jobnet management}
   gem.email = "tengine@nautilus-technologies.com"
