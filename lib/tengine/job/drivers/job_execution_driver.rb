@@ -49,7 +49,7 @@ driver :job_execution_driver do
     submit
   end
 
-  on :'stop.execution.job.tengine.error.tengined' do
+  on :'stop.execution.job.tengine.failed.tengined' do
     # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
     # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
     e = event

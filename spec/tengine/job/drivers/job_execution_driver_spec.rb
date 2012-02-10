@@ -48,7 +48,7 @@ describe 'job_execution_driver' do
       @root.phase_key.should == :ready
     end
 
-    it "failed.tengined, double save" do
+    it "start.execution.job.tengine.failed.tengined, double save" do
       @execution.phase_key = :initialized
       @execution.save!
       @root.phase_key = :initialized
@@ -67,8 +67,17 @@ describe 'job_execution_driver' do
       @execution.phase_key.should == :stuck
     end
 
-    it "failed.tengined, broken event" do
-      pending "to be written"
+    it "start.execution.job.tengine.failed.tengined, broken event" do
+      @execution.phase_key = :initialized
+      @execution.save!
+      @root.phase_key = :initialized
+      @root.save!
+      tengine.receive("start.execution.job.tengine.failed.tengined", :properties => {
+          :original_event => {
+            :event_type_name => "start.execution.job.tengine",
+            :properties => {}}})
+      @execution.reload
+      @execution.phase_key.should_not == :stuck
     end
 
     %w[user_stop timeout].each do |stop_reason|
@@ -106,6 +115,24 @@ describe 'job_execution_driver' do
       end
     end
     # jobnet_control_driverでexecution起動後の処理を行っています
-  end
 
+    it "stop.execution.job.tengine.failed.tengined" do
+      @execution.phase_key = :running
+      @execution.save!
+      @root.phase_key = :running
+      @root.save!
+      tengine.receive("stop.execution.job.tengine.failed.tengined", :properties => {
+          :original_event => {
+            :event_type_name => "STOP.execution.job.tengine",
+            :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_jobnet_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+            }}})
+      @execution.reload
+      @execution.phase_key.should == :stuck
+    end
+  end
 end
