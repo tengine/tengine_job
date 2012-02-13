@@ -563,6 +563,7 @@ describe 'job_control_driver' do
   
   %w[
     success.jobnet.job.tengine.failed.tengined
+    error.jobnet.job.tengine.failed.tengined
   ].each do |i|
     describe i do
       it "stuckにする" do
