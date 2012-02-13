@@ -103,13 +103,13 @@ driver :job_control_driver do
     root_jobnet.update_with_lock do
       signal.reset
       job = root_jobnet.find_descendant(event[:target_job_id])
-      job.finish(signal)
+      job.finish(signal) unless job.phase_key == :stuck
     end
     signal.reservations.each{|r| fire(*r.fire_args)}
     submit
   end
 
-  on :'finished.job.job.tengine.failed.tengined' do
+  on :'finished.process.job.tengine.failed.tengined' do
     # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
     # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
     e = event
