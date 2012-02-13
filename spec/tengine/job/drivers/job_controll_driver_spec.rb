@@ -620,4 +620,62 @@ describe 'job_control_driver' do
     end
   end
 
+  context "start.job.job.tengine.failed.tengined" do
+    it "stuckにする" do
+      Tengine::Core::Schedule.delete_all
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+      @root.phase_key = :initialized
+      @root.save!
+      EM.run_block do
+        tengine.receive("start.job.job.tengine.failed.tengined", :properties => {
+          :original_event => {
+            :event_type_name => "start.job.job.tengine",
+            :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_jobnet_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+              :target_job_id => @root.children[1].id.to_s,
+            }}})
+      end
+      @root.reload
+      @root.children[1].phase_key.should == :stuck
+      @root.phase_key.should_not == :stuck # initialized
+    end
+
+    it "broken event" do
+      Tengine::Core::Schedule.delete_all
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+      @root.phase_key = :initialized
+      @root.save!
+      EM.run_block do
+        tengine.receive("start.job.job.tengine.failed.tengined", :properties => {
+          :original_event => {
+            :event_type_name => "start.job.job.tengine",
+            :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_jobnet_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+            }}})
+      end
+      @root.reload
+      @root.children[1].phase_key.should == :initialized
+      @root.phase_key.should_not == :stuck # initialized
+    end
+  end
 end
