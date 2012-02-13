@@ -45,7 +45,32 @@ driver :jobnet_control_driver do
         edge.transmit(signal)
       end
     end
+    # (*1)
     signal.reservations.each{|r| fire(*r.fire_args)}
+  end
+
+  on :'success.job.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = h["target_job_id"]     or next
+    l = Tengine::Job::RootJobnetActual.find(i) or next
+
+    # 上記(*1)のポイントでtenginedが落ちた時のことを考えると、後続のエッ
+    # ジはもうtransmitしているが送信すべきイベントが欠けている状態であ
+    # るので、この場合このジョブがおかしくなっているというよりむしろジョ
+    # ブネット全体がおかしくなっているというべきである。
+    l.update_with_lock do
+      m = l.find_descendant(j)  || l
+      n = m.find_descendant(k)
+      o = n.parent || n
+      o.phase_key = :stuck
+    end
   end
 
   on :'error.job.job.tengine' do
