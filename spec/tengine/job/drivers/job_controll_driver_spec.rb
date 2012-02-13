@@ -678,4 +678,42 @@ describe 'job_control_driver' do
       @root.phase_key.should_not == :stuck # initialized
     end
   end
+
+  %w[
+     stop.job.job.tengine.failed.tengined
+     finished.job.job.tengine.failed.tengined
+     expired.job.heartbeat.tengine.failed.tengined
+     restart.job.job.tengine.failed.tengined
+  ].each do |i|
+    describe i do
+      it "stuckにする" do
+        Tengine::Core::Schedule.delete_all
+        Tengine::Job::Vertex.delete_all
+        builder = Rjn0001SimpleJobnetBuilder.new
+        @root = builder.create_actual
+        @ctx = builder.context
+        @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+        @root.phase_key = :running
+        @root.save!
+        EM.run_block do
+          tengine.receive(i, :properties => {
+            :original_event => {
+              :event_type_name => "start.job.job.tengine",
+              :properties => {
+                :execution_id => @execution.id.to_s,
+                :root_jobnet_id => @root.id.to_s,
+                :root_jobnet_name_path => @root.name_path,
+                :target_jobnet_id => @root.id.to_s,
+                :target_jobnet_name_path => @root.name_path,
+                :target_job_id => @root.children[1].id.to_s,
+              }}})
+        end
+        @root.reload
+        @root.children[1].phase_key.should == :stuck
+        @root.phase_key.should_not == :stuck # running
+      end
+    end
+  end
 end

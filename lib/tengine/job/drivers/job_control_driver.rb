@@ -77,6 +77,25 @@ driver :job_control_driver do
     submit
   end
 
+  on :'stop.job.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = h["target_job_id"]     or next
+    l = Tengine::Job::RootJobnetActual.find(i) or next
+
+    l.update_with_lock do
+      m = l.find_descendant(j)  || l
+      n = m.find_descendant(k)
+      n.phase_key = :stuck
+    end
+  end
+
   on :'finished.process.job.tengine' do
     signal = Tengine::Job::Signal.new(event)
     root_jobnet = Tengine::Job::RootJobnetActual.find(event[:root_jobnet_id])
@@ -90,6 +109,25 @@ driver :job_control_driver do
     submit
   end
 
+  on :'finished.job.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = h["target_job_id"]     or next
+    l = Tengine::Job::RootJobnetActual.find(i) or next
+
+    l.update_with_lock do
+      m = l.find_descendant(j)  || l
+      n = m.find_descendant(k)
+      n.phase_key = :stuck
+    end
+  end
+
   on :'expired.job.heartbeat.tengine' do
     event.tap do |e|
       Tengine::Job::RootJobnetActual.find(e[:root_jobnet_id]).tap do |r|
@@ -99,6 +137,25 @@ driver :job_control_driver do
       end
     end
     submit
+  end
+
+  on :'expired.job.heartbeat.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = h["target_job_id"]     or next
+    l = Tengine::Job::RootJobnetActual.find(i) or next
+
+    l.update_with_lock do
+      m = l.find_descendant(j)  || l
+      n = m.find_descendant(k)
+      n.phase_key = :stuck
+    end
   end
 
   on :'restart.job.job.tengine' do
@@ -117,4 +174,22 @@ driver :job_control_driver do
     end
   end
 
+  on :'restart.job.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = h["target_job_id"]     or next
+    l = Tengine::Job::RootJobnetActual.find(i) or next
+
+    l.update_with_lock do
+      m = l.find_descendant(j)  || l
+      n = m.find_descendant(k)
+      n.phase_key = :stuck
+    end
+  end
 end
