@@ -177,6 +177,16 @@ describe 'job_control_driver' do
         @root.phase_key.should == :error
         @root.finished_at.utc.iso8601.should == @now.utc.iso8601
       end
+
+      it "上位のジョブネットがstuckしていた場合" do
+        @root.phase_key = :stuck
+        @root.save!
+        tengine.receive("success.job.job.tengine", :properties => {
+            :target_job_id => @ctx[:j12].id.to_s
+          }.update(@base_props))
+        @root.reload
+        @root.phase_key.should == :stuck
+      end
     end
 
   end
