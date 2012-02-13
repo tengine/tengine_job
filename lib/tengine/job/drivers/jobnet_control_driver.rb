@@ -6,6 +6,7 @@
  :'error.job.job.tengine',
  :'success.jobnet.job.tengine',
  :'error.jobnet.job.tengine',
+ :'stop.jobnet.job.tengine',
 ].each do |i|
   ack_policy :after_all_handler_submit, i
 end
@@ -225,6 +226,23 @@ driver :jobnet_control_driver do
       target_jobnet.stop(signal)
     end
     signal.reservations.each{|r| fire(*r.fire_args) }
+    submit
   end
 
+  on :'stop.jobnet.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = Tengine::Job::RootJobnetActual.find(i) or next
+
+    k.update_with_lock do
+      l = k.find_descendant(j) || k
+      l.phase_key = :stuck
+    end
+  end
 end
