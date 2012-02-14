@@ -40,11 +40,19 @@ driver :schedule_driver do
     status = Tengine::Core::Schedule::SCHEDULED
     if exec.actual_base_timeout_alert && !exec.actual_base_timeout_alert.zero? && Tengine::Core::Schedule.where(event_type_name: "alert.execution.job.tengine", source_name: name).count.zero?
       t1 = Time.now + (exec.actual_base_timeout_alert * 60.0)
-      Tengine::Core::Schedule.create event_type_name: "alert.execution.job.tengine", scheduled_at: t1, source_name: name, status: status , properties: orig.properties
+      Tengine::Core::Schedule.safely(
+        safemode(Tengine::Core::Schedule.collection)
+      ).create(
+        event_type_name: "alert.execution.job.tengine", scheduled_at: t1, source_name: name, status: status , properties: orig.properties
+      )
     end
     if exec.actual_base_timeout_termination && !exec.actual_base_timeout_termination.zero? && Tengine::Core::Schedule.where(event_type_name: "stop.execution.job.tengine", source_name: name).count.zero?
       t2 = Time.now + (exec.actual_base_timeout_termination * 60.0)
-      Tengine::Core::Schedule.create event_type_name: "stop.execution.job.tengine", scheduled_at: t2, source_name: name, status: status, properties: orig.properties.merge(stop_reason: 'timeout')
+      Tengine::Core::Schedule.safely(
+        safemode(Tengine::Core::Schedule.collection)
+      ).create(
+        event_type_name: "stop.execution.job.tengine", scheduled_at: t2, source_name: name, status: status, properties: orig.properties.merge(stop_reason: 'timeout')
+      )
     end
     submit
   end
