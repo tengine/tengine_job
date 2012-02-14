@@ -99,6 +99,45 @@ describe 'schedule_driver' do
           'stop_reason'=>'timeout'
         }
       end
+
+      it "tenginedクラッシュからの復帰" do
+        Tengine::Core::Schedule.delete_all
+        @execution.phase_key = :initialized
+        @execution.actual_base_timeout_alert = 32768
+        @execution.actual_base_timeout_termination = 65536
+        @execution.save!
+        @root.phase_key = :initialized
+        @root.save!
+        EM.run_block do
+          tengine.receive("start.execution.job.tengine.failed.tengined", :properties => {
+            :original_event => {
+              :event_type_name => "start.execution.job.tengine",
+              :properties => {
+                :execution_id => @execution.id.to_s,
+                :root_jobnet_id => @root.id.to_s,
+                :target_jobnet_id => @root.id.to_s,
+              }}})
+        end
+        Tengine::Core::Schedule.count(:conditions => {:status => Tengine::Core::Schedule::SCHEDULED}).should == 2
+        s1 = Tengine::Core::Schedule.first(:conditions => {:event_type_name => "alert.execution.job.tengine"})
+        s2 = Tengine::Core::Schedule.first(:conditions => {:event_type_name => "stop.execution.job.tengine"})
+        [s1, s2].each do |i|
+          i.source_name.should == @execution.name_as_resource
+          i.scheduled_at.should >= Time.now
+        end
+        s1.properties.should == {
+          'execution_id' => @execution.id.to_s,
+          'root_jobnet_id' => @root.id.to_s,
+          'target_jobnet_id' => @root.id.to_s,
+        }
+        s2.properties.should == {
+          'execution_id' => @execution.id.to_s,
+          'root_jobnet_id' => @root.id.to_s,
+          'target_jobnet_id' => @root.id.to_s,
+          'stop_reason'=>'timeout'
+        }
+        
+      end
     end
 
     shared_examples "terminated" do
