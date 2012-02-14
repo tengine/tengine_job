@@ -31,6 +31,8 @@ driver :schedule_driver do
     e = event
     f = e.properties                     or next
     g = f["original_event"]              or next
+    h = g["properties"]                  or next
+    i = h["execution_id"]                or next
 
     orig = Tengine::Core::EventWrapper.new(Tengine::Core::Event.new(g)) # this object shall noe be persisted
     exec = Tengine::Job::Signal.new(orig).execution
