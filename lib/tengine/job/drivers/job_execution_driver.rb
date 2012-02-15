@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+include Tengine::Core::SafeUpdatable
 
 # ジョブ起動ドライバ
 driver :job_execution_driver do
@@ -11,7 +12,7 @@ driver :job_execution_driver do
       signal.reset
       execution.transmit(signal)
     end
-    execution.save!
+    execution.safely(safemode(Tengine::Job::Execution.collection)).save!
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
@@ -23,7 +24,7 @@ driver :job_execution_driver do
       signal.reset
       execution.stop(signal)
     end
-    execution.save!
+    execution.safely(safemode(Tengine::Job::Execution.collection)).save!
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 

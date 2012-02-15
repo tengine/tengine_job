@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+include Tengine::Core::SafeUpdatable
 
 # ジョブネット制御ドライバ
 driver :jobnet_control_driver do
@@ -13,7 +14,7 @@ driver :jobnet_control_driver do
         target_jobnet.activate(signal)
       end
     end
-    signal.execution.save! if event[:root_jobnet_id] == event[:target_jobnet_id]
+    signal.execution.safely(safemode(Tengine::Job::Execution.collection)).save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
@@ -71,7 +72,7 @@ driver :jobnet_control_driver do
         end
       end
     end
-    signal.execution.save! if event[:root_jobnet_id] == event[:target_jobnet_id]
+    signal.execution.safely(safemode(Tengine::Job::Execution.collection)).save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
@@ -98,7 +99,7 @@ driver :jobnet_control_driver do
       #   target_parent.end_vertex.transmit(signal)
       # end
     end
-    signal.execution.save! if event[:root_jobnet_id] == event[:target_jobnet_id]
+    signal.execution.safely(safemode(Tengine::Job::Execution.collection)).save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
   end
 
