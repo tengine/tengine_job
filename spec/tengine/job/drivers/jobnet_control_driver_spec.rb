@@ -177,6 +177,16 @@ describe 'job_control_driver' do
         @root.phase_key.should == :error
         @root.finished_at.utc.iso8601.should == @now.utc.iso8601
       end
+
+      it "上位のジョブネットがstuckしていた場合" do
+        @root.phase_key = :stuck
+        @root.save!
+        tengine.receive("success.job.job.tengine", :properties => {
+            :target_job_id => @ctx[:j12].id.to_s
+          }.update(@base_props))
+        @root.reload
+        @root.phase_key.should == :stuck
+      end
     end
 
   end
@@ -443,4 +453,156 @@ describe 'job_control_driver' do
 
   end
 
+  context "start.jobnet.job.tengine.failed.tengined" do
+    it "stuckにする" do
+      Tengine::Core::Schedule.delete_all
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+      @root.phase_key = :initialized
+      @root.save!
+      EM.run_block do
+        tengine.receive("start.jobnet.job.tengine.failed.tengined", :properties => {
+          :original_event => {
+            :event_type_name => "start.jobnet.job.tengine",
+            :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_jobnet_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+            }}})
+      end
+      @root.reload
+      @root.phase_key.should == :stuck
+    end
+
+    it "broken event" do
+      Tengine::Core::Schedule.delete_all
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+      @root.phase_key = :initialized
+      @root.save!
+      EM.run_block do
+        tengine.receive("start.jobnet.job.tengine.failed.tengined", :properties => {
+          :original_event => {
+            :event_type_name => "start.jobnet.job.tengine",
+            :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_job_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+            }}})
+      end
+      @root.reload
+      @root.children[1].phase_key.should == :initialized
+      @root.phase_key.should_not == :stuck # initialized
+    end
+  end
+
+  context "success.job.job.tengine.failed.tengined" do
+    it "stuckにする(ただし上位のジョブネットを)" do
+      Tengine::Core::Schedule.delete_all
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+      @root.phase_key = :initialized
+      @root.save!
+      EM.run_block do
+        tengine.receive("success.job.job.tengine.failed.tengined", :properties => {
+          :original_event => {
+            :event_type_name => "success.job.job.tengine",
+            :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_jobnet_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+              :target_job_id => @root.children[1].id.to_s,
+            }}})
+      end
+      @root.reload
+      @root.phase_key.should == :stuck
+    end
+  end
+
+  context "error.job.job.tengine.failed.tengined" do
+    it "stuckにする(ただし上位のジョブネットを)" do
+      Tengine::Core::Schedule.delete_all
+      Tengine::Job::Vertex.delete_all
+      builder = Rjn0001SimpleJobnetBuilder.new
+      @root = builder.create_actual
+      @ctx = builder.context
+      @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+      @root.phase_key = :initialized
+      @root.save!
+      EM.run_block do
+        tengine.receive("error.job.job.tengine.failed.tengined", :properties => {
+          :original_event => {
+            :event_type_name => "error.job.job.tengine",
+            :properties => {
+              :execution_id => @execution.id.to_s,
+              :root_jobnet_id => @root.id.to_s,
+              :root_jobnet_name_path => @root.name_path,
+              :target_jobnet_id => @root.id.to_s,
+              :target_jobnet_name_path => @root.name_path,
+              :target_job_id => @root.children[1].id.to_s,
+            }}})
+      end
+      @root.reload
+      @root.phase_key.should == :stuck
+    end
+  end
+
+  
+  %w[
+    success.jobnet.job.tengine.failed.tengined
+    error.jobnet.job.tengine.failed.tengined
+    stop.jobnet.job.tengine.failed.tengined
+  ].each do |i|
+    describe i do
+      it "stuckにする" do
+        Tengine::Core::Schedule.delete_all
+        Tengine::Job::Vertex.delete_all
+        builder = Rjn0001SimpleJobnetBuilder.new
+        @root = builder.create_actual
+        @ctx = builder.context
+        @execution = Tengine::Job::Execution.create!({
+          :root_jobnet_id => @root.id,
+        })
+        @root.phase_key = :initialized
+        @root.save!
+        EM.run_block do
+          tengine.receive(i, :properties => {
+            :original_event => {
+              :event_type_name => "start.jobnet.job.tengine",
+              :properties => {
+                :execution_id => @execution.id.to_s,
+                :root_jobnet_id => @root.id.to_s,
+                :root_jobnet_name_path => @root.name_path,
+                :target_jobnet_id => @root.id.to_s,
+                :target_jobnet_name_path => @root.name_path,
+              }}})
+        end
+        @root.reload
+        @root.phase_key.should == :stuck
+      end
+    end
+  end
 end

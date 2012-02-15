@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
 include Tengine::Core::SafeUpdatable
 
+[
+ :'start.jobnet.job.tengine',
+ :'success.job.job.tengine',
+ :'error.job.job.tengine',
+ :'success.jobnet.job.tengine',
+ :'error.jobnet.job.tengine',
+ :'stop.jobnet.job.tengine',
+].each do |i|
+  ack_policy :after_all_handler_submit, i
+end
+
+
 # ジョブネット制御ドライバ
 driver :jobnet_control_driver do
 
@@ -16,6 +28,24 @@ driver :jobnet_control_driver do
     end
     signal.execution.safely(safemode(Tengine::Job::Execution.collection)).save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
+    submit
+  end
+
+  on :'start.jobnet.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = Tengine::Job::RootJobnetActual.find(i) or next
+
+    k.update_with_lock do
+      l = k.find_descendant(j) || k
+      l.phase_key = :stuck
+    end
   end
 
   on :'success.job.job.tengine' do
@@ -29,7 +59,33 @@ driver :jobnet_control_driver do
         edge.transmit(signal)
       end
     end
+    # (*1)
     signal.reservations.each{|r| fire(*r.fire_args)}
+    submit
+  end
+
+  on :'success.job.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = h["target_job_id"]     or next
+    l = Tengine::Job::RootJobnetActual.find(i) or next
+
+    # 上記(*1)のポイントでtenginedが落ちた時のことを考えると、後続のエッ
+    # ジはもうtransmitしているが送信すべきイベントが欠けている状態であ
+    # るので、この場合このジョブがおかしくなっているというよりむしろジョ
+    # ブネット全体がおかしくなっているというべきである。
+    l.update_with_lock do
+      m = l.find_descendant(j)  || l
+      n = m.find_descendant(k)
+      o = n.parent || n
+      o.phase_key = :stuck
+    end
   end
 
   on :'error.job.job.tengine' do
@@ -47,6 +103,29 @@ driver :jobnet_control_driver do
       # target_jobnet.jobnet_fail(signal)
     end
     signal.reservations.each{|r| fire(*r.fire_args)}
+    submit
+  end
+
+  on :'error.job.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = h["target_job_id"]     or next
+    l = Tengine::Job::RootJobnetActual.find(i) or next
+
+    # 同上で、この場合このジョブがおかしくなっているというよりむしろジョ
+    # ブネット全体がおかしくなっているというべきである。
+    l.update_with_lock do
+      m = l.find_descendant(j)  || l
+      n = m.find_descendant(k)
+      o = n.parent || n
+      o.phase_key = :stuck
+    end
   end
 
   on :'success.jobnet.job.tengine' do
@@ -74,6 +153,24 @@ driver :jobnet_control_driver do
     end
     signal.execution.safely(safemode(Tengine::Job::Execution.collection)).save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
+    submit
+  end
+
+  on :'success.jobnet.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = Tengine::Job::RootJobnetActual.find(i) or next
+
+    k.update_with_lock do
+      l = k.find_descendant(j) || k
+      l.phase_key = :stuck
+    end
   end
 
   on :'error.jobnet.job.tengine' do
@@ -101,8 +198,25 @@ driver :jobnet_control_driver do
     end
     signal.execution.safely(safemode(Tengine::Job::Execution.collection)).save! if event[:root_jobnet_id] == event[:target_jobnet_id]
     signal.reservations.each{|r| fire(*r.fire_args)}
+    submit
   end
 
+  on :'error.jobnet.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = Tengine::Job::RootJobnetActual.find(i) or next
+
+    k.update_with_lock do
+      l = k.find_descendant(j) || k
+      l.phase_key = :stuck
+    end
+  end
 
   on :'stop.jobnet.job.tengine' do
     signal = Tengine::Job::Signal.new(event)
@@ -113,6 +227,23 @@ driver :jobnet_control_driver do
       target_jobnet.stop(signal)
     end
     signal.reservations.each{|r| fire(*r.fire_args) }
+    submit
   end
 
+  on :'stop.jobnet.job.tengine.failed.tengined' do
+    # このイベントは壊れていたからfailedなのかもしれない。多重送信によ
+    # りfailedなのかもしれない。あまりへんな仮定を置かない方が良い。
+    e = event
+    f = e.properties           or next
+    g = f["original_event"]    or next
+    h = g["properties"]        or next
+    i = h["root_jobnet_id"]    or next
+    j = h["target_jobnet_id"]  or next
+    k = Tengine::Job::RootJobnetActual.find(i) or next
+
+    k.update_with_lock do
+      l = k.find_descendant(j) || k
+      l.phase_key = :stuck
+    end
+  end
 end
