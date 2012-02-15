@@ -8,6 +8,7 @@ require 'selectable_attr'
 class Tengine::Job::Jobnet < Tengine::Job::Job
   include Tengine::Core::SelectableAttr
   include Tengine::Job::ElementSelectorNotation
+  include Tengine::Core::SafeUpdatable
 
   autoload :Builder, "tengine/job/jobnet/builder"
   autoload :StateTransition, 'tengine/job/jobnet/state_transition'
