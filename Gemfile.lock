@@ -61,7 +61,7 @@ GEM
       simplecov-html (~> 0.5.3)
     simplecov-html (0.5.3)
     systemu (2.4.2)
-    tengine_core (0.5.31)
+    tengine_core (0.5.32)
       activemodel (~> 3.1.0)
       activesupport (~> 3.1.0)
       bson (~> 1.5.2)
@@ -88,9 +88,10 @@ GEM
     tzinfo (0.3.31)
     uuid (2.3.5)
       macaddr (~> 1.0)
-    wakame-adapters-tengine (0.0.7)
+    wakame-adapters-tengine (0.0.1)
       json
-      right_aws (~> 2.1.0)
+      right_aws (= 2.1.0)
+      rspec
     yard (0.7.5)
 
 PLATFORMS
