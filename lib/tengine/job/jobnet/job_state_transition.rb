@@ -115,7 +115,7 @@ module Tengine::Job::Jobnet::JobStateTransition
     event_options.update(options) if options
     signal.fire(self, :"error.job.job.tengine", event_options)
   end
-  available :job_fail, :on => [:starting, :running, :dying, :stuck], :ignored => [:error]
+  available :job_fail, :on => [:starting, :running, :dying], :ignored => [:error, :stuck]
 
   def job_fire_stop(signal)
     signal.fire(self, :"stop.job.job.tengine", {

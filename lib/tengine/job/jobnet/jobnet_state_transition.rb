@@ -65,7 +65,7 @@ module Tengine::Job::Jobnet::JobnetStateTransition
         :target_jobnet_name_path => self.name_path,
       })
   end
-  available :jobnet_fail, :on => [:starting, :running, :dying, :stuck, :success], :ignored => [:error]
+  available :jobnet_fail, :on => [:starting, :running, :dying, :success], :ignored => [:error, :stuck]
 
   def jobnet_fire_stop(signal)
     return if self.phase_key == :initialized

@@ -16,11 +16,11 @@ Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "tengine_job"
   gem.homepage = "http://github.com/tengine/tengine_job"
-  gem.license = "MPL/LGPL"
+  gem.license = "MPL2.0/LGPLv3"
   gem.summary = %Q{tengine_job provides jobnet management}
   gem.description = %Q{tengine_job provides jobnet management}
   gem.email = "tengine@nautilus-technologies.com"
-  gem.authors = %w[saishu w-irie taigou totty hiroshinakao g-morita guemon aoetk hattori-at-nt t-yamada y-karashima akm]
+  gem.authors = %w[taigou totty g-morita shyouhei akm guemon]
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
