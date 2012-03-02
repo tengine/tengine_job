@@ -38,6 +38,7 @@ module Tengine::Job::DslLoader
 
   def jobnet(name, *args, &block)
     options = args.extract_options!
+    options[:description] = options.delete(:caption) if options[:caption]
     options = {
       :name => name,
       :description => args.first || name,
@@ -95,6 +96,7 @@ module Tengine::Job::DslLoader
 
   def job(name, *args)
     script, description, options = __parse_job_args__(name, args)
+    options[:description] = options.delete(:caption) if options[:caption]
     options = {
       :name => name,
       :description => description,
