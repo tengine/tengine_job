@@ -376,6 +376,40 @@ describe Tengine::Job::DslLoader do
       end
     end
 
+    context "0021_caption.rb" do
+      before{
+        Tengine::Job::JobnetTemplate.delete_all
+        load_dsl("0021_caption.rb")
+      }
+
+      it do
+        root_jobnet = Tengine::Job::JobnetTemplate.by_name("jobnet0021")
+        root_jobnet.should be_a(Tengine::Job::RootJobnetTemplate)
+        root_jobnet.tap do |j|
+          j.version.should == 0
+          j.dsl_version.should == @version
+          j.dsl_filepath.should == "0021_caption.rb"
+          j.dsl_lineno.should == 5
+          j.name.should == "jobnet0021"
+          j.description.should == "ジョブネット0021"
+          j.server_name.should == "i-11111111"
+          j.credential_name.should == "goku-ssh-pk1"
+        end
+        root_jobnet.children.map(&:class).should == [
+          Tengine::Job::Start         , # 0
+          Tengine::Job::JobnetTemplate, # 1
+          Tengine::Job::JobnetTemplate, # 2
+          Tengine::Job::JobnetTemplate, # 3
+          Tengine::Job::JobnetTemplate, # 4
+          Tengine::Job::End           , # 5
+        ]
+        root_jobnet.children[1].tap{|j| j.name.should == "job1"; j.description.should == "ジョブ1"; j.script.should == "job1.sh"}
+        root_jobnet.children[2].tap{|j| j.name.should == "job2"; j.description.should == "ジョブ2"; j.script.should == "job2.sh"}
+        root_jobnet.children[3].tap{|j| j.name.should == "job3"; j.description.should == "ジョブ3"; j.script.should == "job3.sh"}
+        root_jobnet.children[4].tap{|j| j.name.should == "hadoop_job_run4"; j.description.should == "Hadoopジョブ4"; j.script.should == "hadoop_job_run4.sh"}
+      end
+    end
+
   end
 
   context "<バグ>同じDSLバージョンで同一のルートジョブネット名が定義できてしまう" do
