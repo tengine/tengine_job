@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["taigou", "totty", "g-morita", "shyouhei", "akm", "guemon"]
   s.date = "2012-02-17"
   s.description = "tengine_job provides jobnet management"
-  s.email = "tengine@nautilus-technologies.com"
+  s.email = "tengine-info@groovenauts.jp"
   s.extra_rdoc_files = [
     "README.rdoc"
   ]

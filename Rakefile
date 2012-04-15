@@ -19,7 +19,7 @@ Jeweler::Tasks.new do |gem|
   gem.license = "MPL2.0/LGPLv3"
   gem.summary = %Q{tengine_job provides jobnet management}
   gem.description = %Q{tengine_job provides jobnet management}
-  gem.email = "tengine@nautilus-technologies.com"
+  gem.email = "tengine-info@groovenauts.jp"
   gem.authors = %w[taigou totty g-morita shyouhei akm guemon]
   # dependencies defined in Gemfile
 end
